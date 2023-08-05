@@ -9,7 +9,7 @@
         <table class="mytable edittable">
             <tr>
                 <th>Name</th>
-                <th>Address 1<th>
+                <th>Address 1</th>
                 <th>Address 2</th>
                 <th>Phone</th>
                 <th>Email</th>
@@ -41,7 +41,13 @@
             <% }); %>
             <tr>
                 <form action="/billing" method="post">
-                    <td><input id="bsb" name="bsb"></td>
+                    <td><input id="name" name="name"></td>
+                    <td><input id="addr1" name="addr1"></td>
+                    <td><input id="addr2" name="addr2"></td>
+                    <td><input id="phone" name="phone"></td>
+                    <td><input id="email" name="email"></td>
+                    <td><input id="abn" name="abn"></td>
+                    <td><input id="bill_to" name="bill_to"></td>
                     <td style="text-align: center;">
                         <button class="btn-fa" type="submit" name="action" value="insert">
                             <i class="fa fa-add" style="color: #00c;"></i>
