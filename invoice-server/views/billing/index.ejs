@@ -5,21 +5,29 @@
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     </head>
     <body>
-        <h1>Accounts</h1>
+        <h1>Billing information</h1>
         <table class="mytable edittable">
             <tr>
-                <th>BSB</th>
-                <th>Account No.</th>
-                <th>Account Name</th>
+                <th>Name</th>
+                <th>Address 1<th>
+                <th>Address 2</th>
+                <th>Phone</th>
+                <th>Email</th>
+                <th>ABN</th>
+                <th>Bill to</th>
                 <th>Action</th>
             </tr>
-            <% accounts.forEach(function(account) { %>
+            <% billings.forEach(function(billing) { %>
             <tr>
-                <form action="/accounts" method="post">
-                    <input id="id" name="id" value="<%= account.id %>" hidden>
-                    <td><input id="bsb" name="bsb" value="<%= account.bsb %>"></td>
-                    <td><input id="number" name="number" value="<%= account.number %>"></td>
-                    <td><input id="name" name="name" value="<%= account.name %>"></td>
+                <form action="/billing" method="post">
+                    <input id="id" name="id" value="<%= billing.id %>" hidden>
+                    <td><input id="name" name="name" value="<%= billing.name %>"></td>
+                    <td><input id="addr1" name="addr1" value="<%= billing.addr1 %>"></td>
+                    <td><input id="addr2" name="addr2" value="<%= billing.addr2 %>"></td>
+                    <td><input id="phone" name="phone" value="<%= billing.phone %>"></td>
+                    <td><input id="email" name="email" value="<%= billing.email %>"></td>
+                    <td><input id="abn" name="abn" value="<%= billing.abn %>"></td>
+                    <td><input id="bill_to" name="bill_to" value="<%= billing.bill_to %>"></td>
                     <td style="text-align: center;">
                         <button class="btn-fa" type="submit" name="action" value="update">
                             <i class="fa fa-save" style="color: green;"></i>
@@ -32,10 +40,8 @@
             </tr>
             <% }); %>
             <tr>
-                <form action="/accounts" method="post">
+                <form action="/billing" method="post">
                     <td><input id="bsb" name="bsb"></td>
-                    <td><input id="number" name="number"></td>
-                    <td><input id="name" name="name"></td>
                     <td style="text-align: center;">
                         <button class="btn-fa" type="submit" name="action" value="insert">
                             <i class="fa fa-add" style="color: #00c;"></i>
