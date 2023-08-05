@@ -31,7 +31,7 @@ app.get('/', function(req, res) {
         return
     }
 
-    res.redirect('/accounts');
+    res.render('index');
 })
 
 app.get('/login', function(req, res) {
@@ -43,7 +43,8 @@ app.post('/login', function(req, res) {
         host: "localhost",
         user: req.body.username,
         password: req.body.password,
-        database: db
+        database: db,
+        multipleStatements: true
     });
 
     con.connect(function(err) {
@@ -53,7 +54,7 @@ app.post('/login', function(req, res) {
         }
         else {
             console.log("Connected to " + db);
-            res.redirect('/accounts');
+            res.redirect('/');
         }
     });
 })
@@ -205,4 +206,113 @@ app.post('/billing', function(req, res) {
 
     res.redirect('/billing');
 })
+
+
+function validateActivityTypeForm(data) {
+    const str_re = /^[a-zA-Z0-9, ]+$/;
+    if (str_re.test(String(data.description)) == false) {
+        console.log("Invalid billing name (can contain only alphanumerics, commas, and spaces)");
+        return false;
+    }
+
+    return true;
+}
+
+app.get('/activity_type', function(req, res) {
+    if (!assert_connection(res)) {
+        return
+    }
+
+    con.query("SELECT id, description, rate_cents/100.0 AS rate FROM activity_type", function(err, result, fields) {
+        res.render('activity_types', {
+            activity_type_fields: fields,
+            activity_types: result
+        });
+    });
+})
+
+app.post('/activity_type', function(req, res) {
+    if (!assert_connection(res)) {
+        return
+    }
+
+    if (validateActivityTypeForm(req.body) == false) {
+        return;
+    }
+
+    if (req.body.action == "insert") {
+        con.query("INSERT INTO activity_type(description, rate_cents) VALUES (?, ?)",
+            [req.body.description, 100*parseFloat(req.body.rate)]
+        );
+    }
+    else if (req.body.action == "delete") {
+        con.query("DELETE FROM activity_type WHERE id = ?",
+            [parseInt(req.body.id)]
+        );
+    }
+    else if (req.body.action == "update") {
+        con.query("UPDATE activity_type SET description = ?, rate_cents = ? WHERE id = ?",
+            [req.body.description, 100*parseFloat(req.body.rate), parseInt(req.body.id)]
+        );
+    }
+
+    res.redirect('/activity_type');
+})
+
+
+function validateActivityForm(data) {
+    const date_re = /^[0-3][0-9]-[0-1][0-9]-[0-9]{4}$/;
+    if (date_re.test(String(data.date)) == false) {
+        console.log("Invalid date (DD-MM-YYYY)");
+        return false;
+    }
+
+    return true;
+}
+
+app.get('/activity', function(req, res) {
+    if (!assert_connection(res)) {
+        return
+    }
+
+    sql1 = "SELECT id, DATE_FORMAT(date, '%d-%m-%Y') AS date_str, qty, activity_type_id, notes FROM activity ORDER BY date"
+    sql2 = "SELECT id, description FROM activity_type"
+    sql = sql1 + "; " + sql2;
+
+    con.query(sql, function(err, results, fields) {
+        res.render('activities', {
+            activities: results[0],
+            activity_types: results[1]
+        });
+    });
+})
+
+app.post('/activity', function(req, res) {
+    if (!assert_connection(res)) {
+        return
+    }
+
+    if (validateActivityForm(req.body) == false) {
+        return;
+    }
+
+    if (req.body.action == "insert") {
+        con.query("INSERT INTO activity(date, qty, activity_type_id, notes) VALUES (STR_TO_DATE(?, '%d-%m-%Y'), ?, ?, ?)",
+            [req.body.date, parseInt(req.body.qty), parseInt(req.body.activity_type), req.body.notes]
+        );
+    }
+    else if (req.body.action == "delete") {
+        con.query("DELETE FROM activity WHERE id = ?",
+            [parseInt(req.body.id)]
+        );
+    }
+    else if (req.body.action == "update") {
+        con.query("UPDATE activity SET date = STR_TO_DATE(?, '%d-%m-%Y'), qty = ?, activity_type_id = ?, notes = ? WHERE id = ?",
+            [req.body.date, parseInt(req.body.qty), parseInt(req.body.activity_type), req.body.notes, parseInt(req.body.id)]
+        );
+    }
+
+    res.redirect('/activity');
+})
+
 

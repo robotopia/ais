@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <link href="css/style.css" rel="stylesheet" type="text/css">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    </head>
+    <body>
+        <h1>Activity types</h1>
+        <table class="mytable edittable">
+            <tr>
+                <th>Description</th>
+                <th>Rate ($)</th>
+                <th>Action</th>
+            </tr>
+            <% activity_types.forEach(function(activity_type) { %>
+            <tr>
+                <form action="/activity_type" method="post">
+                    <input id="id" name="id" value="<%= activity_type.id %>" hidden>
+                    <td><input id="description" name="description" value="<%= activity_type.description %>"></td>
+                    <td><input id="rate" name="rate" value="<%= activity_type.rate %>"></td>
+                    <td style="text-align: center;">
+                        <button class="btn-fa" type="submit" name="action" value="update">
+                            <i class="fa fa-save" style="color: green;"></i>
+                        </button>
+                        <button class="btn-fa" type="submit" name="action" value="delete">
+                            <i class="fa fa-trash" style="color: #c00;"></i>
+                        </button>
+                    </td>
+                </form>
+            </tr>
+            <% }); %>
+            <tr>
+                <form action="/activity_type" method="post">
+                    <td><input id="description" name="description"></td>
+                    <td><input id="rate" name="rate"></td>
+                    <td style="text-align: center;">
+                        <button class="btn-fa" type="submit" name="action" value="insert">
+                            <i class="fa fa-add" style="color: #00c;"></i>
+                        </button>
+                    </td>
+                </form>
+            </tr>
+        </table>
+    </body>
+</html>
