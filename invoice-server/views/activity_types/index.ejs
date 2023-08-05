@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <link href="css/style.css" rel="stylesheet" type="text/css">
+        <link href="/css/style.css" rel="stylesheet" type="text/css">
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     </head>
     <body>
@@ -14,7 +14,7 @@
             </tr>
             <% activity_types.forEach(function(activity_type) { %>
             <tr>
-                <form action="/activity_type" method="post">
+                <form action="/activity-type" method="post">
                     <input id="id" name="id" value="<%= activity_type.id %>" hidden>
                     <td><input id="description" name="description" value="<%= activity_type.description %>"></td>
                     <td><input id="rate" name="rate" value="<%= activity_type.rate %>"></td>
@@ -30,7 +30,7 @@
             </tr>
             <% }); %>
             <tr>
-                <form action="/activity_type" method="post">
+                <form action="/activity-type" method="post">
                     <td><input id="description" name="description"></td>
                     <td><input id="rate" name="rate"></td>
                     <td style="text-align: center;">

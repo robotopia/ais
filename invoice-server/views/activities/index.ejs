@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <link href="/css/style.css" rel="stylesheet" type="text/css">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    </head>
+    <body>
+        <h1>Activities</h1>
+        <table class="mytable edittable">
+            <tr>
+                <th>Date (DD-MM-YYYY)</th>
+                <th>Qty</th>
+                <th>Activity type</th>
+                <th>Notes</th>
+                <th>Action</th>
+            </tr>
+            <% activities.forEach(function(activity) { %>
+            <tr>
+                <form action="/activity" method="post">
+                    <input id="id" name="id" value="<%= activity.id %>" hidden>
+                    <td><input id="date" name="date" value="<%= activity.date_str %>"></td>
+                    <td><input id="qty" name="qty" value="<%= activity.qty %>"></td>
+                    <td>
+                        <select id="activity_type" name="activity_type">
+                            <% activity_types.forEach(function(activity_type) { %>
+                            <option value="<%= activity_type.id %>" <% if(activity.activity_type_id == activity_type.id) { %> selected <% } %>><%= activity_type.description %></option>
+                            <% }); %>
+                        </select>
+                    </td>
+                    <td><input id="notes" name="notes" value="<%= activity.notes %>"></td>
+                    <td style="text-align: center;">
+                        <button class="btn-fa" type="submit" name="action" value="update">
+                            <i class="fa fa-save" style="color: green;"></i>
+                        </button>
+                        <button class="btn-fa" type="submit" name="action" value="delete">
+                            <i class="fa fa-trash" style="color: #c00;"></i>
+                        </button>
+                    </td>
+                </form>
+            </tr>
+            <% }); %>
+            <tr>
+                <form action="/activity" method="post">
+                    <td><input id="date" name="date"></td>
+                    <td><input id="qty" name="qty"></td>
+                    <td>
+                        <select id="activity_type" name="activity_type">
+                            <% activity_types.forEach(function(activity_type) { %>
+                            <option value="<%= activity_type.id %>"><%= activity_type.description %></option>
+                            <% }); %>
+                        </select>
+                    </td>
+                    <td><input id="notes" name="notes"></td>
+                    <td style="text-align: center;">
+                        <button class="btn-fa" type="submit" name="action" value="insert">
+                            <i class="fa fa-add" style="color: #00c;"></i>
+                        </button>
+                    </td>
+                </form>
+            </tr>
+        </table>
+    </body>
+</html>

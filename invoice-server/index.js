@@ -218,7 +218,7 @@ function validateActivityTypeForm(data) {
     return true;
 }
 
-app.get('/activity_type', function(req, res) {
+app.get('/activity-type', function(req, res) {
     if (!assert_connection(res)) {
         return
     }
@@ -231,7 +231,7 @@ app.get('/activity_type', function(req, res) {
     });
 })
 
-app.post('/activity_type', function(req, res) {
+app.post('/activity-type', function(req, res) {
     if (!assert_connection(res)) {
         return
     }
@@ -256,7 +256,7 @@ app.post('/activity_type', function(req, res) {
         );
     }
 
-    res.redirect('/activity_type');
+    res.redirect('/activity-type');
 })
 
 
@@ -316,3 +316,26 @@ app.post('/activity', function(req, res) {
 })
 
 
+app.get('/new-invoice/:date_month_str', function(req, res) {
+    if (!assert_connection(res)) {
+        return
+    }
+
+    const date = new Date(req.params.date_month_str);
+    const full_date = req.params.date_month_str + "-01";
+    const title_date = date.toLocaleString('default', {month: 'long', year: 'numeric'});
+
+    sql = "SELECT DATE_FORMAT(date, '%e %b %Y') AS date_str, qty, at.rate_cents/100.0 as rate, at.description, qty*at.rate_cents/100.0 as amount FROM activity LEFT JOIN activity_type at ON activity_type_id = at.id WHERE date >= ? AND date < DATE_ADD(?, INTERVAL 1 MONTH) ORDER BY date"
+    con.query(sql, [full_date, full_date], function(err, result, fields) {
+        let activities = result;
+        let total_amount = 0;
+        activities.forEach(activity => {
+            total_amount += activity.amount;
+        });
+        res.render('new_invoice', {
+            activities: activities,
+            title_date: title_date,
+            total_amount: total_amount
+        });
+    });
+})

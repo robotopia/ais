@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <link href="/css/style.css" rel="stylesheet" type="text/css">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    </head>
+    <body>
+        <h1 style="text-align: center;">INVOICE (<%= title_date %>)</h1>
+        <table class="mytable">
+            <tr>
+                <th>Date</th>
+                <th>Qty</th>
+                <th>Rate</th>
+                <th>Description</th>
+                <th>Amount</th>
+            </tr>
+            <% activities.forEach(function(activity) { %>
+            <tr>
+                <td><%= activity.date_str %></td>
+                <td><%= activity.qty %></td>
+                <td>$<%= activity.rate %></td>
+                <td><%= activity.description %></td>
+                <td>$<%= activity.amount %></td>
+            </tr>
+            <% }); %>
+            <tr>
+                <td style="opacity: 0; border: 0px;"></td>
+                <td style="opacity: 0; border: 0px;"></td>
+                <td style="opacity: 0; border: 0px;"></td>
+                <td style="border: 0px; text-align: right;"><strong>Total:</strong></td>
+                <td>$<%= total_amount %></td>
+            </tr>
+        </table>
+    </body>
+</html>
