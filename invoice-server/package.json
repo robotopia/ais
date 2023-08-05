@@ -1,0 +1,26 @@
+{
+  "name": "invoice-server",
+  "version": "0.0.1",
+  "description": "A simple database server for managing my PPC invoices",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@bitbucket.org/smcsweeney/galswa-invoices.git"
+  },
+  "author": "Sam McSweeney",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://bitbucket.org/smcsweeney/galswa-invoices/issues"
+  },
+  "homepage": "https://bitbucket.org/smcsweeney/galswa-invoices#readme",
+  "dependencies": {
+    "body-parser": "^1.20.2",
+    "ejs": "^3.1.9",
+    "express": "^4.18.2",
+    "mysql": "^2.18.1",
+    "web-push": "^3.6.4"
+  }
+}
