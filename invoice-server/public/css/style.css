@@ -10,6 +10,10 @@
     width: 100%;
 }
 
+.billing-table td {
+    padding: 8px;
+}
+
 .mytable td, .mytable th {
     border: 1px solid #ddd;
     padding: 8px;

@@ -6,6 +6,35 @@
     </head>
     <body>
         <h1 style="text-align: center;">INVOICE (<%= title_date %>)</h1>
+        <div style="border: 1px solid #000; padding: 8px;">
+            <table class="billing-table" style="width: 100%;">
+                <tr>
+                    <td><b><%= billings[0].name %></b><br><%= billings[0].addr1 %><br><%= billings[0].addr2 %></td>
+                    <td style="text-align: right;">Ph:<br>Email:<br>ABN:</td>
+                    <td><%= billings[0].phone %><br><%= billings[0].email %><br><%= billings[0].abn %> (Not GST Registered)</td>
+                </tr>
+            </table>
+        </div>
+        <div style="border: 1px solid #000; padding: 8px;">
+            <b><u>Bill to</u></b><p><%= billings[0].bill_to %>
+        </div>
+        <div style="border: 1px solid #000; padding: 8px;">
+            <b><u>Summary</u></b><p>
+            <table>
+                <tr>
+                    <td>Date:</td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td>Amount owing:</td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td>Due date:</td>
+                    <td></td>
+                </tr>
+            </table>
+        </div>
         <table class="mytable">
             <tr>
                 <th>Date</th>
