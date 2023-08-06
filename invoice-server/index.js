@@ -316,21 +316,24 @@ app.post('/activity', function(req, res) {
 })
 
 
-app.get('/new-invoice/:date_month_str', function(req, res) {
+app.get('/invoice/:year/:month', function(req, res) {
     if (!assert_connection(res)) {
         return
     }
 
-    const date = new Date(req.params.date_month_str);
-    const full_date = req.params.date_month_str + "-01";
+    const date_str = req.params.year + "-" + req.params.month
+    const date = new Date(date_str);
+    const full_date = date_str + "-01";
     const title_date = date.toLocaleString('default', {month: 'long', year: 'numeric'});
 
     sql1 = "SELECT DATE_FORMAT(date, '%e %b %Y') AS date_str, qty, at.rate_cents/100.0 as rate, at.description, qty*at.rate_cents/100.0 as amount FROM activity LEFT JOIN activity_type at ON activity_type_id = at.id WHERE date >= ? AND date < DATE_ADD(?, INTERVAL 1 MONTH) ORDER BY date";
     sql2 = "SELECT * FROM billing ORDER BY id DESC";
-    sql = sql1 + "; " + sql2;
+    sql3 = "SELECT * FROM account ORDER BY id DESC";
+    sql = sql1 + "; " + sql2 + "; " + sql3;
     con.query(sql, [full_date, full_date], function(err, results, fields) {
         let activities = results[0];
         let billings = results[1];
+        let accounts = results[2];
         let total_amount = 0;
         activities.forEach(activity => {
             total_amount += activity.amount;
@@ -338,6 +341,7 @@ app.get('/new-invoice/:date_month_str', function(req, res) {
         res.render('new_invoice', {
             activities: activities,
             billings: billings,
+            accounts: accounts,
             title_date: title_date,
             total_amount: total_amount
         });

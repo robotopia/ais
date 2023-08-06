@@ -16,10 +16,11 @@
             </table>
         </div>
         <div style="border: 1px solid #000; padding: 8px;">
-            <b><u>Bill to</u></b><p><%= billings[0].bill_to %>
+            <h3>Bill to</h3>
+            <%= billings[0].bill_to %>
         </div>
         <div style="border: 1px solid #000; padding: 8px;">
-            <b><u>Summary</u></b><p>
+            <h3>Summary</h3>
             <table>
                 <tr>
                     <td>Date:</td>
@@ -27,7 +28,7 @@
                 </tr>
                 <tr>
                     <td>Amount owing:</td>
-                    <td></td>
+                    <td>$<%= total_amount %></td>
                 </tr>
                 <tr>
                     <td>Due date:</td>
