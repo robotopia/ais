@@ -321,10 +321,31 @@ app.get('/invoice/:year/:month', function(req, res) {
         return
     }
 
+    // Parse the date info
     const date_str = req.params.year + "-" + req.params.month
     const date = new Date(date_str);
     const full_date = date_str + "-01";
     const title_date = date.toLocaleString('default', {month: 'long', year: 'numeric'});
+
+    // Find the (most recently created) invoice with the matching month and year
+    let sql = "SELECT * FROM invoice WHERE month = ? AND year = ? ORDER BY created DESC LIMIT 1"
+
+    con.query(sql, [req.params.month, req.params.year], function(err, result, field) {
+        invoice = result;
+        // If no such invoice yet exists, create one
+        if (invoice.length == 0) {
+            sql = "INSERT INTO invoice(created, due, billing_id, account_id, month, year) SELECT CURDATE() as created, DATE_ADD(CURDATE(), INTERVAL 1 MONTH) as due, b.id AS billing_id, a.id AS account_id, ? AS month, ? AS year FROM billing AS b JOIN account AS a ORDER BY billing_id DESC, account_id DESC LIMIT 1"
+            con.query(sql, [req.params.month, req.params.year], function(err, result) {
+                if (err) {
+                    console.log("0 records inserted into invoice");
+                    console.log(err);
+                }
+                else {
+                    console.log("1 record inserted into invoice");
+                }
+            });
+        }
+    });
 
     sql1 = "SELECT DATE_FORMAT(date, '%e %b %Y') AS date_str, qty, at.rate_cents/100.0 as rate, at.description, qty*at.rate_cents/100.0 as amount FROM activity LEFT JOIN activity_type at ON activity_type_id = at.id WHERE date >= ? AND date < DATE_ADD(?, INTERVAL 1 MONTH) ORDER BY date";
     sql2 = "SELECT * FROM billing ORDER BY id DESC";
