@@ -20,11 +20,15 @@
             <%= invoice[0].bill_to %>
         </div>
         <div style="border: 1px solid #000; padding: 8px;">
-            <h3>Summary</h3>
+            <h3>Summary
+                <% if (invoice[0].is_paid) { %>
+                <i class="fa fa-check" style="color: green;"></i>
+                <% } %>
+            </h3>
             <table>
                 <tr>
                     <td>Date:</td>
-                    <td></td>
+                    <td><%= invoice[0].issued %></td>
                 </tr>
                 <tr>
                     <td>Amount owing:</td>
@@ -34,6 +38,12 @@
                     <td>Due date:</td>
                     <td><%= invoice[0].due %></td>
                 </tr>
+                <% if (invoice[0].is_paid) { %>
+                <tr>
+                    <td>Paid:</td>
+                    <td><%= invoice[0].paid %></td>
+                </tr>
+                <% } %>
             </table>
         </div>
         <div>

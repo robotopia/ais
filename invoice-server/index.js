@@ -328,7 +328,7 @@ app.get('/invoice/:year/:month', function(req, res) {
     const title_date = date.toLocaleString('default', {month: 'long', year: 'numeric'});
 
     // Find the (most recently created) invoice with the matching month and year
-    let sql = "SELECT i.issued, DATE_FORMAT(i.due, '%e %b %Y') AS due, DATE_FORMAT(i.paid, '%e %b %Y') AS paid, i.pdf, b.name, b.addr1, b.addr2, b.phone, b.email, b.abn, b.bill_to, a.bsb, a.number, a.name as account_name FROM invoice AS i LEFT JOIN billing AS b ON i.billing_id = b.id LEFT JOIN account AS a ON i.account_id = a.id WHERE month = ? AND year = ? ORDER BY created DESC LIMIT 1"
+    let sql = "SELECT i.id, DATE_FORMAT(i.issued, '%e %b %Y') AS issued, DATE_FORMAT(i.due, '%e %b %Y') AS due, DATE_FORMAT(i.paid, '%e %b %Y') AS paid, (i.paid IS NOT NULL) AS is_paid, i.pdf, b.name, b.addr1, b.addr2, b.phone, b.email, b.abn, b.bill_to, a.bsb, a.number, a.name as account_name FROM invoice AS i LEFT JOIN billing AS b ON i.billing_id = b.id LEFT JOIN account AS a ON i.account_id = a.id WHERE month = ? AND year = ? ORDER BY created DESC LIMIT 1"
 
     con.query(sql, [req.params.month, req.params.year], function(err, result, field) {
         invoice = result;
@@ -355,7 +355,7 @@ app.get('/invoice/:year/:month', function(req, res) {
             sql2 = "SELECT * FROM billing ORDER BY id DESC";
             sql3 = "SELECT * FROM account ORDER BY id DESC";
             sql = sql1 + "; " + sql2 + "; " + sql3;
-            con.query(sql, [invoice.id], function(err, results, fields) {
+            con.query(sql, [invoice[0].id], function(err, results, fields) {
                 if (err) console.log(err);
 
                 let invoice_items = results[0];
@@ -378,3 +378,20 @@ app.get('/invoice/:year/:month', function(req, res) {
         }
     });
 })
+
+
+app.get('/add_invoice_item/:id', function (req, res) {
+    if (!assert_connection(res)) {
+        return
+    }
+
+    sql = "SELECT a.id, DATE_FORMAT(a.date, '%e %b %Y') AS date_str, a.qty, at.rate_cents/100.0 AS rate, at.description, (i.paid IS NOT NULL) AS is_paid FROM activity AS a LEFT JOIN activity_type AS at ON a.activity_type_id = at.id LEFT JOIN invoice_item AS ii ON a.id = ii.activity_id LEFT JOIN invoice AS i ON ii.invoice_id = i.id ORDER BY a.date DESC"
+
+    con.query(sql, function(err, result, fields) {
+        if (err) console.log(err);
+
+        res.render('add_invoice_item', {invoice_items: result});
+    });
+
+});
+
