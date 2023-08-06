@@ -328,7 +328,7 @@ app.get('/invoice/:year/:month', function(req, res) {
     const title_date = date.toLocaleString('default', {month: 'long', year: 'numeric'});
 
     // Find the (most recently created) invoice with the matching month and year
-    let sql = "SELECT * FROM invoice WHERE month = ? AND year = ? ORDER BY created DESC LIMIT 1"
+    let sql = "SELECT i.issued, DATE_FORMAT(i.due, '%e %b %Y') AS due, DATE_FORMAT(i.paid, '%e %b %Y') AS paid, i.pdf, b.name, b.addr1, b.addr2, b.phone, b.email, b.abn, b.bill_to, a.bsb, a.number, a.name as account_name FROM invoice AS i LEFT JOIN billing AS b ON i.billing_id = b.id LEFT JOIN account AS a ON i.account_id = a.id WHERE month = ? AND year = ? ORDER BY created DESC LIMIT 1"
 
     con.query(sql, [req.params.month, req.params.year], function(err, result, field) {
         invoice = result;
@@ -344,27 +344,37 @@ app.get('/invoice/:year/:month', function(req, res) {
                     console.log("1 record inserted into invoice");
                 }
             });
-        }
-    });
 
-    sql1 = "SELECT DATE_FORMAT(date, '%e %b %Y') AS date_str, qty, at.rate_cents/100.0 as rate, at.description, qty*at.rate_cents/100.0 as amount FROM activity LEFT JOIN activity_type at ON activity_type_id = at.id WHERE date >= ? AND date < DATE_ADD(?, INTERVAL 1 MONTH) ORDER BY date";
-    sql2 = "SELECT * FROM billing ORDER BY id DESC";
-    sql3 = "SELECT * FROM account ORDER BY id DESC";
-    sql = sql1 + "; " + sql2 + "; " + sql3;
-    con.query(sql, [full_date, full_date], function(err, results, fields) {
-        let activities = results[0];
-        let billings = results[1];
-        let accounts = results[2];
-        let total_amount = 0;
-        activities.forEach(activity => {
-            total_amount += activity.amount;
-        });
-        res.render('new_invoice', {
-            activities: activities,
-            billings: billings,
-            accounts: accounts,
-            title_date: title_date,
-            total_amount: total_amount
-        });
+            res.redirect(req.url)
+        }
+        else {
+            // An invoice has been found, so use it to populate the page
+            // First, get all associated invoice items
+
+            sql1 = "SELECT i.*, DATE_FORMAT(a.date, '%e %b %Y') AS date_str, a.qty, at.description, at.rate_cents/100.0 AS rate, a.qty*at.rate_cents/100.0 AS amount FROM invoice_item AS i LEFT JOIN activity AS a ON i.activity_id = a.id LEFT JOIN activity_type AS at on a.activity_type_id = at.id WHERE i.invoice_id = ?"
+            sql2 = "SELECT * FROM billing ORDER BY id DESC";
+            sql3 = "SELECT * FROM account ORDER BY id DESC";
+            sql = sql1 + "; " + sql2 + "; " + sql3;
+            con.query(sql, [invoice.id], function(err, results, fields) {
+                if (err) console.log(err);
+
+                let invoice_items = results[0];
+                let billings = results[1];
+                let accounts = results[2];
+                let total_amount = 0;
+                invoice_items.forEach(invoice_item => {
+                    total_amount += invoice_item.amount;
+                });
+                context = {
+                    invoice: invoice,
+                    invoice_items: invoice_items,
+                    billings: billings,
+                    accounts: accounts,
+                    title_date: title_date,
+                    total_amount: total_amount
+                };
+                res.render('invoice', context)
+            });
+        }
     });
 })
