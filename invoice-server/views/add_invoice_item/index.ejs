@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <link href="/css/style.css" rel="stylesheet" type="text/css">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    </head>
+    <body>
+        <table class="mytable" style="width: 100%;">
+            <tr>
+                <th>Date</th>
+                <th>Qty</th>
+                <th>Rate</th>
+                <th>Description</th>
+                <th>Add?</th>
+            </tr>
+            <% invoice_items.forEach(function(invoice_item) { %>
+            <tr>
+                <td><%= invoice_item.date_str %></td>
+                <td><%= invoice_item.qty %></td>
+                <td><%= invoice_item.rate %></td>
+                <td><%= invoice_item.description %></td>
+                <td>
+                    <% if (invoice_item.is_paid) { %>
+                    Already paid (TODO make link)
+                    <% } else { %>
+                    <input type="checkbox" id="invoice_item_<%= invoice_item.id %>" name="invoice_item_<%= invoice_item.id %>" value="<%= invoice_item.id %>">
+                    <% } %>
+                </td>
+            </tr>
+            <% }); %>
+        </table>
+    </body>
+</html>
