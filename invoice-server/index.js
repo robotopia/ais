@@ -373,16 +373,38 @@ app.get('/invoice/:id', function(req, res) {
 
 app.get('/add_invoice_item/:id', function (req, res) {
     if (!assert_connection(res)) {
-        return
+        return;
     }
 
-    sql = "SELECT * FROM add_activity_view";
+    sql1 = "SELECT * FROM add_activity_view";
+    sql2 = "SELECT * FROM invoice WHERE id = ?";
 
-    con.query(sql, function(err, result, fields) {
+    sql = sql1 + "; " + sql2;
+    con.query(sql, [req.params.id], function(err, results, fields) {
         if (err) console.log(err);
 
-        res.render('add_invoice_item', {invoice_items: result});
+        res.render('add_invoice_item', {
+            invoice_items: results[0],
+            invoice: results[1]
+        });
     });
 
 });
 
+
+app.post('/delete_invoice_item/:id', function (req, res) {
+    if (!assert_connection(res)) {
+        return;
+    }
+
+    sql1 = "SELECT invoice_id FROM invoice_item WHERE id = ?";
+    sql2 = "DELETE FROM invoice_item WHERE id = ?";
+
+    sql = sql1 + "; " + sql2;
+
+    con.query(sql, function(err, results) {
+        if (err) console.log(err);
+
+        res.redirect('/invoice/' + results[0].invoice_id);
+    });
+});

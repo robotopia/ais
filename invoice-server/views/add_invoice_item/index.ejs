@@ -5,31 +5,35 @@
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     </head>
     <body>
-        <table class="mytable" style="width: 100%;">
-            <tr>
-                <th>Date</th>
-                <th>Qty</th>
-                <th>Rate</th>
-                <th>Description</th>
-                <th>Add?</th>
-            </tr>
-            <% invoice_items.forEach(function(invoice_item) { %>
-            <% if (invoice_item.is_paid) { %>
-            <tr class="disabled">
-            <% } else { %>
-            <tr>
-            <% } %>
-                <td><%= invoice_item.date_str %></td>
-                <td><%= invoice_item.qty %></td>
-                <td>$<%= invoice_item.rate %></td>
-                <td><%= invoice_item.description %></td>
-                <td>
-                    <% if (!invoice_item.is_paid) { %>
-                    <input type="checkbox" id="invoice_item_<%= invoice_item.id %>" name="invoice_item_<%= invoice_item.id %>" value="<%= invoice_item.id %>">
-                    <% } %>
-                </td>
-            </tr>
-            <% }); %>
-        </table>
+        <a href="/invoice/<%= invoice.id %>">Invoice <%= invoice.name %></a> > Add items
+        <form action="/add_invoice_item/:id" method="post" id="form">
+            <button type="submit" method="post">Add selected items</button>
+            <table class="mytable" style="width: 100%;">
+                <tr>
+                    <th>Select</th>
+                    <th>Date</th>
+                    <th>Qty</th>
+                    <th>Rate</th>
+                    <th>Description</th>
+                </tr>
+                <% invoice_items.forEach(function(invoice_item) { %>
+                <% if (invoice_item.is_paid) { %>
+                <tr class="disabled">
+                    <% } else { %>
+                    <tr>
+                        <% } %>
+                        <td>
+                            <% if (!invoice_item.is_paid) { %>
+                            <input type="checkbox" id="invoice_item_<%= invoice_item.id %>" name="invoice_item_<%= invoice_item.id %>" value="<%= invoice_item.id %>">
+                            <% } %>
+                        </td>
+                        <td><%= invoice_item.date_str %></td>
+                        <td><%= invoice_item.qty %></td>
+                        <td>$<%= invoice_item.rate %></td>
+                        <td><%= invoice_item.description %></td>
+                    </tr>
+                    <% }); %>
+            </table>
+        </form>
     </body>
 </html>
