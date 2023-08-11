@@ -34,15 +34,17 @@ app.get('/', function(req, res) {
     res.render('index');
 })
 
+/*
 app.get('/login', function(req, res) {
     res.render('login');
 })
+*/
 
-app.post('/login', function(req, res) {
+app.get('/login', function(req, res) {
     con = mysql.createConnection({
         host: "localhost",
-        user: req.body.username,
-        password: req.body.password,
+        user: process.env.DB_USER, //req.body.username,
+        password: process.env.DB_PASS, //req.body.password,
         database: db,
         multipleStatements: true
     });
@@ -315,6 +317,21 @@ app.post('/activity', function(req, res) {
     res.redirect('/activity');
 })
 
+
+app.get('/invoices', function(req, res) {
+    if (!assert_connection(res)) {
+        return
+    }
+
+    let sql = "SELECT SUM(a.qty*at.rate_cents/100.0) AS total_amount, i.month, i.year, DATE_FORMAT(i.created,'%e %b %Y') AS created_str, DATE_FORMAT(i.issued,'%e %b %Y') AS issued_str, DATE_FORMAT(i.due,'%e %b %Y') AS due_str, DATE_FORMAT(i.paid,'%e %b %Y') AS paid_str, i.pdf FROM invoice AS i LEFT JOIN invoice_item AS ii ON i.id = ii.invoice_id LEFT JOIN activity AS a ON ii.activity_id = a.id LEFT JOIN activity_type AS at on a.activity_type_id = at.id GROUP BY i.id"
+    con.query(sql, function(err, result, field) {
+        if (err) {
+            console.log(err);
+        }
+
+        res.render('invoices', {invoices: result});
+    });
+})
 
 app.get('/invoice/:year/:month', function(req, res) {
     if (!assert_connection(res)) {
