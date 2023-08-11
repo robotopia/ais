@@ -6,7 +6,7 @@
     </head>
     <body>
         <a href="/invoice/<%= invoice.id %>">Invoice <%= invoice.name %></a> > Add items
-        <form action="/add_invoice_item/:id" method="post" id="form">
+        <form action="/add_invoice_item/<%= invoice.id %>" method="post" id="form">
             <button type="submit" method="post">Add selected items</button>
             <table class="mytable" style="width: 100%;">
                 <tr>

@@ -350,7 +350,7 @@ app.get('/invoice/:id', function(req, res) {
             console.log(err);
         }
 
-        if (results[0][0].length == 0) {
+        if (results[0].length == 0) {
             res.sendStatus(404);
         }
 
@@ -385,10 +385,21 @@ app.get('/add_invoice_item/:id', function (req, res) {
 
         res.render('add_invoice_item', {
             invoice_items: results[0],
-            invoice: results[1]
+            invoice: results[1][0]
         });
     });
 
+});
+
+
+app.post('/add_invoice_item/:id', function(req, res) {
+    if (!assert_connection(res)) {
+        return;
+    }
+
+    console.log(req.body);
+
+    res.redirect('/add_invoice_item/' + req.params.id);
 });
 
 
@@ -402,7 +413,7 @@ app.post('/delete_invoice_item/:id', function (req, res) {
 
     sql = sql1 + "; " + sql2;
 
-    con.query(sql, function(err, results) {
+    con.query(sql, [req.params.id, req.params.id], function(err, results) {
         if (err) console.log(err);
 
         res.redirect('/invoice/' + results[0].invoice_id);

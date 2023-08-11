@@ -58,20 +58,25 @@
                     <th>Rate</th>
                     <th>Description</th>
                     <th>Amount</th>
+                    <th>Remove</th>
                 </tr>
                 <% invoice_items.forEach(function(invoice_item) { %>
-                <tr>
-                    <td><%= invoice_item.date_str %></td>
-                    <td><%= invoice_item.qty %></td>
-                    <td>$<%= invoice_item.rate %></td>
-                    <td><%= invoice_item.description %></td>
-                    <td>$<%= invoice_item.amount %></td>
-                </tr>
+                <form method="post" action="/delete_invoice_item/<%= invoice_item.id %>">
+                    <tr>
+                        <td><%= invoice_item.date_str %></td>
+                        <td><%= invoice_item.qty %></td>
+                        <td>$<%= invoice_item.rate %></td>
+                        <td><%= invoice_item.description %></td>
+                        <td>$<%= invoice_item.amount %></td>
+                        <td><button style="border: none; color: #c00;"><i class="fa fa-trash"></i></button>
+                    </tr>
+                </form>
                 <% }); %>
                 <tr>
                     <td>Add items <a href="/add_invoice_item/<%= invoice.id %>">
                             <i class="fa fa-add" style="color: green; text-decoration: none;"></i>
                         </a></td>
+                    <td></td>
                     <td></td>
                     <td></td>
                     <td></td>
@@ -83,6 +88,7 @@
                     <td style="opacity: 0; border: 0px;"></td>
                     <td style="border: 0px; text-align: right;"><strong>Total:</strong></td>
                     <td>$<%= invoice.total_amount %></td>
+                    <td></td>
                 </tr>
             </table>
         </div>
