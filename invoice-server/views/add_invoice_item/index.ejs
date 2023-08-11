@@ -14,15 +14,17 @@
                 <th>Add?</th>
             </tr>
             <% invoice_items.forEach(function(invoice_item) { %>
+            <% if (invoice_item.is_paid) { %>
+            <tr class="disabled">
+            <% } else { %>
             <tr>
+            <% } %>
                 <td><%= invoice_item.date_str %></td>
                 <td><%= invoice_item.qty %></td>
-                <td><%= invoice_item.rate %></td>
+                <td>$<%= invoice_item.rate %></td>
                 <td><%= invoice_item.description %></td>
                 <td>
-                    <% if (invoice_item.is_paid) { %>
-                    Already paid (TODO make link)
-                    <% } else { %>
+                    <% if (!invoice_item.is_paid) { %>
                     <input type="checkbox" id="invoice_item_<%= invoice_item.id %>" name="invoice_item_<%= invoice_item.id %>" value="<%= invoice_item.id %>">
                     <% } %>
                 </td>

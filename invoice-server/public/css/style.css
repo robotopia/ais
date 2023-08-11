@@ -19,6 +19,10 @@
     padding: 8px;
 }
 
+.mytable tr.disabled {
+    opacity: 0.4;
+}
+
 .mytable tr:nth-child(even), .mytable tr:nth-child(even) button, .mytable tr:nth-child(even) input {
     background-color: #f2f2f2;
 }
