@@ -15,11 +15,30 @@
                 <th>Notes</th>
                 <th>Action</th>
             </tr>
+            <tr>
+                <form action="/activity" method="post">
+                    <td><input id="date" name="date" type="date"></td>
+                    <td><input id="qty" name="qty"></td>
+                    <td>
+                        <select id="activity_type" name="activity_type">
+                            <% activity_types.forEach(function(activity_type) { %>
+                            <option value="<%= activity_type.id %>"><%= activity_type.description %></option>
+                            <% }); %>
+                        </select>
+                    </td>
+                    <td><input id="notes" name="notes"></td>
+                    <td style="text-align: center;">
+                        <button class="btn-fa" type="submit" name="action" value="insert">
+                            <i class="fa fa-add" style="color: #00c;"></i>
+                        </button>
+                    </td>
+                </form>
+            </tr>
             <% activities.forEach(function(activity) { %>
             <tr>
                 <form action="/activity" method="post">
                     <input id="id" name="id" value="<%= activity.id %>" hidden>
-                    <td><input id="date" name="date" value="<%= activity.date_str %>"></td>
+                    <td><input type="date" id="date" name="date" value="<%= activity.date_str %>"></td>
                     <td><input id="qty" name="qty" value="<%= activity.qty %>"></td>
                     <td>
                         <select id="activity_type" name="activity_type">
@@ -40,25 +59,6 @@
                 </form>
             </tr>
             <% }); %>
-            <tr>
-                <form action="/activity" method="post">
-                    <td><input id="date" name="date"></td>
-                    <td><input id="qty" name="qty"></td>
-                    <td>
-                        <select id="activity_type" name="activity_type">
-                            <% activity_types.forEach(function(activity_type) { %>
-                            <option value="<%= activity_type.id %>"><%= activity_type.description %></option>
-                            <% }); %>
-                        </select>
-                    </td>
-                    <td><input id="notes" name="notes"></td>
-                    <td style="text-align: center;">
-                        <button class="btn-fa" type="submit" name="action" value="insert">
-                            <i class="fa fa-add" style="color: #00c;"></i>
-                        </button>
-                    </td>
-                </form>
-            </tr>
         </table>
     </body>
 </html>

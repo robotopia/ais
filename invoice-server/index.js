@@ -211,9 +211,9 @@ app.post('/billing', function(req, res) {
 
 
 function validateActivityTypeForm(data) {
-    const str_re = /^[a-zA-Z0-9, ]+$/;
+    const str_re = /^[a-zA-Z0-9, ()]+$/;
     if (str_re.test(String(data.description)) == false) {
-        console.log("Invalid billing name (can contain only alphanumerics, commas, and spaces)");
+        console.log("Invalid description (can contain only alphanumerics, commas, parentheses, and spaces)");
         return false;
     }
 
@@ -263,7 +263,7 @@ app.post('/activity-type', function(req, res) {
 
 
 function validateActivityForm(data) {
-    const date_re = /^[0-3][0-9]-[0-1][0-9]-[0-9]{4}$/;
+    const date_re = /^[0-9]{4}-[0-1][0-9]-[0-3][0-9]$/;
     if (date_re.test(String(data.date)) == false) {
         console.log("Invalid date (DD-MM-YYYY)");
         return false;
@@ -277,7 +277,7 @@ app.get('/activity', function(req, res) {
         return
     }
 
-    sql1 = "SELECT id, DATE_FORMAT(date, '%d-%m-%Y') AS date_str, qty, activity_type_id, notes FROM activity ORDER BY date"
+    sql1 = "SELECT id, DATE_FORMAT(date, '%Y-%m-%d') AS date_str, qty, activity_type_id, notes FROM activity ORDER BY date"
     sql2 = "SELECT id, description FROM activity_type"
     sql = sql1 + "; " + sql2;
 
@@ -299,8 +299,8 @@ app.post('/activity', function(req, res) {
     }
 
     if (req.body.action == "insert") {
-        con.query("INSERT INTO activity(date, qty, activity_type_id, notes) VALUES (STR_TO_DATE(?, '%d-%m-%Y'), ?, ?, ?)",
-            [req.body.date, parseInt(req.body.qty), parseInt(req.body.activity_type), req.body.notes]
+        con.query("INSERT INTO activity(date, qty, activity_type_id, notes) VALUES (STR_TO_DATE(?, '%Y-%m-%d'), ?, ?, ?)",
+            [req.body.date, parseFloat(req.body.qty), parseInt(req.body.activity_type), req.body.notes]
         );
     }
     else if (req.body.action == "delete") {
@@ -309,8 +309,8 @@ app.post('/activity', function(req, res) {
         );
     }
     else if (req.body.action == "update") {
-        con.query("UPDATE activity SET date = STR_TO_DATE(?, '%d-%m-%Y'), qty = ?, activity_type_id = ?, notes = ? WHERE id = ?",
-            [req.body.date, parseInt(req.body.qty), parseInt(req.body.activity_type), req.body.notes, parseInt(req.body.id)]
+        con.query("UPDATE activity SET date = STR_TO_DATE(?, '%Y-%m-%d'), qty = ?, activity_type_id = ?, notes = ? WHERE id = ?",
+            [req.body.date, parseFloat(req.body.qty), parseInt(req.body.activity_type), req.body.notes, parseInt(req.body.id)]
         );
     }
 
