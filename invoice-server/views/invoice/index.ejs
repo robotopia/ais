@@ -9,25 +9,25 @@
     <body>
         <h2><a href="/">Home</a> > <a href="/invoices">Invoices</a> > <%= invoice.name %></h2>
         <div style="border: 1px solid #000; padding: 8px;">
-            <table class="billing-table" style="width: 100%;">
+            <table>
                 <tr>
-                    <td style="text-align: right;">Name:</td>
+                    <td>Name:</td>
                     <td><b><%= invoice.billing_name %></b></td>
                 </tr>
                 <tr>
-                    <td style="text-align: right;">Address:</td>
+                    <td>Address:</td>
                     <td><%= invoice.addr1 %>, <%= invoice.addr2 %></td>
                 </tr>
                 <tr>
-                    <td style="text-align: right;">Ph:</td>
+                    <td>Ph:</td>
                     <td><%= invoice.phone %></td>
                 </tr>
                 <tr>
-                    <td style="text-align: right;">Email:</td>
+                    <td>Email:</td>
                     <td><%= invoice.email %></td>
                 </tr>
                 <tr>
-                    <td style="text-align: right;">ABN:</td>
+                    <td>ABN:</td>
                     <td>
                         <%= invoice.abn %>
                         <% if (!invoice.is_gst_registered) { %>
@@ -42,22 +42,18 @@
             <%= invoice.bill_to %>
         </div>
         <div style="border: 1px solid #000; padding: 8px;">
-            <h3>Summary
-                <% if (invoice.is_paid) { %>
-                (Paid <i class="fa fa-check" style="color: green;"></i>)
-                <% } %>
-            </h3>
+            <h3>Summary</h3>
             <table>
                 <tr>
-                    <td>Date:</td>
-                    <td><input type="date" id="issued_str" name="issued_str" value="<%= invoice.issued_str %>"></input></td>
-                </tr>
-                <tr>
-                    <td>Amount owing:</td>
+                    <td>Amount:</td>
                     <td>$<%= invoice.total_amount %></td>
                 </tr>
                 <tr>
-                    <td>Due date:</td>
+                    <td>Issued:</td>
+                    <td><input type="date" id="issued_str" name="issued_str" value="<%= invoice.issued_str %>"></input></td>
+                </tr>
+                <tr>
+                    <td>Due:</td>
                     <td><input type="date" id="issued_str" name="issued_str" value="<%= invoice.due_str %>"></input></td>
                 </tr>
                 <tr>
@@ -74,25 +70,20 @@
                     <th>Rate</th>
                     <th>Description</th>
                     <th>Amount</th>
-                    <th>Remove</th>
                 </tr>
-                <% invoice_items.forEach(function(invoice_item) { %>
-                <form method="post" action="/delete_invoice_item/<%= invoice.id %>/<%= invoice_item.id %>">
-                    <tr>
-                        <td><%= invoice_item.date_str %></td>
-                        <td><%= invoice_item.qty %></td>
-                        <td>$<%= invoice_item.rate %></td>
-                        <td><%= invoice_item.description %></td>
-                        <td>$<%= invoice_item.amount %></td>
-                        <td><button style="border: none; color: #c00;"><i class="fa fa-trash"></i></button>
-                    </tr>
-                </form>
+                <% activities.forEach(function(activity) { %>
+                <tr>
+                    <td><%= activity.date_str %></td>
+                    <td><%= activity.qty %></td>
+                    <td>$<%= activity.rate %></td>
+                    <td><%= activity.description %></td>
+                    <td>$<%= activity.amount %></td>
+                </tr>
                 <% }); %>
                 <tr>
                     <td>Add items <a href="/add_invoice_item/<%= invoice.id %>">
                             <i class="fa fa-add" style="color: green; text-decoration: none;"></i>
                         </a></td>
-                    <td></td>
                     <td></td>
                     <td></td>
                     <td></td>
@@ -104,7 +95,6 @@
                     <td style="opacity: 0; border: 0px;"></td>
                     <td style="border: 0px; text-align: right;"><strong>Total:</strong></td>
                     <td>$<%= invoice.total_amount %></td>
-                    <td></td>
                 </tr>
             </table>
         </div>

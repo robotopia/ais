@@ -340,7 +340,7 @@ app.get('/invoice/:id', function(req, res) {
 
     // Find the (most recently created) invoice with the matching month and year
     sql1 = "SELECT * FROM invoice_view WHERE id = ?";
-    sql2 = "SELECT * FROM invoice_item_view WHERE invoice_id = ?";
+    sql2 = "SELECT * FROM activity_view WHERE invoice_id = ?";
     sql3 = "SELECT * FROM billing ORDER BY id DESC";
     sql4 = "SELECT * FROM account ORDER BY id DESC";
     sql = sql1 + "; " + sql2 + "; " + sql3 + "; " + sql4;
@@ -355,13 +355,13 @@ app.get('/invoice/:id', function(req, res) {
         }
 
         invoice = results[0][0]; // There can only be 1 invoice
-        invoice_items = results[1];
+        activities = results[1];
         billings = results[2];
         accounts = results[3];
 
         context = {
             invoice: invoice,
-            invoice_items: invoice_items,
+            activities: activities,
             billings: billings,
             accounts: accounts,
         };
@@ -371,16 +371,16 @@ app.get('/invoice/:id', function(req, res) {
 })
 
 
-app.get('/add_invoice_item/:id', function (req, res) {
+app.get('/add_invoice_item/:invoice_id', function (req, res) {
     if (!assert_connection(res)) {
         return;
     }
 
-    sql1 = "SELECT * FROM add_activity_view";
+    sql1 = "SELECT * FROM activity_view ORDER BY date_str DESC";
     sql2 = "SELECT * FROM invoice WHERE id = ?";
 
     sql = sql1 + "; " + sql2;
-    con.query(sql, [req.params.id], function(err, results, fields) {
+    con.query(sql, [req.params.invoice_id], function(err, results, fields) {
         if (err) console.log(err);
 
         res.render('add_invoice_item', {
@@ -401,20 +401,22 @@ app.post('/add_invoice_item/:invoice_id', function(req, res) {
         res.sendStatus(204);
     }
     else {
-        var values = [];
+        var activity_ids = [];
         if (Array.isArray(req.body.activities)) {
             req.body.activities.forEach(function(activity_id) {
-                values.push([activity_id, req.params.invoice_id]);
+                activity_ids.push(activity_id);
             });
         }
         else {
-            activity_id = req.body.activities;
-            values = [[activity_id, req.params.invoice_id]];
+            activity_ids = [req.body.activities];
         }
 
-        sql = "INSERT INTO invoice_item(activity_id, invoice_id) VALUES ?";
+        sql1 = "UPDATE activity SET invoice_id = NULL WHERE invoice_id = ?"; // Clear out the existing invoice associations
+        sql2 = "UPDATE activity SET invoice_id = ? WHERE id IN (?)"; // Add the selected ones
+        console.log(activity_ids);
 
-        con.query(sql, [values], function(err) {
+        sql = sql1 + "; " + sql2;
+        con.query(sql, [req.param.invoice_id, req.param.invoice_id, activity_ids], function(err) {
             if (err) console.log(err);
         })
 
@@ -422,17 +424,3 @@ app.post('/add_invoice_item/:invoice_id', function(req, res) {
     }
 });
 
-
-app.post('/delete_invoice_item/:invoice_id/:invoice_item_id', function (req, res) {
-    if (!assert_connection(res)) {
-        return;
-    }
-
-    sql = "DELETE FROM invoice_item WHERE id = ? AND invoice_id = ?";
-
-    con.query(sql, [req.params.invoice_item_id, req.params.invoice_id], function(err, results) {
-        if (err) console.log(err);
-
-        res.redirect('/invoice/' + req.params.invoice_id);
-    });
-});

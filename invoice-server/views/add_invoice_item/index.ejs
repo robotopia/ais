@@ -20,20 +20,20 @@
                 <% activities.forEach(function(activity) { %>
                 <% if (activity.invoice_id != null) { %>
                 <tr class="disabled">
-                    <% } else { %>
-                    <tr>
+                <% } else { %>
+                <tr>
+                <% } %>
+                    <td style="text-align: center;">
+                        <% if (activity.invoice_id == null) { %>
+                        <input type="checkbox" id="activity_<%= activity.id %>" name="activities" value="<%= activity.id %>">
                         <% } %>
-                        <td style="text-align: center;">
-                            <% if (activity.invoice_id == null) { %>
-                            <input type="checkbox" id="activity_<%= activity.id %>" name="activities" value="<%= activity.id %>">
-                            <% } %>
-                        </td>
-                        <td><%= activity.date_str %></td>
-                        <td><%= activity.qty %></td>
-                        <td>$<%= activity.rate %></td>
-                        <td><%= activity.description %></td>
-                    </tr>
-                    <% }); %>
+                    </td>
+                    <td><%= activity.date_str %></td>
+                    <td><%= activity.qty %></td>
+                    <td>$<%= activity.rate %></td>
+                    <td><%= activity.description %></td>
+                </tr>
+                <% }); %>
             </table>
         </form>
     </body>
