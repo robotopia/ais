@@ -6,9 +6,8 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
     </head>
     <body>
-        <h2><a href="/">Home</a> > <a href="/invoices">Invoices</a> > <a href="/invoice/<%= invoice.id %>"><%= invoice.name %></a> > Add items</h2>
         <form action="/add_invoice_item/<%= invoice.id %>" method="post" id="form">
-            <button type="submit" method="post">Add selected items</button>
+        <h2><a href="/">Home</a> > <a href="/invoices">Invoices</a> > <a href="/invoice/<%= invoice.id %>"><%= invoice.name %></a> > Add items <button type="submit" method="post" class="btn-fa" id="save-button" disabled><i class="fa fa-save"></i></button></h2>
             <table class="mytable" style="width: 100%;">
                 <tr>
                     <th>Select</th>
@@ -18,14 +17,16 @@
                     <th>Description</th>
                 </tr>
                 <% activities.forEach(function(activity) { %>
-                <% if (activity.invoice_id != null) { %>
+                <% if (activity.invoice_id != null && activity.invoice_id != invoice.id) { %>
                 <tr class="disabled">
                 <% } else { %>
                 <tr>
                 <% } %>
                     <td style="text-align: center;">
                         <% if (activity.invoice_id == null) { %>
-                        <input type="checkbox" id="activity_<%= activity.id %>" name="activities" value="<%= activity.id %>">
+                        <input type="checkbox" id="activity_<%= activity.id %>" name="activities" value="<%= activity.id %>" onclick="enableSave()">
+                        <% } else if (activity.invoice_id == invoice.id) { %>
+                        <input type="checkbox" id="activity_<%= activity.id %>" name="activities" value="<%= activity.id %>" onclick="enableSave()" checked>
                         <% } %>
                     </td>
                     <td><%= activity.date_str %></td>
@@ -37,4 +38,9 @@
             </table>
         </form>
     </body>
+    <script>
+        function enableSave() {
+            document.getElementById('save-button').disabled = false;
+        }
+    </script>
 </html>

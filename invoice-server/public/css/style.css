@@ -95,6 +95,20 @@
 .btn-fa {
     border: none;
     cursor: pointer;
+    background: transparent;
+    font-size: 20px;
+}
+
+.btn-fa:disabled {
+    cursor: auto;
+}
+
+.btn-fa i.fa-save {
+    color: green;
+}
+
+.btn-fa:disabled i {
+    color: #ddd;
 }
 
 .edittable input {

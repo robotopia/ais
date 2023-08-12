@@ -413,10 +413,9 @@ app.post('/add_invoice_item/:invoice_id', function(req, res) {
 
         sql1 = "UPDATE activity SET invoice_id = NULL WHERE invoice_id = ?"; // Clear out the existing invoice associations
         sql2 = "UPDATE activity SET invoice_id = ? WHERE id IN (?)"; // Add the selected ones
-        console.log(activity_ids);
 
         sql = sql1 + "; " + sql2;
-        con.query(sql, [req.param.invoice_id, req.param.invoice_id, activity_ids], function(err) {
+        con.query(sql, [req.params.invoice_id, req.params.invoice_id, activity_ids], function(err) {
             if (err) console.log(err);
         })
 
