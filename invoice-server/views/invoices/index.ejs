@@ -3,28 +3,23 @@
     <head>
         <link href="/css/style.css" rel="stylesheet" type="text/css">
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
     </head>
     <body>
         <h2><a href="/">Home</a> > Invoices</h2>
         <table class="mytable edittable">
             <tr>
-                <th>Month/Year</th>
-                <th>Created</th>
+                <th>Name</th>
                 <th>Issued</th>
-                <th>Due</th>
                 <th>Total amount</th>
                 <th>Paid</th>
-                <th>PDF</th>
             </tr>
             <% invoices.forEach(function(invoice) { %>
             <tr>
                 <td><a href="invoice/<%= invoice.id %>"><%= invoice.name %><a></td>
-                <td><%= invoice.created_str %></td>
                 <td><%= invoice.issued_str %></td>
-                <td><%= invoice.due_str %></td>
                 <td>$<%= invoice.total_amount %></td>
                 <td><%= invoice.paid_str %></td>
-                <td><%= invoice.pdf %></td>
             </tr>
             <% }); %>
         </table>
