@@ -384,7 +384,7 @@ app.get('/add_invoice_item/:id', function (req, res) {
         if (err) console.log(err);
 
         res.render('add_invoice_item', {
-            invoice_items: results[0],
+            activities: results[0],
             invoice: results[1][0]
         });
     });
@@ -392,30 +392,47 @@ app.get('/add_invoice_item/:id', function (req, res) {
 });
 
 
-app.post('/add_invoice_item/:id', function(req, res) {
+app.post('/add_invoice_item/:invoice_id', function(req, res) {
     if (!assert_connection(res)) {
         return;
     }
 
-    console.log(req.body);
+    if (! req.body.hasOwnProperty("activities")) {
+        res.sendStatus(204);
+    }
+    else {
+        var values = [];
+        if (Array.isArray(req.body.activities)) {
+            req.body.activities.forEach(function(activity_id) {
+                values.push([activity_id, req.params.invoice_id]);
+            });
+        }
+        else {
+            activity_id = req.body.activities;
+            values = [[activity_id, req.params.invoice_id]];
+        }
 
-    res.redirect('/add_invoice_item/' + req.params.id);
+        sql = "INSERT INTO invoice_item(activity_id, invoice_id) VALUES ?";
+
+        con.query(sql, [values], function(err) {
+            if (err) console.log(err);
+        })
+
+        res.redirect('/add_invoice_item/' + req.params.invoice_id);
+    }
 });
 
 
-app.post('/delete_invoice_item/:id', function (req, res) {
+app.post('/delete_invoice_item/:invoice_id/:invoice_item_id', function (req, res) {
     if (!assert_connection(res)) {
         return;
     }
 
-    sql1 = "SELECT invoice_id FROM invoice_item WHERE id = ?";
-    sql2 = "DELETE FROM invoice_item WHERE id = ?";
+    sql = "DELETE FROM invoice_item WHERE id = ? AND invoice_id = ?";
 
-    sql = sql1 + "; " + sql2;
-
-    con.query(sql, [req.params.id, req.params.id], function(err, results) {
+    con.query(sql, [req.params.invoice_item_id, req.params.invoice_id], function(err, results) {
         if (err) console.log(err);
 
-        res.redirect('/invoice/' + results[0].invoice_id);
+        res.redirect('/invoice/' + req.params.invoice_id);
     });
 });

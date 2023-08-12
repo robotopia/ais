@@ -5,7 +5,7 @@
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     </head>
     <body>
-        <a href="/invoice/<%= invoice.id %>">Invoice <%= invoice.name %></a> > Add items
+        <h2><a href="/invoice/<%= invoice.id %>">Invoice <%= invoice.name %></a> > Add items</h2>
         <form action="/add_invoice_item/<%= invoice.id %>" method="post" id="form">
             <button type="submit" method="post">Add selected items</button>
             <table class="mytable" style="width: 100%;">
@@ -16,21 +16,21 @@
                     <th>Rate</th>
                     <th>Description</th>
                 </tr>
-                <% invoice_items.forEach(function(invoice_item) { %>
-                <% if (invoice_item.is_paid) { %>
+                <% activities.forEach(function(activity) { %>
+                <% if (activity.invoice_id != null) { %>
                 <tr class="disabled">
                     <% } else { %>
                     <tr>
                         <% } %>
                         <td>
-                            <% if (!invoice_item.is_paid) { %>
-                            <input type="checkbox" id="invoice_item_<%= invoice_item.id %>" name="invoice_item_<%= invoice_item.id %>" value="<%= invoice_item.id %>">
+                            <% if (!activity.is_paid) { %>
+                            <input type="checkbox" id="activity_<%= activity.id %>" name="activities" value="<%= activity.id %>">
                             <% } %>
                         </td>
-                        <td><%= invoice_item.date_str %></td>
-                        <td><%= invoice_item.qty %></td>
-                        <td>$<%= invoice_item.rate %></td>
-                        <td><%= invoice_item.description %></td>
+                        <td><%= activity.date_str %></td>
+                        <td><%= activity.qty %></td>
+                        <td>$<%= activity.rate %></td>
+                        <td><%= activity.description %></td>
                     </tr>
                     <% }); %>
             </table>

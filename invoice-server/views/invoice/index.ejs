@@ -61,7 +61,7 @@
                     <th>Remove</th>
                 </tr>
                 <% invoice_items.forEach(function(invoice_item) { %>
-                <form method="post" action="/delete_invoice_item/<%= invoice_item.id %>">
+                <form method="post" action="/delete_invoice_item/<%= invoice.id %>/<%= invoice_item.id %>">
                     <tr>
                         <td><%= invoice_item.date_str %></td>
                         <td><%= invoice_item.qty %></td>
