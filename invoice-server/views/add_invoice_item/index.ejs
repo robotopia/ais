@@ -6,7 +6,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
     </head>
     <body>
-        <h2><a href="/invoice/<%= invoice.id %>">Invoice <%= invoice.name %></a> > Add items</h2>
+        <h2><a href="/">Home</a> > <a href="/invoices">Invoices</a> > <a href="/invoice/<%= invoice.id %>"><%= invoice.name %></a> > Add items</h2>
         <form action="/add_invoice_item/<%= invoice.id %>" method="post" id="form">
             <button type="submit" method="post">Add selected items</button>
             <table class="mytable" style="width: 100%;">
@@ -24,7 +24,7 @@
                     <tr>
                         <% } %>
                         <td>
-                            <% if (!activity.is_paid) { %>
+                            <% if (activity.invoice_id == null) { %>
                             <input type="checkbox" id="activity_<%= activity.id %>" name="activities" value="<%= activity.id %>">
                             <% } %>
                         </td>
