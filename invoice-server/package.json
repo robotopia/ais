@@ -1,6 +1,6 @@
 {
   "name": "invoice-server",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "A simple database server for managing my PPC invoices",
   "main": "index.js",
   "scripts": {
