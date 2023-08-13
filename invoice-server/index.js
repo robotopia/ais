@@ -547,7 +547,7 @@ app.get('/invoice/:id', function(req, res) {
             res.render('invoice', context);
         });
     } else {
-        // Find the (most recently created) invoice with the matching month and year
+        // Find the matching invoice
         sql = "SELECT * FROM invoice_view WHERE id = ?";
         sql += "; SELECT * FROM activity_view WHERE invoice_id = ?";
         sql += "; " + sql_clients;

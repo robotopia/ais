@@ -15,9 +15,13 @@
                 </tr>
             </table>
         </form>
-        <form action="/client/delete/<%= client.id %>" method="post">
-            <button class="btn-fa">Delete this client <i class="fa fa-trash"></i></button>
-        </form>
+        <% if (client.id != "new") { %>
+        <div class="page-action">
+            <form action="/client/delete/<%= client.id %>" method="post">
+                <button class="delete-button"><i class="fa fa-trash"></i></button>
+            </form>
+        </div>
+        <% } %>
     </body>
     <script type="text/javascript" src="/scripts/enable-save.js"></script>
 </html>
