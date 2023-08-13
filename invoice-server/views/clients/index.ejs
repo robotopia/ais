@@ -6,25 +6,21 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
     </head>
     <body>
-        <h2 class="nav"><a href="/">Home</a> > Invoices</h2>
+        <h2><a href="/">Home</a> > Clients</h2>
         <table class="mytable">
             <tr>
                 <th>Name</th>
-                <th>Issued</th>
-                <th>Total amount</th>
-                <th>Paid</th>
+                <th>Billing email</th>
             </tr>
-            <% invoices.forEach(function(invoice) { %>
+            <% clients.forEach(function(client) { %>
             <tr>
-                <td><a href="invoice/<%= invoice.id %>"><%= invoice.name %><a></td>
-                <td><%= invoice.issued_str %></td>
-                <td>$<%= invoice.total_amount %></td>
-                <td><%= invoice.paid_str %></td>
+                <td><a href="/client/<%= client.id %>"><%= client.name %></a></td>
+                <td><%= client.bill_email %></td>
             </tr>
             <% }); %>
         </table>
         <div class="add-button">
-            <a href="/invoice/new"><i class="fa fa-circle-plus"></i></a>
+            <a href="/client/new"><i class="fa fa-circle-plus"></i></a>
         </div>
     </body>
 </html>

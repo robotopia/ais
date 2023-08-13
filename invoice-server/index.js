@@ -133,6 +133,99 @@ app.post('/accounts', function(req, res) {
     res.redirect('/accounts');
 })
 
+/* CLIENT */
+
+function validateClientForm(data) {
+    const str_re = /^[a-zA-Z0-9, ]+$/;
+    if (str_re.test(String(data.name)) == false) {
+        console.log("Invalid billing name (can contain only alphanumerics, commas, and spaces)");
+        return false;
+    }
+
+    const email_re = /(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9]))\.){3}(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9])|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])/;
+    if (email_re.test(String(data.bill_email)) == false) {
+        console.log("Invalid email address");
+        return false;
+    }
+
+    return true;
+}
+
+app.get('/clients', function(req, res) {
+    if (!assert_connection(res)) {
+        return
+    }
+
+    con.query("SELECT * FROM client", function(err, result, fields) {
+        res.render('clients', {clients: result});
+    });
+})
+
+app.get('/client/:id', function(req, res) {
+    if (!assert_connection(res)) {
+        return
+    }
+
+    sql = "SELECT * FROM client WHERE id = ?";
+    con.query(sql, [req.params.id], function(err, result) {
+        if (err) {
+            console.log(err);
+            res.sendStatus(404);
+        } else if (result.length == 0) {
+            res.render('client', {client: {id: "new"}});
+        } else {
+            res.render('client', {client: result[0]});
+        }
+    });
+});
+
+app.post('/client/delete/:id', function(req, res) {
+    if (!assert_connection(res)) {
+        return;
+    }
+
+    sql = "DELETE FROM client WHERE id = ?"
+    con.query(sql, [req.params.id]);
+
+    res.redirect('/clients');
+});
+
+app.post('/client/:id', function(req, res) {
+    if (!assert_connection(res)) {
+        return
+    }
+
+    if (validateClientForm(req.body) == false) {
+        return;
+    }
+
+    values = [req.body.name, req.body.bill_email];
+
+    if (req.params.id == "new") {
+        sql = "INSERT INTO client(name, bill_email) VALUES (?)"
+        con.query(sql, [values], function(err, result) {
+            if (err) {
+                console.log(err);
+                res.redirect('/clients');
+            } else {
+                res.redirect('/client/' + result.insertId);
+            }
+        });
+    } else {
+        sql = "UPDATE client SET ? WHERE id = ?";
+        con.query(sql, [req.body, req.params.id], function(err) {
+            if (err) {
+                console.log(err);
+                res.redirect('/clients/');
+            } else {
+                res.redirect('/client/' + req.params.id);
+            }
+        });
+    }
+})
+
+
+/* BILLING */
 
 function validateBillingForm(data) {
     const str_re = /^[a-zA-Z0-9, ]+$/;
@@ -177,20 +270,46 @@ function validateBillingForm(data) {
     return true;
 }
 
-app.get('/billing', function(req, res) {
+app.get('/billings', function(req, res) {
     if (!assert_connection(res)) {
         return
     }
 
     con.query("SELECT * FROM billing", function(err, result, fields) {
-        res.render('billing', {
-            billing_fields: fields,
-            billings: result
-        });
+        res.render('billings', {billings: result});
     });
 })
 
-app.post('/billing', function(req, res) {
+app.get('/billing/:id', function(req, res) {
+    if (!assert_connection(res)) {
+        return
+    }
+
+    sql = "SELECT * FROM billing WHERE id = ?";
+    con.query(sql, [req.params.id], function(err, result) {
+        if (err) {
+            console.log(err);
+            res.sendStatus(404);
+        } else if (result.length == 0) {
+            res.render('billing', {billing: {id: "new"}});
+        } else {
+            res.render('billing', {billing: result[0]});
+        }
+    });
+});
+
+app.post('/billing/delete/:id', function(req, res) {
+    if (!assert_connection(res)) {
+        return;
+    }
+
+    sql = "DELETE FROM billing WHERE id = ?"
+    con.query(sql, [req.params.id]);
+
+    res.redirect('/billings');
+});
+
+app.post('/billing/:id', function(req, res) {
     if (!assert_connection(res)) {
         return
     }
@@ -199,23 +318,29 @@ app.post('/billing', function(req, res) {
         return;
     }
 
-    if (req.body.action == "insert") {
-        con.query("INSERT INTO billing(name, addr1, addr2, phone, email, abn, bill_to) VALUES (?, ?, ?, ?, ?, ?, ?)",
-            [req.body.name, req.body.addr1, req.body.addr2, req.body.phone, req.body.email, req.body.abn, req.body.bill_to]
-        );
-    }
-    else if (req.body.action == "delete") {
-        con.query("DELETE FROM billing WHERE id = ?",
-            [parseInt(req.body.id)]
-        );
-    }
-    else if (req.body.action == "update") {
-        con.query("UPDATE billing SET name = ?, addr1 = ?, addr2 = ?, phone = ?, email = ?, abn = ?, bill_to = ? WHERE id = ?",
-            [req.body.name, req.body.addr1, req.body.addr2, req.body.phone, req.body.email, req.body.abn, req.body.bill_to, parseInt(req.body.id)]
-        );
-    }
+    values = [req.body.name, req.body.addr1, req.body.addr2, req.body.phone, req.body.email, req.body.abn];
 
-    res.redirect('/billing');
+    if (req.params.id == "new") {
+        sql = "INSERT INTO billing(name, addr1, addr2, phone, email, abn) VALUES (?)"
+        con.query(sql, [values], function(err, result) {
+            if (err) {
+                console.log(err);
+                res.redirect('/billings');
+            } else {
+                res.redirect('/billing/' + result.insertId);
+            }
+        });
+    } else {
+        sql = "UPDATE billing SET ? WHERE id = ?";
+        con.query(sql, [req.body, req.params.id], function(err) {
+            if (err) {
+                console.log(err);
+                res.redirect('/billings/');
+            } else {
+                res.redirect('/billing/' + req.params.id);
+            }
+        });
+    }
 })
 
 
@@ -370,9 +495,9 @@ app.post('/invoice/:id', function(req, res) {
             if (err) {
                 console.log(err);
                 res.redirect("/invoices");
+            } else {
+                res.redirect("/invoice/" + result.insertId);
             }
-
-            res.redirect("/invoice/" + result.insertId);
         });
     } else {
         // Update existing invoice

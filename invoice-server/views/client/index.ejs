@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <link href="/css/style.css" rel="stylesheet" type="text/css">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    </head>
+    <body>
+        <form action="/client/<%= client.id %>" method="post">
+            <h2><a href="/">Home</a> > <a href="/clients">Clients</a> > <input id="name" name="name" value="<%= client.name %>" style="font-size: 16px" onChange="enableSave('save-button')" required></input> <button type="submit" method="post" class="btn-fa" id="save-button" disabled><i class="fa fa-save"></i></button></h2>
+            <table class="mytable">
+                <tr>
+                    <td>Billing email:</td>
+                    <td><input id="bill_email" name="bill_email" value="<%= client.bill_email %>" onChange="enableSave('save-button')"></td>
+                </tr>
+            </table>
+        </form>
+        <form action="/client/delete/<%= client.id %>" method="post">
+            <button class="btn-fa">Delete this client <i class="fa fa-trash"></i></button>
+        </form>
+    </body>
+    <script type="text/javascript" src="/scripts/enable-save.js"></script>
+</html>

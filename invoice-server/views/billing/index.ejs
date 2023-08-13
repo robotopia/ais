@@ -6,56 +6,35 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
     </head>
     <body>
-        <h2><a href="/">Home</a> > Billing information</h2>
-        <table class="mytable edittable">
-            <tr>
-                <th>Name</th>
-                <th>Address 1</th>
-                <th>Address 2</th>
-                <th>Phone</th>
-                <th>Email</th>
-                <th>ABN</th>
-                <th>Bill to</th>
-                <th>Action</th>
-            </tr>
-            <% billings.forEach(function(billing) { %>
-            <tr>
-                <form action="/billing" method="post">
-                    <input id="id" name="id" value="<%= billing.id %>" hidden>
-                    <td><input id="name" name="name" value="<%= billing.name %>"></td>
-                    <td><input id="addr1" name="addr1" value="<%= billing.addr1 %>"></td>
-                    <td><input id="addr2" name="addr2" value="<%= billing.addr2 %>"></td>
-                    <td><input id="phone" name="phone" value="<%= billing.phone %>"></td>
-                    <td><input id="email" name="email" value="<%= billing.email %>"></td>
-                    <td><input id="abn" name="abn" value="<%= billing.abn %>"></td>
-                    <td><input id="bill_to" name="bill_to" value="<%= billing.bill_to %>"></td>
-                    <td style="text-align: center;">
-                        <button class="btn-fa" type="submit" name="action" value="update">
-                            <i class="fa fa-save" style="color: green;"></i>
-                        </button>
-                        <button class="btn-fa" type="submit" name="action" value="delete">
-                            <i class="fa fa-trash" style="color: #c00;"></i>
-                        </button>
-                    </td>
-                </form>
-            </tr>
-            <% }); %>
-            <tr>
-                <form action="/billing" method="post">
-                    <td><input id="name" name="name"></td>
-                    <td><input id="addr1" name="addr1"></td>
-                    <td><input id="addr2" name="addr2"></td>
-                    <td><input id="phone" name="phone"></td>
-                    <td><input id="email" name="email"></td>
-                    <td><input id="abn" name="abn"></td>
-                    <td><input id="bill_to" name="bill_to"></td>
-                    <td style="text-align: center;">
-                        <button class="btn-fa" type="submit" name="action" value="insert">
-                            <i class="fa fa-add" style="color: #00c;"></i>
-                        </button>
-                    </td>
-                </form>
-            </tr>
-        </table>
+        <form action="/billing/<%= billing.id %>" method="post">
+            <h2><a href="/">Home</a> > <a href="/billings">Billing information</a> > <input id="name" name="name" value="<%= billing.name %>" style="font-size: 16px" onChange="enableSave('save-button')" required></input> <button type="submit" method="post" class="btn-fa" id="save-button" disabled><i class="fa fa-save"></i></button></h2>
+            <table class="mytable">
+                <tr>
+                    <td>Address line 1:</td>
+                    <td><input id="addr1" name="addr1" value="<%= billing.addr1 %>" onChange="enableSave('save-button')"></td>
+                </tr>
+                <tr>
+                    <td>Address line 2:</td>
+                    <td><input id="addr2" name="addr2" value="<%= billing.addr2 %>" onChange="enableSave('save-button')"></td>
+                </tr>
+                <tr>
+                    <td>Phone:</td>
+                    <td><input id="phone" name="phone" value="<%= billing.phone %>" onChange="enableSave('save-button')"></td>
+                </tr>
+                <tr>
+                    <td>Email:</td>
+                    <td><input id="email" name="email" value="<%= billing.email %>" onChange="enableSave('save-button')"></td>
+                </tr>
+                <tr>
+                    <td>ABN:</td>
+                    <td><input id="abn" name="abn" value="<%= billing.abn %>" onChange="enableSave('save-button')"></td>
+                </tr>
+                <tr>
+                    <td>GST registered?</td>
+                    <td><input type="checkbox" id="is_gst_registered" name="is_gst_registered" value="<%= billing.is_gst_registered %>" onChange="enableSave('save-button')"></td>
+                </tr>
+            </table>
+        </form>
     </body>
+    <script type="text/javascript" src="/scripts/enable-save.js"></script>
 </html>
