@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <%- include('../partials/head'); %>
+    </head>
+    <body>
+        <form action="/<%= table_name %>/<%= obj.id %>/edit" method="post">
+            <h2 class="nav"><a href="/">Home</a> > <a href="/<%= table_name %>/list"><%= table.parent_display %></a> > <input id="<%= table.slug %>" name="<%= table.slug %>" value="<%= obj[table.slug] %>" style="font-size: 16px" onChange="enableSave('save-button')" required></input> <button type="submit" method="post" class="btn-fa" id="save-button" disabled><i class="fa fa-save"></i></button></h2>
+            <table class="mytable">
+                <% table.fields_editable.forEach(function(k) { %>
+                <tr>
+                    <td><%= table.fields[k].display %><% if (table.fields[k].required) { %>*<% } %></td>
+                    <td>
+                        <input type="<%= table.fields[k].type %>" id="<%= k %>" name="<%= k %>" value="<%= obj[k] %>" onChange="enableSave('save-button')">
+                    </td>
+                </tr>
+                <% }); %>
+            </table>
+            <div>*Required</div>
+        </form>
+        <% if (obj.id != "new") { %>
+        <div class="page-action">
+            <form action="/<%= table_name %>/<%= obj.id %>/delete" method="post">
+                <button class="delete-button"><i class="fa fa-trash"></i></button>
+            </form>
+        </div>
+        <% } %>
+    </body>
+    <script type="text/javascript" src="/scripts/enable-save.js"></script>
+    <script>
+        <% table.fields_editable.forEach(function(k) { %>
+            // Set required inputs to "required"
+            <% if (table.fields[k].required) { %>
+                document.getElementById("<%= k %>").required = true;
+            <% } %>
+
+            // Set checkboxes as checked according to value
+            <% if (table.fields[k].type == "checkbox" && obj[k] == 1) { %>
+                document.getElementById("<%= k %>").checked = true;
+            <% } %>
+        <% }); %>
+    </script>
+</html>

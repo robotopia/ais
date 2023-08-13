@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <%- include('../partials/head'); %>
+    </head>
+    <body>
+        <h2 class="nav"><a href="/">Home</a> > <%= table.parent_display %></h2>
+        <table class="mytable">
+            <tr>
+                <th><%= table.fields[table.slug].display %></th>
+                <% table.fields_list.forEach(function(k) { %>
+                <th><%= table.fields[k].display %></th>
+                <% }); %>
+            </tr>
+            <% objs.forEach(function(obj) { %>
+            <tr>
+                <td><a href="/<%= table_name %>/<%= obj.id %>/edit"><%= obj[table.slug] %></a></td>
+                <% table.fields_list.forEach(function(k) { %>
+                <td><%= obj[k] %></td>
+                <% }); %>
+            </tr>
+            <% }); %>
+        </table>
+        <div class="page-action">
+            <a href="/<%= table_name %>/new/edit" class="add-button"><i class="fa fa-circle-plus"></i></a>
+        </div>
+    </body>
+</html>

@@ -35,154 +35,6 @@ app.listen(port, () => {
     console.log(`Now listening on port ${port}`);
 });
 
-app.get('/', function(req, res) {
-    if (!assert_connection(res)) {
-        return
-    }
-
-    res.render('index');
-})
-
-/*
-app.get('/login', function(req, res) {
-    res.render('login');
-})
-*/
-
-app.get('/login', function(req, res) {
-    con = mysql.createConnection({
-        host: "localhost",
-        user: process.env.DB_USER, //req.body.username,
-        password: process.env.DB_PASS, //req.body.password,
-        database: db,
-        multipleStatements: true
-    });
-
-    con.connect(function(err) {
-        if (err) {
-            console.log(err.sqlMessage);
-            con = 0;
-        }
-        else {
-            console.log("Connected to " + db);
-            res.redirect('/');
-        }
-    });
-})
-
-function validateAccountForm(data) {
-    const bsb_re = /^[0-9]{3}-*[0-9]{3}$/;
-    if (bsb_re.test(String(data.bsb)) == false) {
-        console.log("Invalid BSB number");
-        return false;
-    }
-
-    const number_re = /^[0-9 -]+$/;
-    if (number_re.test(String(data.number)) == false) {
-        console.log("Invalid account number");
-        return false;
-    }
-
-    const name_re = /^[a-zA-Z0-9 ]+$/;
-    if (name_re.test(String(data.name)) == false) {
-        console.log("Invalid account name (can contain only alphanumerics and spaces)");
-        return false;
-    }
-
-    return true;
-}
-
-app.get('/accounts', function(req, res) {
-    if (!assert_connection(res)) {
-        return
-    }
-
-    con.query("SELECT * FROM account", function(err, result, fields) {
-        res.render('accounts', {
-            account_fields: fields,
-            accounts: result
-        });
-    });
-})
-
-app.post('/invoice/delete/:id', function(req, res) {
-    if (!assert_connection(res)) {
-        return;
-    }
-
-    sql = "DELETE FROM invoice WHERE id = ?"
-    con.query(sql, [req.params.id]);
-
-    res.redirect('/invoices');
-});
-
-/* ACCOUNT */
-
-app.post('/account/delete/:id', function(req, res) {
-    if (!assert_connection(res)) {
-        return;
-    }
-
-    sql = "DELETE FROM account WHERE id = ?"
-    con.query(sql, [req.params.id]);
-
-    res.redirect('/accounts');
-});
-
-app.get('/account/:id', function(req, res) {
-    if (!assert_connection(res)) {
-        return
-    }
-
-    sql = "SELECT * FROM account WHERE id = ?";
-    con.query(sql, [req.params.id], function(err, result) {
-        if (err) {
-            console.log(err);
-            res.sendStatus(404);
-        } else if (result.length == 0) {
-            res.render('account', {account: {id: "new"}});
-        } else {
-            res.render('account', {account: result[0]});
-        }
-    });
-});
-
-app.post('/account/:id', function(req, res) {
-    if (!assert_connection(res)) {
-        return
-    }
-
-    if (validateAccountForm(req.body) == false) {
-        return;
-    }
-
-    values = [req.body.name, req.body.bsb, req.body.number];
-
-    if (req.params.id == "new") {
-        sql = "INSERT INTO account(name, bsb, number) VALUES (?)"
-        con.query(sql, [values], function(err, result) {
-            if (err) {
-                console.log(err);
-                res.redirect('/accounts');
-            } else {
-                res.redirect('/account/' + result.insertId);
-            }
-        });
-    } else {
-        sql = "UPDATE account SET ? WHERE id = ?";
-        con.query(sql, [req.body, req.params.id], function(err) {
-            if (err) {
-                console.log(err);
-                res.redirect('/accounts/');
-            } else {
-                res.redirect('/account/' + req.params.id);
-            }
-        });
-    }
-})
-
-/* CLIENT */
-
 function validateClientForm(data) {
     const str_re = /^[a-zA-Z0-9, ]+$/;
     if (str_re.test(String(data.name)) == false) {
@@ -198,110 +50,6 @@ function validateClientForm(data) {
 
     return true;
 }
-
-
-app.get('/clients', function(req, res) {
-    if (!assert_connection(res)) {
-        return
-    }
-
-    con.query("SELECT * FROM client", function(err, result, fields) {
-        res.render('clients', {clients: result});
-    });
-})
-
-const tables = {
-    client: {
-        parent: "clients",
-        parent_display: "Clients",
-        fields: {
-            id: {display: "ID", type: "text"},
-            name: {display: "Name", type: "text", required: true},
-            bill_email: {display: "Billing email", type: "text"}
-        },
-        fields_editable: ["bill_email"],
-        slug: "name"
-    }
-};
-
-app.get('/client/:id', function(req, res) {
-    if (!assert_connection(res)) {
-        return
-    }
-
-    table = tables['client'];
-
-    if (req.params.id == "new") {
-        obj = {};
-        for (var k in table.fields) {
-            obj[k] = "";
-        }
-        obj.id = "new";
-        res.render('record', {table: table, table_name: 'client', obj: obj});
-    } else {
-        sql = "SELECT * FROM client WHERE id = ?";
-        con.query(sql, [req.params.id], function(err, results) {
-            if (err) {
-                console.log(err);
-                res.sendStatus(404);
-            } else if (results.length == 0) {
-                res.sendStatus(404);
-            } else {
-                obj = results[0];
-                res.render('record', {table: table, table_name: 'client', obj: obj});
-            }
-        });
-    }
-});
-
-
-app.post('/client/delete/:id', function(req, res) {
-    if (!assert_connection(res)) {
-        return;
-    }
-
-    sql = "DELETE FROM client WHERE id = ?"
-    con.query(sql, [req.params.id]);
-
-    res.redirect('/clients');
-});
-
-app.post('/client/:id', function(req, res) {
-    if (!assert_connection(res)) {
-        return
-    }
-
-    if (validateClientForm(req.body) == false) {
-        return;
-    }
-
-    values = [req.body.name, req.body.bill_email];
-
-    if (req.params.id == "new") {
-        sql = "INSERT INTO client(name, bill_email) VALUES (?)"
-        con.query(sql, [values], function(err, result) {
-            if (err) {
-                console.log(err);
-                res.redirect('/clients');
-            } else {
-                res.redirect('/client/' + result.insertId);
-            }
-        });
-    } else {
-        sql = "UPDATE client SET ? WHERE id = ?";
-        con.query(sql, [req.body, req.params.id], function(err) {
-            if (err) {
-                console.log(err);
-                res.redirect('/clients/');
-            } else {
-                res.redirect('/client/' + req.params.id);
-            }
-        });
-    }
-})
-
-
-/* BILLING */
 
 function validateBillingForm(data) {
     const str_re = /^[a-zA-Z0-9, ]+$/;
@@ -345,6 +93,221 @@ function validateBillingForm(data) {
 
     return true;
 }
+
+function validateAccountForm(data) {
+    const bsb_re = /^[0-9]{3}-*[0-9]{3}$/;
+    if (bsb_re.test(String(data.bsb)) == false) {
+        console.log("Invalid BSB number");
+        return false;
+    }
+
+    const number_re = /^[0-9 -]+$/;
+    if (number_re.test(String(data.number)) == false) {
+        console.log("Invalid account number");
+        return false;
+    }
+
+    const name_re = /^[a-zA-Z0-9 ]+$/;
+    if (name_re.test(String(data.name)) == false) {
+        console.log("Invalid account name (can contain only alphanumerics and spaces)");
+        return false;
+    }
+
+    return true;
+}
+
+const tables = {
+    account: {
+        parent_display: "Accounts",
+        validationFunc: validateAccountForm,
+        fields: {
+            id: {display: "ID", type: "text"},
+            name: {display: "Account Name", type: "text", required: true},
+            bsb: {display: "BSB", type: "text", required: true},
+            number: {display: "Account No.", type: "text", required: true}
+        },
+        fields_editable: ["bsb", "number"],
+        fields_list: ["bsb", "number"],
+        slug: "name"
+    },
+    billing: {
+        parent_display: "Billing information",
+        validationFunc: validateBillingForm,
+        fields: {
+            id: {display: "ID", type: "text"},
+            name: {display: "Name", type: "text", required: true},
+            addr1: {display: "Address line 1", type: "text"},
+            addr2: {display: "Address line 2", type: "text"},
+            phone: {display: "Phone", type: "text", required: true},
+            email: {display: "Email", type: "text", required: true},
+            abn: {display: "ABN", type: "text", required: true},
+            is_gst_registered: {display: "GST registered?", type: "checkbox"}
+        },
+        fields_editable: ["addr1", "addr2", "phone", "email", "abn", "is_gst_registered"],
+        fields_list: ["email", "abn"],
+        slug: "name"
+    },
+    client: {
+        parent_display: "Clients",
+        validationFunc: validateClientForm,
+        fields: {
+            id: {display: "ID", type: "text"},
+            name: {display: "Name", type: "text", required: true},
+            bill_email: {display: "Billing email", type: "text"}
+        },
+        fields_editable: ["bill_email"],
+        fields_list: ["bill_email"],
+        slug: "name"
+    }
+};
+
+app.get('/', function(req, res) {
+    if (!assert_connection(res)) {
+        return
+    }
+
+    res.render('index');
+})
+
+/*
+app.get('/login', function(req, res) {
+    res.render('login');
+})
+*/
+
+app.get('/login', function(req, res) {
+    con = mysql.createConnection({
+        host: "localhost",
+        user: process.env.DB_USER, //req.body.username,
+        password: process.env.DB_PASS, //req.body.password,
+        database: db,
+        multipleStatements: true
+    });
+
+    con.connect(function(err) {
+        if (err) {
+            console.log(err.sqlMessage);
+            con = 0;
+        }
+        else {
+            console.log("Connected to " + db);
+            res.redirect('/');
+        }
+    });
+})
+
+app.post('/invoice/delete/:id', function(req, res) {
+    if (!assert_connection(res)) {
+        return;
+    }
+
+    sql = "DELETE FROM invoice WHERE id = ?"
+    con.query(sql, [req.params.id]);
+
+    res.redirect('/invoices');
+});
+
+
+
+app.get('/:table/list', function(req, res) {
+    if (!assert_connection(res)) {
+        return
+    }
+
+    table = tables[req.params.table];
+    view = table.hasOwnProperty("view") ? table.view : req.params.table;
+
+    con.query("SELECT * FROM ??", [view], function(err, results) {
+        res.render("objs", {table: table, table_name: req.params.table, objs: results});
+    });
+})
+
+app.get('/:table/:id/edit', function(req, res) {
+    if (!assert_connection(res)) {
+        return
+    }
+
+    table = tables[req.params.table];
+
+    if (req.params.id == "new") {
+        obj = {};
+        for (var k in table.fields) {
+            obj[k] = "";
+        }
+        obj.id = "new";
+        res.render('obj', {table: table, table_name: req.params.table, obj: obj});
+    } else {
+        sql = "SELECT * FROM ?? WHERE id = ?";
+        con.query(sql, [req.params.table, req.params.id], function(err, results) {
+            if (err) {
+                console.log(err);
+                res.sendStatus(404);
+            } else if (results.length == 0) {
+                res.sendStatus(404);
+            } else {
+                obj = results[0];
+                res.render('obj', {table: table, table_name: req.params.table, obj: obj});
+            }
+        });
+    }
+});
+
+
+app.post('/:table/:id/delete', function(req, res) {
+    if (!assert_connection(res)) {
+        return;
+    }
+
+    sql = "DELETE FROM ?? WHERE id = ?"
+    con.query(sql, [req.params.table, req.params.id]);
+
+    res.redirect('/' + req.params.table + '/list');
+});
+
+app.post('/:table/:id/edit', function(req, res) {
+    if (!assert_connection(res)) {
+        return
+    }
+
+    table = tables[req.params.table];
+    if (table.validationFunc(req.body) == false) {
+        return;
+    }
+
+    if (req.params.id == "new") {
+        sql = "INSERT INTO ?? (??) VALUES (?)"
+        con.query(sql, [req.params.table, Object.keys(req.body), Object.values(req.body)], function(err, result) {
+            if (err) {
+                console.log(err);
+                res.redirect('/' + req.params.table + '/list');
+            } else {
+                res.redirect('/' + req.params.table + '/' + result.insertId + '/edit');
+            }
+        });
+    } else {
+        // Ensure checkbox values are always present
+        data = req.body;
+        table.fields_editable.forEach(function(k) {
+            if (table.fields[k].type == "checkbox") {
+                data[k] = req.body.hasOwnProperty(k) ? 1 : 0;
+            }
+        });
+        console.log(req.body);
+        console.log(data);
+        sql = "UPDATE ?? SET ? WHERE id = ?";
+        con.query(sql, [req.params.table, data, req.params.id], function(err) {
+            if (err) {
+                console.log(err);
+                res.redirect('/' + req.params.table + '/list');
+            } else {
+                res.redirect('/' + req.params.table + '/' + req.params.id + '/edit');
+            }
+        });
+    }
+})
+
+
+/* BILLING */
 
 app.get('/billings', function(req, res) {
     if (!assert_connection(res)) {
