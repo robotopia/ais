@@ -136,3 +136,15 @@
 .add-button a {
     text-decoration: none;
 }
+
+div.invoice-container > div {
+    border: 1px solid #000;
+    padding: 8px;
+    margin-bottom: 12px;
+    box-shadow: 5px 5px 2px 1px #0002;
+}
+
+div.invoice-container h3, div.invoice-container h4 {
+    margin-top: 5px;
+    margin-bottom: 5px;
+}

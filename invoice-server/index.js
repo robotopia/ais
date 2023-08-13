@@ -10,6 +10,15 @@ app.use(express.urlencoded({extended: true}));
 app.use(express.static(__dirname + '/public'));
 app.set('view engine', 'ejs');
 
+function today() {
+    date = new Date();
+    year = date.getFullYear();
+    month = ("0" + (date.getMonth() + 1)).slice(-2);
+    day = ("0" + date.getDate()).slice(-2);
+
+    return year + "-" + month + "-" + day;
+}
+
 const db = "ppc_invoices";
 let con = 0;
 function assert_connection(res) {
@@ -331,43 +340,96 @@ app.get('/invoices', function(req, res) {
 
         res.render('invoices', {invoices: result});
     });
-})
+});
+
+app.post('/invoice/:id', function(req, res) {
+    if (!assert_connection(res)) {
+        return;
+    }
+
+    // Turn empty date strings into nulls
+    issued = req.body.issued_str.length > 0 ? req.body.issued_str : null;
+    due = req.body.due_str.length > 0 ? req.body.due_str : null;
+    paid = req.body.paid_str.length > 0 ? req.body.paid_str : null;
+
+    values = [req.body.billing_id,
+        req.body.account_id,
+        issued,
+        due,
+        paid];
+
+    // Two cases: "id" is an existing invoice id, or "id" = "new"
+    if (req.params.id == "new") {
+        // Insert new invoice
+        sql = "INSERT INTO invoice (billing_id, account_id, issued, due, paid, created) VALUES (?)"
+        values.push(today());
+
+        con.query(sql, values, function(err, result) {
+            if (err) {
+                console.log(err);
+                res.redirect("/invoices");
+            }
+
+            res.redirect("/invoice/" + result.insertId);
+        });
+    } else {
+        // Update existing invoice
+        sql = "UPDATE invoice SET billing_id = ?, account_id = ?, issued = ?, due = ?, paid = ? WHERE id = ?";
+
+        values.push(req.params.id);
+
+        con.query(sql, values, function(err) {
+            if (err) console.log(err);
+        });
+
+        res.redirect('/invoice/' + req.params.id);
+    }
+});
 
 app.get('/invoice/:id', function(req, res) {
     if (!assert_connection(res)) {
         return;
     }
 
-    // Find the (most recently created) invoice with the matching month and year
-    sql1 = "SELECT * FROM invoice_view WHERE id = ?";
-    sql2 = "SELECT * FROM activity_view WHERE invoice_id = ?";
-    sql3 = "SELECT * FROM billing ORDER BY id DESC";
-    sql4 = "SELECT * FROM account ORDER BY id DESC";
-    sql = sql1 + "; " + sql2 + "; " + sql3 + "; " + sql4;
+    // If "id" is existing invoice id, display invoice,
+    // but if "id" = "new", display empty form
 
-    con.query(sql, [req.params.id, req.params.id], function(err, results, field) {
-        if (err) {
-            console.log(err);
-        }
-
-        if (results[0].length == 0) {
-            res.sendStatus(404);
-        }
-
-        invoice = results[0][0]; // There can only be 1 invoice
-        activities = results[1];
-        billings = results[2];
-        accounts = results[3];
+    if (req.params.id == "new") {
+        invoice = {id: "new"};
+        activities = [];
 
         context = {
             invoice: invoice,
             activities: activities,
-            billings: billings,
-            accounts: accounts,
         };
 
         res.render('invoice', context)
-    });
+    } else {
+        // Find the (most recently created) invoice with the matching month and year
+        sql1 = "SELECT * FROM invoice_view WHERE id = ?";
+        sql2 = "SELECT * FROM activity_view WHERE invoice_id = ?";
+        sql = sql1 + "; " + sql2;
+
+        con.query(sql, [req.params.id, req.params.id], function(err, results, field) {
+            if (err) {
+                console.log(err);
+            }
+
+            if (results[0].length == 0) {
+                res.sendStatus(404);
+            }
+
+            invoice = results[0][0]; // There can only be 1 invoice
+            activities = results[1];
+
+            context = {
+                invoice: invoice,
+                activities: activities,
+            };
+
+            res.render('invoice', context)
+        });
+    }
 })
 
 

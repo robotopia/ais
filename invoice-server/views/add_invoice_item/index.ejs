@@ -24,9 +24,9 @@
                 <% } %>
                     <td style="text-align: center;">
                         <% if (activity.invoice_id == null) { %>
-                        <input type="checkbox" id="activity_<%= activity.id %>" name="activities" value="<%= activity.id %>" onclick="enableSave()">
+                        <input type="checkbox" id="activity_<%= activity.id %>" name="activities" value="<%= activity.id %>" onclick="enableSave('save-button')">
                         <% } else if (activity.invoice_id == invoice.id) { %>
-                        <input type="checkbox" id="activity_<%= activity.id %>" name="activities" value="<%= activity.id %>" onclick="enableSave()" checked>
+                        <input type="checkbox" id="activity_<%= activity.id %>" name="activities" value="<%= activity.id %>" onclick="enableSave('save-button')" checked>
                         <% } %>
                     </td>
                     <td><%= activity.date_str %></td>
@@ -38,9 +38,5 @@
             </table>
         </form>
     </body>
-    <script>
-        function enableSave() {
-            document.getElementById('save-button').disabled = false;
-        }
-    </script>
+    <script type="text/javascript" src="/scripts/enable-save.js"></script>
 </html>

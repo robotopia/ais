@@ -7,115 +7,119 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
     </head>
     <body>
-        <h2><a href="/">Home</a> > <a href="/invoices">Invoices</a> > <%= invoice.name %></h2>
-        <div style="border: 1px solid #000; padding: 8px;">
-            <table>
-                <tr>
-                    <td>Name:</td>
-                    <td><b><%= invoice.billing_name %></b></td>
-                </tr>
-                <tr>
-                    <td>Address:</td>
-                    <td><%= invoice.addr1 %>, <%= invoice.addr2 %></td>
-                </tr>
-                <tr>
-                    <td>Ph:</td>
-                    <td><%= invoice.phone %></td>
-                </tr>
-                <tr>
-                    <td>Email:</td>
-                    <td><%= invoice.email %></td>
-                </tr>
-                <tr>
-                    <td>ABN:</td>
-                    <td>
-                        <%= invoice.abn %>
-                        <% if (!invoice.is_gst_registered) { %>
-                        (not GST Registered)
-                        <% } %>
-                    </td>
-                </tr>
-            </table>
-        </div>
-        <div style="border: 1px solid #000; padding: 8px;">
-            <h3>Bill to</h3>
-            <%= invoice.bill_to %>
-        </div>
-        <div style="border: 1px solid #000; padding: 8px;">
-            <h3>Summary</h3>
-            <table>
-                <tr>
-                    <td>Amount:</td>
-                    <td>$<%= invoice.total_amount %></td>
-                </tr>
-                <tr>
-                    <td>Issued:</td>
-                    <td><input type="date" id="issued_str" name="issued_str" value="<%= invoice.issued_str %>"></input></td>
-                </tr>
-                <tr>
-                    <td>Due:</td>
-                    <td><input type="date" id="issued_str" name="issued_str" value="<%= invoice.due_str %>"></input></td>
-                </tr>
-                <tr>
-                    <td>Paid:</td>
-                    <td><input type="date" id="issued_str" name="issued_str" value="<%= invoice.paid_str %>"></input></td>
-                </tr>
-            </table>
-        </div>
-        <div>
-            <table class="mytable">
-                <tr>
-                    <th>Date</th>
-                    <th>Qty</th>
-                    <th>Rate</th>
-                    <th>Description</th>
-                    <th>Amount</th>
-                </tr>
-                <% activities.forEach(function(activity) { %>
-                <tr>
-                    <td><%= activity.date_str %></td>
-                    <td><%= activity.qty %></td>
-                    <td>$<%= activity.rate %></td>
-                    <td><%= activity.description %></td>
-                    <td>$<%= activity.amount %></td>
-                </tr>
-                <% }); %>
-                <tr>
-                    <td>Add items <a href="/add_invoice_item/<%= invoice.id %>">
-                            <i class="fa fa-add" style="color: green; text-decoration: none;"></i>
-                        </a></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                </tr>
-                <tr>
-                    <td style="opacity: 0; border: 0px;"></td>
-                    <td style="opacity: 0; border: 0px;"></td>
-                    <td style="opacity: 0; border: 0px;"></td>
-                    <td style="border: 0px; text-align: right;"><strong>Total:</strong></td>
-                    <td>$<%= invoice.total_amount %></td>
-                </tr>
-            </table>
-        </div>
-        <div style="border: 1px solid #000; padding: 8px;">
-            <h3>Payment Options:</h3>
-            <h4>Electronic Transfer:</h4>
-            <table>
-                <tr>
-                    <td>BSB:</td>
-                    <td><%= invoice.bsb %></td>
-                </tr>
-                <tr>
-                    <td>Account No.:</td>
-                    <td><%= invoice.number %></td>
-                </tr>
-                <tr>
-                    <td>Account Name:</td>
-                    <td><%= invoice.account_name %></td>
-                </tr>
-            </table>
-        </div>
+        <form action="/invoice/<%= invoice.id %>" method="post">
+            <h2><a href="/">Home</a> > <a href="/invoices">Invoices</a> > <%= invoice.name %> <button type="submit" method="post" class="btn-fa" id="save-button" disabled><i class="fa fa-save"></i></button></h2>
+            <div class="invoice-container">
+                <div>
+                    <input id="billing_id" name="billing_id" value="<%= invoice.billing_id %>" hidden></input>
+                    <table>
+                        <tr>
+                            <td>Name:</td>
+                            <td><b><%= invoice.billing_name %></b></td>
+                        </tr>
+                        <tr>
+                            <td>Address:</td>
+                            <td><%= invoice.addr1 %>, <%= invoice.addr2 %></td>
+                        </tr>
+                        <tr>
+                            <td>Ph:</td>
+                            <td><%= invoice.phone %></td>
+                        </tr>
+                        <tr>
+                            <td>Email:</td>
+                            <td><%= invoice.email %></td>
+                        </tr>
+                        <tr>
+                            <td>ABN:</td>
+                            <td>
+                                <%= invoice.abn %>
+                                <% if (!invoice.is_gst_registered) { %>
+                                (not GST Registered)
+                                <% } %>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                <div>
+                    <h3>Bill to</h3>
+                    <%= invoice.bill_to %>
+                </div>
+                <div>
+                    <h3>Summary</h3>
+                    <table>
+                        <tr>
+                            <td>Amount:</td>
+                            <td>$<%= invoice.total_amount %></td>
+                        </tr>
+                        <tr>
+                            <td>Issued:</td>
+                            <td><input type="date" id="issued_str" name="issued_str" value="<%= invoice.issued_str %>" onChange="enableSave('save-button')"></input></td>
+                        </tr>
+                        <tr>
+                            <td>Due:</td>
+                            <td><input type="date" id="due_str" name="due_str" value="<%= invoice.due_str %>"></input></td>
+                        </tr>
+                        <tr>
+                            <td>Paid:</td>
+                            <td><input type="date" id="paid_str" name="paid_str" value="<%= invoice.paid_str %>"></input></td>
+                        </tr>
+                    </table>
+                </div>
+                <table class="mytable">
+                    <tr>
+                        <th>Date</th>
+                        <th>Qty</th>
+                        <th>Rate</th>
+                        <th>Description</th>
+                        <th>Amount</th>
+                    </tr>
+                    <% activities.forEach(function(activity) { %>
+                    <tr>
+                        <td><%= activity.date_str %></td>
+                        <td><%= activity.qty %></td>
+                        <td>$<%= activity.rate %></td>
+                        <td><%= activity.description %></td>
+                        <td>$<%= activity.amount %></td>
+                    </tr>
+                    <% }); %>
+                    <tr>
+                        <td>Edit items <a href="/add_invoice_item/<%= invoice.id %>">
+                                <i class="fa fa-edit" style="color: green; text-decoration: none;"></i>
+                            </a></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                    </tr>
+                    <tr>
+                        <td style="opacity: 0; border: 0px;"></td>
+                        <td style="opacity: 0; border: 0px;"></td>
+                        <td style="opacity: 0; border: 0px;"></td>
+                        <td style="border: 0px; text-align: right;"><strong>Total:</strong></td>
+                        <td>$<%= invoice.total_amount %></td>
+                    </tr>
+                </table>
+                <div>
+                    <input id="account_id" name="account_id" value="<%= invoice.account_id %>" hidden></input>
+                    <h3>Payment Options:</h3>
+                    <h4>Electronic Transfer:</h4>
+                    <table>
+                        <tr>
+                            <td>BSB:</td>
+                            <td><%= invoice.bsb %></td>
+                        </tr>
+                        <tr>
+                            <td>Account No.:</td>
+                            <td><%= invoice.number %></td>
+                        </tr>
+                        <tr>
+                            <td>Account Name:</td>
+                            <td><%= invoice.account_name %></td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </form>
     </body>
-    <script src="https://unpkg.com/js-datepicker"></script>
+    <script type="text/javascript" src="/scripts/enable-save.js"></script>
 </html>
