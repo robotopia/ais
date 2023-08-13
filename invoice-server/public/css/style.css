@@ -10,10 +10,6 @@
     width: 100%;
 }
 
-.billing-table td {
-    padding: 3px;
-}
-
 .mytable td, .mytable th {
     border: 1px solid #ddd;
     padding: 8px;
@@ -135,6 +131,7 @@
 
 .add-button a {
     text-decoration: none;
+    color: green;
 }
 
 div.invoice-container > div {
@@ -147,4 +144,14 @@ div.invoice-container > div {
 div.invoice-container h3, div.invoice-container h4 {
     margin-top: 5px;
     margin-bottom: 5px;
+}
+
+h2.nav a {
+    text-decoration: none;
+    color: #4C50AF;
+}
+
+span.btn {
+    color: #4C50AF;
+    cursor: pointer;
 }

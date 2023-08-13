@@ -352,7 +352,9 @@ app.post('/invoice/:id', function(req, res) {
     due = req.body.due_str.length > 0 ? req.body.due_str : null;
     paid = req.body.paid_str.length > 0 ? req.body.paid_str : null;
 
-    values = [req.body.billing_id,
+    values = [req.body.name,
+        req.body.client_id,
+        req.body.billing_id,
         req.body.account_id,
         issued,
         due,
@@ -361,10 +363,10 @@ app.post('/invoice/:id', function(req, res) {
     // Two cases: "id" is an existing invoice id, or "id" = "new"
     if (req.params.id == "new") {
         // Insert new invoice
-        sql = "INSERT INTO invoice (billing_id, account_id, issued, due, paid, created) VALUES (?)"
+        sql = "INSERT INTO invoice (name, bill_to, billing_id, account_id, issued, due, paid, created) VALUES (?)"
         values.push(today());
 
-        con.query(sql, values, function(err, result) {
+        con.query(sql, [values], function(err, result) {
             if (err) {
                 console.log(err);
                 res.redirect("/invoices");
@@ -374,7 +376,7 @@ app.post('/invoice/:id', function(req, res) {
         });
     } else {
         // Update existing invoice
-        sql = "UPDATE invoice SET billing_id = ?, account_id = ?, issued = ?, due = ?, paid = ? WHERE id = ?";
+        sql = "UPDATE invoice SET name = ?, bill_to = ?, billing_id = ?, account_id = ?, issued = ?, due = ?, paid = ? WHERE id = ?";
 
         values.push(req.params.id);
 
@@ -391,43 +393,61 @@ app.get('/invoice/:id', function(req, res) {
         return;
     }
 
+    // Prepare a few queries
+    sql_clients = "SELECT * FROM client";
+    sql_billings = "SELECT * FROM billing";
+    sql_accounts = "SELECT * FROM account";
+
     // If "id" is existing invoice id, display invoice,
     // but if "id" = "new", display empty form
 
     if (req.params.id == "new") {
-        invoice = {id: "new"};
-        activities = [];
+        sql = sql_clients;
+        sql += "; " + sql_billings;
+        sql += "; " + sql_accounts;
 
-        context = {
-            invoice: invoice,
-            activities: activities,
-        };
-
-        res.render('invoice', context)
-    } else {
-        // Find the (most recently created) invoice with the matching month and year
-        sql1 = "SELECT * FROM invoice_view WHERE id = ?";
-        sql2 = "SELECT * FROM activity_view WHERE invoice_id = ?";
-        sql = sql1 + "; " + sql2;
-
-        con.query(sql, [req.params.id, req.params.id], function(err, results, field) {
+        con.query(sql, function(err, results, field) {
             if (err) {
                 console.log(err);
             }
 
-            if (results[0].length == 0) {
-                res.sendStatus(404);
-            }
-
-            invoice = results[0][0]; // There can only be 1 invoice
-            activities = results[1];
-
             context = {
-                invoice: invoice,
-                activities: activities,
+                invoice: {id: "new"},
+                activities: [],
+                clients: results[0],
+                billings: results[1],
+                accounts: results[2]
             };
 
-            res.render('invoice', context)
+            res.render('invoice', context);
+        });
+    } else {
+        // Find the (most recently created) invoice with the matching month and year
+        sql = "SELECT * FROM invoice_view WHERE id = ?";
+        sql += "; SELECT * FROM activity_view WHERE invoice_id = ?";
+        sql += "; " + sql_clients;
+        sql += "; " + sql_billings;
+        sql += "; " + sql_accounts;
+
+        con.query(sql, [req.params.id, req.params.id], function(err, results, field) {
+            if (err) {
+                console.log(err);
+                res.sendStatus(404);
+            } else {
+                if (results[0].length == 0) {
+                    res.sendStatus(404);
+                } else {
+                    context = {
+                        invoice: results[0][0], // There can only be 1 invoice
+                        activities: results[1],
+                        clients: results[2],
+                        billings: results[3],
+                        accounts: results[4]
+                    };
+
+                    res.render('invoice', context)
+                }
+            }
         });
     }
 })
