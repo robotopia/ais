@@ -116,6 +116,26 @@ function validateAccountForm(data) {
     return true;
 }
 
+function validateActivityForm(data) {
+    const date_re = /^[0-9]{4}-[0-1][0-9]-[0-3][0-9]$/;
+    if (date_re.test(String(data.date)) == false) {
+        console.log("Invalid date (DD-MM-YYYY)");
+        return false;
+    }
+
+    return true;
+}
+
+function validateActivityTypeForm(data) {
+    const str_re = /^[a-zA-Z0-9, ()]+$/;
+    if (str_re.test(String(data.description)) == false) {
+        console.log("Invalid description (can contain only alphanumerics, commas, parentheses, and spaces)");
+        return false;
+    }
+
+    return true;
+}
+
 const tables = {
     account: {
         parent_display: "Accounts",
@@ -129,6 +149,36 @@ const tables = {
         fields_editable: ["bsb", "number"],
         fields_list: ["bsb", "number"],
         slug: "name"
+    },
+    activity: {
+        parent_display: "Activities",
+        validationFunc: validateActivityForm,
+        view: "activity_view",
+        fields: {
+            id: {display: "ID", type: "text"},
+            date: {display: "Date", type: "date", required: true},
+            qty: {display: "Qty", type: "text", required: true},
+            activity_type: {display: "Activity type", type: "text"},
+            activity_type_id: {display: "Activity type", type: "select", required: true, references: "activity_type"},
+            notes: {display: "Notes", type: "text"},
+            invoice: {display: "Invoice", type: "text"},
+            invoice_id: {display: "Invoice", type: "select", references: "invoice"}
+        },
+        fields_editable: ["qty", "activity_type_id", "notes", "invoice_id"],
+        fields_list: ["qty", "activity_type", "notes", "invoice"],
+        slug: "date"
+    },
+    activity_type: {
+        parent_display: "Activity types",
+        validationFunc: validateActivityTypeForm,
+        fields: {
+            id: {display: "ID", type: "text"},
+            description: {display: "Description", type: "text", required: true},
+            rate: {display: "Rate ($)", type: "text", required: true}
+        },
+        fields_editable: ["rate"],
+        fields_list: ["rate"],
+        slug: "description"
     },
     billing: {
         parent_display: "Billing information",
@@ -158,6 +208,20 @@ const tables = {
         fields_editable: ["bill_email"],
         fields_list: ["bill_email"],
         slug: "name"
+    },
+    invoice: {
+        parent_display: "Invoices",
+        /*
+        validationFunc: validateInvoiceForm,
+        fields: {
+            id: {display: "ID", type: "text"},
+            name: {display: "Name", type: "text", required: true},
+            bill_email: {display: "Billing email", type: "text"}
+        },
+        fields_editable: ["bill_email"],
+        fields_list: ["bill_email"],
+        */
+        slug: "name"
     }
 };
 
@@ -181,7 +245,8 @@ app.get('/login', function(req, res) {
         user: process.env.DB_USER, //req.body.username,
         password: process.env.DB_PASS, //req.body.password,
         database: db,
-        multipleStatements: true
+        multipleStatements: true,
+        dateStrings: 'date'
     });
 
     con.connect(function(err) {
@@ -217,7 +282,7 @@ app.get('/:table/list', function(req, res) {
     table = tables[req.params.table];
     view = table.hasOwnProperty("view") ? table.view : req.params.table;
 
-    con.query("SELECT * FROM ??", [view], function(err, results) {
+    con.query("SELECT * FROM ?? ORDER BY ??", [view, table.slug], function(err, results) {
         res.render("objs", {table: table, table_name: req.params.table, objs: results});
     });
 })
@@ -228,28 +293,50 @@ app.get('/:table/:id/edit', function(req, res) {
     }
 
     table = tables[req.params.table];
+    view = table.hasOwnProperty("view") ? table.view : req.params.table;
 
-    if (req.params.id == "new") {
-        obj = {};
-        for (var k in table.fields) {
-            obj[k] = "";
+    ref_sqls = [];
+    references = [];
+    ref_table_names = [];
+    for (var k in table.fields) {
+        if (table.fields[k].hasOwnProperty("references")) {
+            ref_sqls.push("SELECT id, ?? AS slug FROM ??");
+            ref = table.fields[k].references;
+            references.push(tables[ref].slug);
+            references.push(ref);
+            ref_table_names.push(ref);
         }
-        obj.id = "new";
-        res.render('obj', {table: table, table_name: req.params.table, obj: obj});
-    } else {
-        sql = "SELECT * FROM ?? WHERE id = ?";
-        con.query(sql, [req.params.table, req.params.id], function(err, results) {
-            if (err) {
-                console.log(err);
-                res.sendStatus(404);
-            } else if (results.length == 0) {
-                res.sendStatus(404);
-            } else {
-                obj = results[0];
-                res.render('obj', {table: table, table_name: req.params.table, obj: obj});
-            }
-        });
     }
+
+    ref_sql = ref_sqls.join("; ");
+
+    con.query(ref_sql, references, function(err, ref_results) {
+        // Doesn't matter if this query fails (e.g. if ref_sql is empty)
+
+        // "refs" includes all "SELECT *" results from tables to populate select boxes
+        refs = Object.fromEntries(ref_table_names.map((k, i) => [k, ref_results[i]]));
+        if (req.params.id == "new") {
+            obj = {};
+            for (var k in table.fields) {
+                obj[k] = "";
+            }
+            obj.id = "new";
+            res.render('obj', {table: table, table_name: req.params.table, obj: obj, refs: refs});
+        } else {
+            sql = "SELECT * FROM ?? WHERE id = ?";
+            con.query(sql, [view, req.params.id], function(err, results) {
+                if (err) {
+                    console.log(err);
+                    res.sendStatus(404);
+                } else if (results.length == 0) {
+                    res.sendStatus(404);
+                } else {
+                    obj = results[0];
+                    res.render('obj', {table: table, table_name: req.params.table, obj: obj});
+                }
+            });
+        }
+    });
 });
 
 
@@ -274,9 +361,22 @@ app.post('/:table/:id/edit', function(req, res) {
         return;
     }
 
+    data = req.body;
+    table.fields_editable.forEach(function(k) {
+        // Ensure checkbox values are always present
+        if (table.fields[k].type == "checkbox") {
+            data[k] = req.body.hasOwnProperty(k) ? 1 : 0;
+        }
+
+        // Force all empty strings to be nulls
+        if (data[k].length == 0) {
+            data[k] = null;
+        }
+    });
+
     if (req.params.id == "new") {
         sql = "INSERT INTO ?? (??) VALUES (?)"
-        con.query(sql, [req.params.table, Object.keys(req.body), Object.values(req.body)], function(err, result) {
+        con.query(sql, [req.params.table, Object.keys(data), Object.values(data)], function(err, result) {
             if (err) {
                 console.log(err);
                 res.redirect('/' + req.params.table + '/list');
@@ -285,15 +385,6 @@ app.post('/:table/:id/edit', function(req, res) {
             }
         });
     } else {
-        // Ensure checkbox values are always present
-        data = req.body;
-        table.fields_editable.forEach(function(k) {
-            if (table.fields[k].type == "checkbox") {
-                data[k] = req.body.hasOwnProperty(k) ? 1 : 0;
-            }
-        });
-        console.log(req.body);
-        console.log(data);
         sql = "UPDATE ?? SET ? WHERE id = ?";
         con.query(sql, [req.params.table, data, req.params.id], function(err) {
             if (err) {
@@ -304,224 +395,6 @@ app.post('/:table/:id/edit', function(req, res) {
             }
         });
     }
-})
-
-
-/* BILLING */
-
-app.get('/billings', function(req, res) {
-    if (!assert_connection(res)) {
-        return
-    }
-
-    con.query("SELECT * FROM billing", function(err, result, fields) {
-        res.render('billings', {billings: result});
-    });
-})
-
-app.get('/billing/:id', function(req, res) {
-    if (!assert_connection(res)) {
-        return
-    }
-
-    sql = "SELECT * FROM billing WHERE id = ?";
-    con.query(sql, [req.params.id], function(err, result) {
-        if (err) {
-            console.log(err);
-            res.sendStatus(404);
-        } else if (result.length == 0) {
-            res.render('billing', {billing: {id: "new"}});
-        } else {
-            res.render('billing', {billing: result[0]});
-        }
-    });
-});
-
-app.post('/billing/delete/:id', function(req, res) {
-    if (!assert_connection(res)) {
-        return;
-    }
-
-    sql = "DELETE FROM billing WHERE id = ?"
-    con.query(sql, [req.params.id]);
-
-    res.redirect('/billings');
-});
-
-app.post('/billing/:id', function(req, res) {
-    if (!assert_connection(res)) {
-        return
-    }
-
-    if (validateBillingForm(req.body) == false) {
-        return;
-    }
-
-    values = [req.body.name, req.body.addr1, req.body.addr2, req.body.phone, req.body.email, req.body.abn];
-
-    if (req.params.id == "new") {
-        sql = "INSERT INTO billing(name, addr1, addr2, phone, email, abn) VALUES (?)"
-        con.query(sql, [values], function(err, result) {
-            if (err) {
-                console.log(err);
-                res.redirect('/billings');
-            } else {
-                res.redirect('/billing/' + result.insertId);
-            }
-        });
-    } else {
-        sql = "UPDATE billing SET ? WHERE id = ?";
-        con.query(sql, [req.body, req.params.id], function(err) {
-            if (err) {
-                console.log(err);
-                res.redirect('/billings/');
-            } else {
-                res.redirect('/billing/' + req.params.id);
-            }
-        });
-    }
-})
-
-/* ACTIVITY TYPE */
-
-function validateActivityTypeForm(data) {
-    const str_re = /^[a-zA-Z0-9, ()]+$/;
-    if (str_re.test(String(data.description)) == false) {
-        console.log("Invalid description (can contain only alphanumerics, commas, parentheses, and spaces)");
-        return false;
-    }
-
-    return true;
-}
-
-app.get('/activity-types', function(req, res) {
-    if (!assert_connection(res)) {
-        return
-    }
-
-    con.query("SELECT * FROM activity_type_view", function(err, result) {
-        res.render('activity_types', {activity_types: result});
-    });
-})
-
-app.get('/activity-type/:id', function(req, res) {
-    if (!assert_connection(res)) {
-        return
-    }
-
-    sql = "SELECT * FROM activity_type_view WHERE id = ?";
-    con.query(sql, [req.params.id], function(err, result) {
-        if (err) {
-            console.log(err);
-            res.sendStatus(404);
-        } else if (result.length == 0) {
-            res.render('activity_type', {activity_type: {id: "new"}});
-        } else {
-            res.render('activity_type', {activity_type: result[0]});
-        }
-    });
-});
-
-app.post('/activity-type/delete/:id', function(req, res) {
-    if (!assert_connection(res)) {
-        return;
-    }
-
-    sql = "DELETE FROM activity_type WHERE id = ?"
-    con.query(sql, [req.params.id]);
-
-    res.redirect('/activity-types');
-});
-
-app.post('/activity-type/:id', function(req, res) {
-    if (!assert_connection(res)) {
-        return
-    }
-
-    if (validateActivityTypeForm(req.body) == false) {
-        return;
-    }
-
-    rate_cents = parseInt(req.body.rate*100);
-    values = [req.body.description, rate_cents];
-
-    if (req.params.id == "new") {
-        sql = "INSERT INTO activity_type(description, rate_cents) VALUES (?)"
-        con.query(sql, [values], function(err, result) {
-            if (err) {
-                console.log(err);
-                res.redirect('/activity-types');
-            } else {
-                res.redirect('/activity-type/' + result.insertId);
-            }
-        });
-    } else {
-        sql = "UPDATE activity_type SET description = ?, rate_cents = ? WHERE id = ?";
-        con.query(sql, [req.body.description, rate_cents, req.params.id], function(err) {
-            if (err) {
-                console.log(err);
-                res.redirect('/activity-types/');
-            } else {
-                res.redirect('/activity-type/' + req.params.id);
-            }
-        });
-    }
-})
-
-
-function validateActivityForm(data) {
-    const date_re = /^[0-9]{4}-[0-1][0-9]-[0-3][0-9]$/;
-    if (date_re.test(String(data.date)) == false) {
-        console.log("Invalid date (DD-MM-YYYY)");
-        return false;
-    }
-
-    return true;
-}
-
-app.get('/activity', function(req, res) {
-    if (!assert_connection(res)) {
-        return
-    }
-
-    sql1 = "SELECT id, DATE_FORMAT(date, '%Y-%m-%d') AS date_str, qty, activity_type_id, notes FROM activity ORDER BY date"
-    sql2 = "SELECT id, description FROM activity_type"
-    sql = sql1 + "; " + sql2;
-
-    con.query(sql, function(err, results, fields) {
-        res.render('activities', {
-            activities: results[0],
-            activity_types: results[1]
-        });
-    });
-})
-
-app.post('/activity', function(req, res) {
-    if (!assert_connection(res)) {
-        return
-    }
-
-    if (validateActivityForm(req.body) == false) {
-        return;
-    }
-
-    if (req.body.action == "insert") {
-        con.query("INSERT INTO activity(date, qty, activity_type_id, notes) VALUES (STR_TO_DATE(?, '%Y-%m-%d'), ?, ?, ?)",
-            [req.body.date, parseFloat(req.body.qty), parseInt(req.body.activity_type), req.body.notes]
-        );
-    }
-    else if (req.body.action == "delete") {
-        con.query("DELETE FROM activity WHERE id = ?",
-            [parseInt(req.body.id)]
-        );
-    }
-    else if (req.body.action == "update") {
-        con.query("UPDATE activity SET date = STR_TO_DATE(?, '%Y-%m-%d'), qty = ?, activity_type_id = ?, notes = ? WHERE id = ?",
-            [req.body.date, parseFloat(req.body.qty), parseInt(req.body.activity_type), req.body.notes, parseInt(req.body.id)]
-        );
-    }
-
-    res.redirect('/activity');
 })
 
 
@@ -622,7 +495,7 @@ app.get('/invoice/:id', function(req, res) {
     } else {
         // Find the matching invoice
         sql = "SELECT * FROM invoice_view WHERE id = ?";
-        sql += "; SELECT * FROM activity_view WHERE invoice_id = ?";
+        sql += "; SELECT * FROM invoice_item_view WHERE invoice_id = ?";
         sql += "; " + sql_clients;
         sql += "; " + sql_billings;
         sql += "; " + sql_accounts;
@@ -656,7 +529,7 @@ app.get('/add_invoice_item/:invoice_id', function (req, res) {
         return;
     }
 
-    sql1 = "SELECT * FROM activity_view ORDER BY date_str DESC";
+    sql1 = "SELECT * FROM invoice_item_view ORDER BY date_str DESC";
     sql2 = "SELECT * FROM invoice WHERE id = ?";
 
     sql = sql1 + "; " + sql2;

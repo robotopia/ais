@@ -11,7 +11,16 @@
                 <tr>
                     <td><%= table.fields[k].display %><% if (table.fields[k].required) { %>*<% } %></td>
                     <td>
+                        <% if (table.fields[k].type == "select") { %>
+                        <select id="<%= k %>" name="<%= k %>" onChange="enableSave('save-button')">
+                            <option value="">---Select---</option>
+                            <% refs[table.fields[k].references].forEach(function(ref) { %>
+                            <option value="<%= ref.id %>"><%= ref.slug %></option>
+                            <% }); %>
+                        </select>
+                        <% } else { %>
                         <input type="<%= table.fields[k].type %>" id="<%= k %>" name="<%= k %>" value="<%= obj[k] %>" onChange="enableSave('save-button')">
+                        <% } %>
                     </td>
                 </tr>
                 <% }); %>
@@ -37,6 +46,17 @@
             // Set checkboxes as checked according to value
             <% if (table.fields[k].type == "checkbox" && obj[k] == 1) { %>
                 document.getElementById("<%= k %>").checked = true;
+            <% } %>
+
+            // Set select drop down values
+            <% if (table.fields[k].type == "select") { %>
+                var mySelect = document.getElementById("<%= k %>");
+                for(var i, j = 0; i = mySelect.options[j]; j++) {
+                    if(i.value == "<%= obj[k] %>") {
+                        mySelect.selectedIndex = j;
+                        break;
+                    }
+                }
             <% } %>
         <% }); %>
     </script>
