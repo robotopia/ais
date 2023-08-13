@@ -7,7 +7,7 @@
     </head>
     <body>
         <form action="/billing/<%= billing.id %>" method="post">
-            <h2><a href="/">Home</a> > <a href="/billings">Billing information</a> > <input id="name" name="name" value="<%= billing.name %>" style="font-size: 16px" onChange="enableSave('save-button')" required></input> <button type="submit" method="post" class="btn-fa" id="save-button" disabled><i class="fa fa-save"></i></button></h2>
+            <h2 class="nav"><a href="/">Home</a> > <a href="/billings">Billing information</a> > <input id="name" name="name" value="<%= billing.name %>" style="font-size: 16px" onChange="enableSave('save-button')" required></input> <button type="submit" method="post" class="btn-fa" id="save-button" disabled><i class="fa fa-save"></i></button></h2>
             <table class="mytable">
                 <tr>
                     <td>Address line 1:</td>
@@ -35,6 +35,13 @@
                 </tr>
             </table>
         </form>
+        <% if (billing.id != "new") { %>
+        <div class="page-action">
+            <form action="/billing/delete/<%= billing.id %>" method="post">
+                <button class="delete-button"><i class="fa fa-trash"></i></button>
+            </form>
+        </div>
+        <% } %>
     </body>
     <script type="text/javascript" src="/scripts/enable-save.js"></script>
 </html>

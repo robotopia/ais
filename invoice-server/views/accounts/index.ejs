@@ -6,44 +6,23 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
     </head>
     <body>
-        <h2><a href="/">Home</a> > Accounts</h2>
-        <table class="mytable edittable">
+        <h2 class="nav"><a href="/">Home</a> > Accounts</h2>
+        <table class="mytable">
             <tr>
+                <th>Account Name</th>
                 <th>BSB</th>
                 <th>Account No.</th>
-                <th>Account Name</th>
-                <th>Action</th>
             </tr>
             <% accounts.forEach(function(account) { %>
             <tr>
-                <form action="/accounts" method="post">
-                    <input id="id" name="id" value="<%= account.id %>" hidden>
-                    <td><input id="bsb" name="bsb" value="<%= account.bsb %>"></td>
-                    <td><input id="number" name="number" value="<%= account.number %>"></td>
-                    <td><input id="name" name="name" value="<%= account.name %>"></td>
-                    <td style="text-align: center;">
-                        <button class="btn-fa" type="submit" name="action" value="update">
-                            <i class="fa fa-save" style="color: green;"></i>
-                        </button>
-                        <button class="btn-fa" type="submit" name="action" value="delete">
-                            <i class="fa fa-trash" style="color: #c00;"></i>
-                        </button>
-                    </td>
-                </form>
+                <td><a href="/account/<%= account.id %>"><%= account.name %></a></td>
+                <td><%= account.bsb %></td>
+                <td><%= account.number %></td>
             </tr>
             <% }); %>
-            <tr>
-                <form action="/accounts" method="post">
-                    <td><input id="bsb" name="bsb"></td>
-                    <td><input id="number" name="number"></td>
-                    <td><input id="name" name="name"></td>
-                    <td style="text-align: center;">
-                        <button class="btn-fa" type="submit" name="action" value="insert">
-                            <i class="fa fa-add" style="color: #00c;"></i>
-                        </button>
-                    </td>
-                </form>
-            </tr>
         </table>
+        <div class="page-action">
+            <a href="/account/new" class="add-button"><i class="fa fa-circle-plus"></i></a>
+        </div>
     </body>
 </html>

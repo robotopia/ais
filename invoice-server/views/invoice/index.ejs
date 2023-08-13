@@ -185,6 +185,13 @@
                 </div>
             </div>
         </form>
+        <% if (invoice.id != "new") { %>
+        <div class="page-action">
+            <form action="/invoice/delete/<%= invoice.id %>" method="post">
+                <button class="delete-button"><i class="fa fa-trash"></i></button>
+            </form>
+        </div>
+        <% } %>
     </body>
     <script type="text/javascript" src="/scripts/enable-save.js"></script>
     <script>

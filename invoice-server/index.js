@@ -105,7 +105,49 @@ app.get('/accounts', function(req, res) {
     });
 })
 
-app.post('/accounts', function(req, res) {
+app.post('/invoice/delete/:id', function(req, res) {
+    if (!assert_connection(res)) {
+        return;
+    }
+
+    sql = "DELETE FROM invoice WHERE id = ?"
+    con.query(sql, [req.params.id]);
+
+    res.redirect('/invoices');
+});
+
+/* ACCOUNT */
+
+app.post('/account/delete/:id', function(req, res) {
+    if (!assert_connection(res)) {
+        return;
+    }
+
+    sql = "DELETE FROM account WHERE id = ?"
+    con.query(sql, [req.params.id]);
+
+    res.redirect('/accounts');
+});
+
+app.get('/account/:id', function(req, res) {
+    if (!assert_connection(res)) {
+        return
+    }
+
+    sql = "SELECT * FROM account WHERE id = ?";
+    con.query(sql, [req.params.id], function(err, result) {
+        if (err) {
+            console.log(err);
+            res.sendStatus(404);
+        } else if (result.length == 0) {
+            res.render('account', {account: {id: "new"}});
+        } else {
+            res.render('account', {account: result[0]});
+        }
+    });
+});
+
+app.post('/account/:id', function(req, res) {
     if (!assert_connection(res)) {
         return
     }
@@ -114,23 +156,29 @@ app.post('/accounts', function(req, res) {
         return;
     }
 
-    if (req.body.action == "insert") {
-        con.query("INSERT INTO account(bsb, number, name) VALUES (?, ?, ?)",
-            [req.body.bsb, req.body.number, req.body.name]
-        );
-    }
-    else if (req.body.action == "delete") {
-        con.query("DELETE FROM account WHERE id = ?",
-            [parseInt(req.body.id)]
-        );
-    }
-    else if (req.body.action == "update") {
-        con.query("UPDATE account SET bsb = ?, number = ?, name = ? WHERE id = ?",
-            [req.body.bsb, req.body.number, req.body.name, parseInt(req.body.id)]
-        );
-    }
+    values = [req.body.name, req.body.bsb, req.body.number];
 
-    res.redirect('/accounts');
+    if (req.params.id == "new") {
+        sql = "INSERT INTO account(name, bsb, number) VALUES (?)"
+        con.query(sql, [values], function(err, result) {
+            if (err) {
+                console.log(err);
+                res.redirect('/accounts');
+            } else {
+                res.redirect('/account/' + result.insertId);
+            }
+        });
+    } else {
+        sql = "UPDATE account SET ? WHERE id = ?";
+        con.query(sql, [req.body, req.params.id], function(err) {
+            if (err) {
+                console.log(err);
+                res.redirect('/accounts/');
+            } else {
+                res.redirect('/account/' + req.params.id);
+            }
+        });
+    }
 })
 
 /* CLIENT */
@@ -151,6 +199,7 @@ function validateClientForm(data) {
     return true;
 }
 
+
 app.get('/clients', function(req, res) {
     if (!assert_connection(res)) {
         return
@@ -166,18 +215,37 @@ app.get('/client/:id', function(req, res) {
         return
     }
 
-    sql = "SELECT * FROM client WHERE id = ?";
-    con.query(sql, [req.params.id], function(err, result) {
-        if (err) {
-            console.log(err);
-            res.sendStatus(404);
-        } else if (result.length == 0) {
-            res.render('client', {client: {id: "new"}});
-        } else {
-            res.render('client', {client: result[0]});
-        }
-    });
+    table = {
+        name: "client",
+        parent: "clients",
+        display: "Client",
+        parent_display: "Clients"
+    };
+
+    obj = {id: req.params.id, name: ""};
+    fields = {
+        bill_email: {display: "Billing email", type: "text", value: ""}
+    };
+
+    if (req.params.id == "new") {
+        res.render('record', {table: table, obj: obj, fields: fields});
+    } else {
+        sql = "SELECT * FROM client WHERE id = ?";
+        con.query(sql, [req.params.id], function(err, results) {
+            if (err) {
+                console.log(err);
+                res.sendStatus(404);
+            } else if (results.length == 0) {
+                res.sendStatus(404);
+            } else {
+                obj.name = results[0].name;
+                fields.bill_email.value = results[0].bill_email;
+                res.render('record', {table: table, obj: obj, fields: fields});
+            }
+        });
+    }
 });
+
 
 app.post('/client/delete/:id', function(req, res) {
     if (!assert_connection(res)) {
@@ -343,6 +411,7 @@ app.post('/billing/:id', function(req, res) {
     }
 })
 
+/* ACTIVITY TYPE */
 
 function validateActivityTypeForm(data) {
     const str_re = /^[a-zA-Z0-9, ()]+$/;
@@ -354,20 +423,46 @@ function validateActivityTypeForm(data) {
     return true;
 }
 
-app.get('/activity-type', function(req, res) {
+app.get('/activity-types', function(req, res) {
     if (!assert_connection(res)) {
         return
     }
 
-    con.query("SELECT id, description, rate_cents/100.0 AS rate FROM activity_type", function(err, result, fields) {
-        res.render('activity_types', {
-            activity_type_fields: fields,
-            activity_types: result
-        });
+    con.query("SELECT * FROM activity_type_view", function(err, result) {
+        res.render('activity_types', {activity_types: result});
     });
 })
 
-app.post('/activity-type', function(req, res) {
+app.get('/activity-type/:id', function(req, res) {
+    if (!assert_connection(res)) {
+        return
+    }
+
+    sql = "SELECT * FROM activity_type_view WHERE id = ?";
+    con.query(sql, [req.params.id], function(err, result) {
+        if (err) {
+            console.log(err);
+            res.sendStatus(404);
+        } else if (result.length == 0) {
+            res.render('activity_type', {activity_type: {id: "new"}});
+        } else {
+            res.render('activity_type', {activity_type: result[0]});
+        }
+    });
+});
+
+app.post('/activity-type/delete/:id', function(req, res) {
+    if (!assert_connection(res)) {
+        return;
+    }
+
+    sql = "DELETE FROM activity_type WHERE id = ?"
+    con.query(sql, [req.params.id]);
+
+    res.redirect('/activity-types');
+});
+
+app.post('/activity-type/:id', function(req, res) {
     if (!assert_connection(res)) {
         return
     }
@@ -376,23 +471,30 @@ app.post('/activity-type', function(req, res) {
         return;
     }
 
-    if (req.body.action == "insert") {
-        con.query("INSERT INTO activity_type(description, rate_cents) VALUES (?, ?)",
-            [req.body.description, 100*parseFloat(req.body.rate)]
-        );
-    }
-    else if (req.body.action == "delete") {
-        con.query("DELETE FROM activity_type WHERE id = ?",
-            [parseInt(req.body.id)]
-        );
-    }
-    else if (req.body.action == "update") {
-        con.query("UPDATE activity_type SET description = ?, rate_cents = ? WHERE id = ?",
-            [req.body.description, 100*parseFloat(req.body.rate), parseInt(req.body.id)]
-        );
-    }
+    rate_cents = parseInt(req.body.rate*100);
+    values = [req.body.description, rate_cents];
 
-    res.redirect('/activity-type');
+    if (req.params.id == "new") {
+        sql = "INSERT INTO activity_type(description, rate_cents) VALUES (?)"
+        con.query(sql, [values], function(err, result) {
+            if (err) {
+                console.log(err);
+                res.redirect('/activity-types');
+            } else {
+                res.redirect('/activity-type/' + result.insertId);
+            }
+        });
+    } else {
+        sql = "UPDATE activity_type SET description = ?, rate_cents = ? WHERE id = ?";
+        con.query(sql, [req.body.description, rate_cents, req.params.id], function(err) {
+            if (err) {
+                console.log(err);
+                res.redirect('/activity-types/');
+            } else {
+                res.redirect('/activity-type/' + req.params.id);
+            }
+        });
+    }
 })
 
 

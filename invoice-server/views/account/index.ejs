@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <link href="/css/style.css" rel="stylesheet" type="text/css">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    </head>
+    <body>
+        <form action="/account/<%= account.id %>" method="post">
+            <h2 class="nav"><a href="/">Home</a> > <a href="/accounts">Accounts</a> > <input id="name" name="name" value="<%= account.name %>" style="font-size: 16px" onChange="enableSave('save-button')" required></input> <button type="submit" method="post" class="btn-fa" id="save-button" disabled><i class="fa fa-save"></i></button></h2>
+            <table class="mytable">
+                <tr>
+                    <td>BSB:</td>
+                    <td><input id="bsb" name="bsb" value="<%= account.bsb %>" onChange="enableSave('save-button')"></td>
+                </tr>
+                <tr>
+                    <td>Account No.:</td>
+                    <td><input id="number" name="number" value="<%= account.number %>" onChange="enableSave('save-button')"></td>
+                </tr>
+            </table>
+        </form>
+        <% if (account.id != "new") { %>
+        <div class="page-action">
+            <form action="/account/delete/<%= account.id %>" method="post">
+                <button class="delete-button"><i class="fa fa-trash"></i></button>
+            </form>
+        </div>
+        <% } %>
+    </body>
+    <script type="text/javascript" src="/scripts/enable-save.js"></script>
+</html>

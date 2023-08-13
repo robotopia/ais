@@ -6,41 +6,21 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
     </head>
     <body>
-        <h2><a href="/">Home</a> > Activity types</h2>
-        <table class="mytable edittable">
+        <h2 class="nav"><a href="/">Home</a> > Activity types</h2>
+        <table class="mytable">
             <tr>
                 <th>Description</th>
-                <th>Rate ($)</th>
-                <th>Action</th>
+                <th>Rate</th>
             </tr>
             <% activity_types.forEach(function(activity_type) { %>
             <tr>
-                <form action="/activity-type" method="post">
-                    <input id="id" name="id" value="<%= activity_type.id %>" hidden>
-                    <td><input id="description" name="description" value="<%= activity_type.description %>"></td>
-                    <td><input id="rate" name="rate" value="<%= activity_type.rate %>"></td>
-                    <td style="text-align: center;">
-                        <button class="btn-fa" type="submit" name="action" value="update">
-                            <i class="fa fa-save" style="color: green;"></i>
-                        </button>
-                        <button class="btn-fa" type="submit" name="action" value="delete">
-                            <i class="fa fa-trash" style="color: #c00;"></i>
-                        </button>
-                    </td>
-                </form>
+                <td><a href="/activity-type/<%= activity_type.id %>"><%= activity_type.description %></a></td>
+                <td>$<%= activity_type.rate %></td>
             </tr>
             <% }); %>
-            <tr>
-                <form action="/activity-type" method="post">
-                    <td><input id="description" name="description"></td>
-                    <td><input id="rate" name="rate"></td>
-                    <td style="text-align: center;">
-                        <button class="btn-fa" type="submit" name="action" value="insert">
-                            <i class="fa fa-add" style="color: #00c;"></i>
-                        </button>
-                    </td>
-                </form>
-            </tr>
         </table>
+        <div class="page-action">
+            <a href="/activity-type/new" class="add-button"><i class="fa fa-circle-plus"></i></a>
+        </div>
     </body>
 </html>
