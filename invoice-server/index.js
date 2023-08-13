@@ -210,25 +210,34 @@ app.get('/clients', function(req, res) {
     });
 })
 
+const tables = {
+    client: {
+        parent: "clients",
+        parent_display: "Clients",
+        fields: {
+            id: {display: "ID", type: "text"},
+            name: {display: "Name", type: "text", required: true},
+            bill_email: {display: "Billing email", type: "text"}
+        },
+        fields_editable: ["bill_email"],
+        slug: "name"
+    }
+};
+
 app.get('/client/:id', function(req, res) {
     if (!assert_connection(res)) {
         return
     }
 
-    table = {
-        name: "client",
-        parent: "clients",
-        display: "Client",
-        parent_display: "Clients"
-    };
-
-    obj = {id: req.params.id, name: ""};
-    fields = {
-        bill_email: {display: "Billing email", type: "text", value: ""}
-    };
+    table = tables['client'];
 
     if (req.params.id == "new") {
-        res.render('record', {table: table, obj: obj, fields: fields});
+        obj = {};
+        for (var k in table.fields) {
+            obj[k] = "";
+        }
+        obj.id = "new";
+        res.render('record', {table: table, table_name: 'client', obj: obj});
     } else {
         sql = "SELECT * FROM client WHERE id = ?";
         con.query(sql, [req.params.id], function(err, results) {
@@ -238,9 +247,8 @@ app.get('/client/:id', function(req, res) {
             } else if (results.length == 0) {
                 res.sendStatus(404);
             } else {
-                obj.name = results[0].name;
-                fields.bill_email.value = results[0].bill_email;
-                res.render('record', {table: table, obj: obj, fields: fields});
+                obj = results[0];
+                res.render('record', {table: table, table_name: 'client', obj: obj});
             }
         });
     }

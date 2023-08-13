@@ -4,20 +4,20 @@
         <%- include('../partials/head'); %>
     </head>
     <body>
-        <form action="/<%= table.name %>/<%= obj.id %>" method="post">
-            <h2 class="nav"><a href="/">Home</a> > <a href="/<%= table.parent %>"><%= table.parent_display %></a> > <input id="name" name="name" value="<%= obj.name %>" style="font-size: 16px" onChange="enableSave('save-button')" required></input> <button type="submit" method="post" class="btn-fa" id="save-button" disabled><i class="fa fa-save"></i></button></h2>
+        <form action="/<%= table_name %>/<%= obj.id %>" method="post">
+            <h2 class="nav"><a href="/">Home</a> > <a href="/<%= table.parent %>"><%= table.parent_display %></a> > <input id="<%= table.slug %>" name="<%= table.slug %>" value="<%= obj[table.slug] %>" style="font-size: 16px" onChange="enableSave('save-button')" required></input> <button type="submit" method="post" class="btn-fa" id="save-button" disabled><i class="fa fa-save"></i></button></h2>
             <table class="mytable">
-                <% for(var k in fields) { %>
+                <% table.fields_editable.forEach(function(k) { %>
                 <tr>
-                    <td><%= fields[k].display %>:</td>
-                    <td><input type="<%= fields[k].type %>" id="<%= k %>" name="<%= k %>" value="<%= fields[k].value %>" onChange="enableSave('save-button')"></td>
+                    <td><%= table.fields[k].display %>:</td>
+                    <td><input type="<%= table.fields[k].type %>" id="<%= k %>" name="<%= k %>" value="<%= obj[k] %>" onChange="enableSave('save-button')"></td>
                 </tr>
-                <% } %>
+                <% }); %>
             </table>
         </form>
         <% if (obj.id != "new") { %>
         <div class="page-action">
-            <form action="/<%= table.name %>/delete/<%= obj.id %>" method="post">
+            <form action="/<%= table_name %>/delete/<%= obj.id %>" method="post">
                 <button class="delete-button"><i class="fa fa-trash"></i></button>
             </form>
         </div>
