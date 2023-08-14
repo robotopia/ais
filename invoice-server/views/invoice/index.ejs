@@ -99,11 +99,11 @@
                         </tr>
                         <tr>
                             <td>Due:</td>
-                            <td><input type="date" id="due" name="due" value="<%= invoice.due %>"></input></td>
+                            <td><input type="date" id="due" name="due" value="<%= invoice.due %>" onChange="enableSave('save-button')"></input></td>
                         </tr>
                         <tr>
                             <td>Paid:</td>
-                            <td><input type="date" id="paid" name="paid" value="<%= invoice.paid %>"></input></td>
+                            <td><input type="date" id="paid" name="paid" value="<%= invoice.paid %>" onChange="enableSave('save-button')"></input></td>
                         </tr>
                     </table>
                 </div>
