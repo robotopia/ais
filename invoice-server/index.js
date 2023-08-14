@@ -403,7 +403,7 @@ app.get('/invoices', function(req, res) {
         return
     }
 
-    let sql = "SELECT * FROM invoice_view"
+    let sql = "SELECT * FROM invoice_view ORDER BY -issued"
     con.query(sql, function(err, result, field) {
         if (err) {
             console.log(err);
@@ -419,9 +419,9 @@ app.post('/invoice/:id', function(req, res) {
     }
 
     // Turn empty date strings into nulls
-    issued = req.body.issued_str.length > 0 ? req.body.issued_str : null;
-    due = req.body.due_str.length > 0 ? req.body.due_str : null;
-    paid = req.body.paid_str.length > 0 ? req.body.paid_str : null;
+    issued = req.body.issued.length > 0 ? req.body.issued : null;
+    due = req.body.due.length > 0 ? req.body.due : null;
+    paid = req.body.paid.length > 0 ? req.body.paid : null;
 
     values = [req.body.name,
         req.body.client_id,
@@ -529,7 +529,7 @@ app.get('/add_invoice_item/:invoice_id', function (req, res) {
         return;
     }
 
-    sql1 = "SELECT * FROM invoice_item_view ORDER BY date_str DESC";
+    sql1 = "SELECT * FROM invoice_item_view ORDER BY date DESC";
     sql2 = "SELECT * FROM invoice WHERE id = ?";
 
     sql = sql1 + "; " + sql2;

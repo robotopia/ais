@@ -95,15 +95,15 @@
                         <% } %>
                         <tr>
                             <td>Issued:</td>
-                            <td><input type="date" id="issued_str" name="issued_str" value="<%= invoice.issued_str %>" onChange="enableSave('save-button')"></input></td>
+                            <td><input type="date" id="issued" name="issued" value="<%= invoice.issued %>" onChange="enableSave('save-button')"></input></td>
                         </tr>
                         <tr>
                             <td>Due:</td>
-                            <td><input type="date" id="due_str" name="due_str" value="<%= invoice.due_str %>"></input></td>
+                            <td><input type="date" id="due" name="due" value="<%= invoice.due %>"></input></td>
                         </tr>
                         <tr>
                             <td>Paid:</td>
-                            <td><input type="date" id="paid_str" name="paid_str" value="<%= invoice.paid_str %>"></input></td>
+                            <td><input type="date" id="paid" name="paid" value="<%= invoice.paid %>"></input></td>
                         </tr>
                     </table>
                 </div>
@@ -118,7 +118,7 @@
                     </tr>
                     <% activities.forEach(function(activity) { %>
                     <tr>
-                        <td><%= activity.date_str %></td>
+                        <td><%= activity.date %></td>
                         <td><%= activity.qty %></td>
                         <td>$<%= activity.rate %></td>
                         <td><%= activity.description %></td>

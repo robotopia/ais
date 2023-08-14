@@ -29,7 +29,7 @@
                         <input type="checkbox" id="activity_<%= activity.id %>" name="activities" value="<%= activity.id %>" onclick="enableSave('save-button')" checked>
                         <% } %>
                     </td>
-                    <td><%= activity.date_str %></td>
+                    <td><%= activity.date %></td>
                     <td><%= activity.qty %></td>
                     <td>$<%= activity.rate %></td>
                     <td><%= activity.description %></td>

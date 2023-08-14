@@ -17,9 +17,9 @@
             <% invoices.forEach(function(invoice) { %>
             <tr>
                 <td><a href="invoice/<%= invoice.id %>"><%= invoice.name %><a></td>
-                <td><%= invoice.issued_str %></td>
+                <td><%= invoice.issued %></td>
                 <td>$<%= invoice.total_amount %></td>
-                <td><%= invoice.paid_str %></td>
+                <td><%= invoice.paid %></td>
             </tr>
             <% }); %>
         </table>
