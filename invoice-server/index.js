@@ -116,10 +116,25 @@ function validateAccountForm(data) {
     return true;
 }
 
+function validateTaxPeriodForm(data) {
+    const date_re = /^[0-9]{4}-[0-1][0-9]-[0-3][0-9]$/;
+    if (date_re.test(String(data.start)) == false) {
+        console.log("Invalid date (YYYY-MM-DD)");
+        return false;
+    }
+
+    if (date_re.test(String(data.end)) == false) {
+        console.log("Invalid date (YYYY-MM-DD)");
+        return false;
+    }
+
+    return true;
+}
+
 function validateActivityForm(data) {
     const date_re = /^[0-9]{4}-[0-1][0-9]-[0-3][0-9]$/;
     if (date_re.test(String(data.date)) == false) {
-        console.log("Invalid date (DD-MM-YYYY)");
+        console.log("Invalid date (YYYY-MM-DD)");
         return false;
     }
 
@@ -221,6 +236,21 @@ const tables = {
         fields_editable: ["bill_email"],
         fields_list: ["bill_email"],
         */
+        slug: "name"
+    },
+    tax_period: {
+        parent_display: "Tax periods",
+        view: "tax_period_view",
+        validationFunc: validateTaxPeriodForm,
+        fields: {
+            id: {display: "ID", type: "text"},
+            name: {display: "Name", type: "text", required: true},
+            start: {display: "Start date", type: "date", required: true},
+            end: {display: "Start date", type: "date", required: true},
+            taxable_income: {display: "Taxable income", type: "text"}
+        },
+        fields_editable: ["start", "end"],
+        fields_list: ["start", "end", "taxable_income"],
         slug: "name"
     }
 };
