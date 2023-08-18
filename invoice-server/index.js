@@ -181,7 +181,8 @@ const tables = {
         },
         fields_editable: ["qty", "activity_type_id", "notes", "invoice_id"],
         fields_list: ["qty", "activity_type", "notes", "invoice"],
-        slug: "date"
+        slug: "date",
+        order_by: "-date",
     },
     activity_type: {
         parent_display: "Activity types",
@@ -305,16 +306,21 @@ app.post('/invoice/delete/:id', function(req, res) {
 });
 
 
-
 app.get('/:table/list', function(req, res) {
     if (!assert_connection(res)) {
         return
     }
 
     table = tables[req.params.table];
-    view = table.hasOwnProperty("view") ? table.view : req.params.table;
 
-    con.query("SELECT * FROM ?? ORDER BY ??", [view, table.slug], function(err, results) {
+    view = table.hasOwnProperty("view") ? table.view : req.params.table;
+    order_by = table.hasOwnProperty("order_by") ? table.order_by : table.slug;
+
+    sql = "SELECT * FROM ?? ORDER BY " + order_by;
+
+    con.query(sql, [view], function(err, results) {
+        console.log(err);
+        console.log(results);
         res.render("objs", {table: table, table_name: req.params.table, objs: results});
     });
 })
