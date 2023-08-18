@@ -1,190 +1,199 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <link href="/css/style.css" rel="stylesheet" type="text/css">
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-        <link rel="stylesheet" href="https://unpkg.com/js-datepicker/dist/datepicker.min.css">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <%- include('../partials/head'); %>
     </head>
     <body>
-        <form action="/invoice/<%= invoice.id %>" method="post">
-            <h2 class="nav"><a href="/">Home</a> > <a href="/invoices">Invoices</a> > <input id="invoice_name" name="name" value="<%= invoice.name %>" style="font-size: 16px" onChange="enableSave('save-button')" required></input> <button type="submit" method="post" class="btn-fa" id="save-button" disabled><i class="fa fa-save"></i></button></h2>
-            <div class="invoice-container">
-                <div>
-                    <h3>Biller (<span class="btn" onclick="displayTableHideName('billing_table', 'billing_name');">change</span>)</h3>
-                    <span id="billing_name">
-                    <table>
-                        <tr>
-                            <td>Name:</td>
-                            <td><b><%= invoice.billing_name %></b></td>
-                        </tr>
-                        <tr>
-                            <td>Address:</td>
-                            <td><%= invoice.addr1 %>, <%= invoice.addr2 %></td>
-                        </tr>
-                        <tr>
-                            <td>Ph:</td>
-                            <td><%= invoice.phone %></td>
-                        </tr>
-                        <tr>
-                            <td>Email:</td>
-                            <td><%= invoice.email %></td>
-                        </tr>
-                        <tr>
-                            <td>ABN:</td>
-                            <td>
-                                <%= invoice.abn %>
-                                <% if (!invoice.is_gst_registered) { %>
-                                (not GST Registered)
+        <%- include('../partials/sidebar'); %>
+
+        <div class="w3-main" style="margin-left:200px">
+            <div class="w3-container">
+                <form action="/invoice/<%= invoice.id %>" method="post">
+                    <div>
+                        <button class="w3-button w3-xlarge w3-hide-large" onclick="w3_open()">&#9776;</button>
+                        <div class="w3-container">
+                            <h2 class="nav"><a href="/">Home</a> > <a href="/invoices">Invoices</a> > <input id="invoice_name" name="name" value="<%= invoice.name %>" style="font-size: 16px" onChange="enableSave('save-button')" required></input> <button type="submit" method="post" class="btn-fa" id="save-button" disabled><i class="fa fa-save"></i></button></h2>
+                        </div>
+                    </div>
+
+                    <div class="invoice-container">
+                        <div>
+                            <h3>Biller (<span class="btn" onclick="displayTableHideName('billing_table', 'billing_name');">change</span>)</h3>
+                            <span id="billing_name">
+                                <table>
+                                    <tr>
+                                        <td>Name:</td>
+                                        <td><b><%= invoice.billing_name %></b></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Address:</td>
+                                        <td><%= invoice.addr1 %>, <%= invoice.addr2 %></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Ph:</td>
+                                        <td><%= invoice.phone %></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Email:</td>
+                                        <td><%= invoice.email %></td>
+                                    </tr>
+                                    <tr>
+                                        <td>ABN:</td>
+                                        <td>
+                                            <%= invoice.abn %>
+                                            <% if (!invoice.is_gst_registered) { %>
+                                            (not GST Registered)
+                                            <% } %>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </span>
+                            <table class="mytable" id="billing_table" style="display: none;">
+                                <tr>
+                                    <th></th>
+                                    <th>Name</th>
+                                    <th>Address</th>
+                                    <th>ABN</th>
+                                </tr>
+                                <% billings.forEach(function(billing) { %>
+                                <tr>
+                                    <% if (billing.id == invoice.billing_id) { %>
+                                    <td><input type="radio" id="billing_id_<%= billing.id %>" name="billing_id" value="<%= billing.id %>" required checked onChange="enableSave('save-button');"></input></td>
+                                    <% } else { %>
+                                    <td><input type="radio" id="billing_id_<%= billing.id %>" name="billing_id" value="<%= billing.id %>" required onChange="enableSave('save-button');"></input></td>
+                                    <% } %>
+                                    <td><%= billing.name %></td>
+                                    <td><%= billing.addr1 %>, <%= billing.addr2 %></td>
+                                    <td><%= billing.abn %></td>
+                                </tr>
+                                <% }); %>
+                            </table>
+                        </div>
+                        <div>
+                            <h3>Bill to (<span class="btn" onclick="displayTableHideName('client_table', 'client_name');">change</span>)</h3>
+                            <span id="client_name"><%= invoice.bill_to_name %></span>
+                            <table class="mytable" id="client_table" style="display: none;">
+                                <tr>
+                                    <th></th>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                </tr>
+                                <% clients.forEach(function(client) { %>
+                                <tr>
+                                    <% if (client.id == invoice.bill_to) { %>
+                                    <td><input type="radio" id="client_id_<%= client.id %>" name="client_id" value="<%= client.id %>" required checked onChange="enableSave('save-button');"></input></td>
+                                    <% } else { %>
+                                    <td><input type="radio" id="client_id_<%= client.id %>" name="client_id" value="<%= client.id %>" required onChange="enableSave('save-button');"></input></td>
+                                    <% } %>
+                                    <td><%= client.name %></td>
+                                    <td><%= client.bill_email %></td>
+                                </tr>
+                                <% }); %>
+                            </table>
+                        </div>
+                        <div>
+                            <h3>Summary</h3>
+                            <table>
+                                <% if (invoice.id != "new") { %>
+                                <tr>
+                                    <td>Amount:</td>
+                                    <td>$<%= invoice.total_amount %></td>
+                                </tr>
                                 <% } %>
-                            </td>
-                        </tr>
-                    </table>
-                    </span>
-                    <table class="mytable" id="billing_table" style="display: none;">
-                        <tr>
-                            <th></th>
-                            <th>Name</th>
-                            <th>Address</th>
-                            <th>ABN</th>
-                        </tr>
-                        <% billings.forEach(function(billing) { %>
-                        <tr>
-                            <% if (billing.id == invoice.billing_id) { %>
-                            <td><input type="radio" id="billing_id_<%= billing.id %>" name="billing_id" value="<%= billing.id %>" required checked onChange="enableSave('save-button');"></input></td>
-                            <% } else { %>
-                            <td><input type="radio" id="billing_id_<%= billing.id %>" name="billing_id" value="<%= billing.id %>" required onChange="enableSave('save-button');"></input></td>
-                            <% } %>
-                            <td><%= billing.name %></td>
-                            <td><%= billing.addr1 %>, <%= billing.addr2 %></td>
-                            <td><%= billing.abn %></td>
-                        </tr>
-                        <% }); %>
-                    </table>
-                </div>
-                <div>
-                    <h3>Bill to (<span class="btn" onclick="displayTableHideName('client_table', 'client_name');">change</span>)</h3>
-                    <span id="client_name"><%= invoice.bill_to_name %></span>
-                    <table class="mytable" id="client_table" style="display: none;">
-                        <tr>
-                            <th></th>
-                            <th>Name</th>
-                            <th>Email</th>
-                        </tr>
-                        <% clients.forEach(function(client) { %>
-                        <tr>
-                            <% if (client.id == invoice.bill_to) { %>
-                            <td><input type="radio" id="client_id_<%= client.id %>" name="client_id" value="<%= client.id %>" required checked onChange="enableSave('save-button');"></input></td>
-                            <% } else { %>
-                            <td><input type="radio" id="client_id_<%= client.id %>" name="client_id" value="<%= client.id %>" required onChange="enableSave('save-button');"></input></td>
-                            <% } %>
-                            <td><%= client.name %></td>
-                            <td><%= client.bill_email %></td>
-                        </tr>
-                        <% }); %>
-                    </table>
-                </div>
-                <div>
-                    <h3>Summary</h3>
-                    <table>
+                                <tr>
+                                    <td>Issued:</td>
+                                    <td><input type="date" id="issued" name="issued" value="<%= invoice.issued %>" onChange="enableSave('save-button')"></input></td>
+                                </tr>
+                                <tr>
+                                    <td>Due:</td>
+                                    <td><input type="date" id="due" name="due" value="<%= invoice.due %>" onChange="enableSave('save-button')"></input></td>
+                                </tr>
+                                <tr>
+                                    <td>Paid:</td>
+                                    <td><input type="date" id="paid" name="paid" value="<%= invoice.paid %>" onChange="enableSave('save-button')"></input></td>
+                                </tr>
+                            </table>
+                        </div>
                         <% if (invoice.id != "new") { %>
-                        <tr>
-                            <td>Amount:</td>
-                            <td>$<%= invoice.total_amount %></td>
-                        </tr>
+                        <table class="mytable">
+                            <tr>
+                                <th>Date</th>
+                                <th>Qty</th>
+                                <th>Rate</th>
+                                <th>Description</th>
+                                <th>Amount</th>
+                            </tr>
+                            <% activities.forEach(function(activity) { %>
+                            <tr>
+                                <td><%= activity.date %></td>
+                                <td><%= activity.qty %></td>
+                                <td>$<%= activity.rate %></td>
+                                <td><%= activity.description %></td>
+                                <td>$<%= activity.amount %></td>
+                            </tr>
+                            <% }); %>
+                            <tr>
+                                <td>Edit items <a href="/add_invoice_item/<%= invoice.id %>">
+                                        <i class="fa fa-edit" style="color: green; text-decoration: none;"></i>
+                                    </a></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                            </tr>
+                            <tr>
+                                <td style="opacity: 0; border: 0px;"></td>
+                                <td style="opacity: 0; border: 0px;"></td>
+                                <td style="opacity: 0; border: 0px;"></td>
+                                <td style="border: 0px; text-align: right;"><strong>Total:</strong></td>
+                                <td>$<%= invoice.total_amount %></td>
+                            </tr>
+                        </table>
                         <% } %>
-                        <tr>
-                            <td>Issued:</td>
-                            <td><input type="date" id="issued" name="issued" value="<%= invoice.issued %>" onChange="enableSave('save-button')"></input></td>
-                        </tr>
-                        <tr>
-                            <td>Due:</td>
-                            <td><input type="date" id="due" name="due" value="<%= invoice.due %>" onChange="enableSave('save-button')"></input></td>
-                        </tr>
-                        <tr>
-                            <td>Paid:</td>
-                            <td><input type="date" id="paid" name="paid" value="<%= invoice.paid %>" onChange="enableSave('save-button')"></input></td>
-                        </tr>
-                    </table>
-                </div>
-                <% if (invoice.id != "new") { %>
-                <table class="mytable">
-                    <tr>
-                        <th>Date</th>
-                        <th>Qty</th>
-                        <th>Rate</th>
-                        <th>Description</th>
-                        <th>Amount</th>
-                    </tr>
-                    <% activities.forEach(function(activity) { %>
-                    <tr>
-                        <td><%= activity.date %></td>
-                        <td><%= activity.qty %></td>
-                        <td>$<%= activity.rate %></td>
-                        <td><%= activity.description %></td>
-                        <td>$<%= activity.amount %></td>
-                    </tr>
-                    <% }); %>
-                    <tr>
-                        <td>Edit items <a href="/add_invoice_item/<%= invoice.id %>">
-                                <i class="fa fa-edit" style="color: green; text-decoration: none;"></i>
-                            </a></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                    </tr>
-                    <tr>
-                        <td style="opacity: 0; border: 0px;"></td>
-                        <td style="opacity: 0; border: 0px;"></td>
-                        <td style="opacity: 0; border: 0px;"></td>
-                        <td style="border: 0px; text-align: right;"><strong>Total:</strong></td>
-                        <td>$<%= invoice.total_amount %></td>
-                    </tr>
-                </table>
-                <% } %>
-                <div>
-                    <h3>Payment Options (<span class="btn" onclick="displayTableHideName('account_table', 'account_name');">change</span>)</h3>
-                    <span id="account_name">
-                    <h4>Electronic Transfer:</h4>
-                    <table>
-                        <tr>
-                            <td>BSB:</td>
-                            <td><%= invoice.bsb %></td>
-                        </tr>
-                        <tr>
-                            <td>Account No.:</td>
-                            <td><%= invoice.number %></td>
-                        </tr>
-                        <tr>
-                            <td>Account Name:</td>
-                            <td><%= invoice.account_name %></td>
-                        </tr>
-                    </table>
-                    </span>
-                    <table class="mytable" id="account_table" style="display: none;">
-                        <tr>
-                            <th></th>
-                            <th>BSB</th>
-                            <th>Account No.</th>
-                            <th>Account Name</th>
-                        </tr>
-                        <% accounts.forEach(function(account) { %>
-                        <tr>
-                            <% if (account.id == invoice.account_id) { %>
-                            <td><input type="radio" id="account_id_<%= account.id %>" name="account_id" value="<%= account.id %>" required checked onChange="enableSave('save-button');"></input></td>
-                            <% } else { %>
-                            <td><input type="radio" id="account_id_<%= account.id %>" name="account_id" value="<%= account.id %>" required onChange="enableSave('save-button');"></input></td>
-                            <% } %>
-                            <td><%= account.bsb %></td>
-                            <td><%= account.number %></td>
-                            <td><%= account.name %></td>
-                        </tr>
-                        <% }); %>
-                    </table>
-                </div>
+                        <div>
+                            <h3>Payment Options (<span class="btn" onclick="displayTableHideName('account_table', 'account_name');">change</span>)</h3>
+                            <span id="account_name">
+                                <h4>Electronic Transfer:</h4>
+                                <table>
+                                    <tr>
+                                        <td>BSB:</td>
+                                        <td><%= invoice.bsb %></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Account No.:</td>
+                                        <td><%= invoice.number %></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Account Name:</td>
+                                        <td><%= invoice.account_name %></td>
+                                    </tr>
+                                </table>
+                            </span>
+                            <table class="mytable" id="account_table" style="display: none;">
+                                <tr>
+                                    <th></th>
+                                    <th>BSB</th>
+                                    <th>Account No.</th>
+                                    <th>Account Name</th>
+                                </tr>
+                                <% accounts.forEach(function(account) { %>
+                                <tr>
+                                    <% if (account.id == invoice.account_id) { %>
+                                    <td><input type="radio" id="account_id_<%= account.id %>" name="account_id" value="<%= account.id %>" required checked onChange="enableSave('save-button');"></input></td>
+                                    <% } else { %>
+                                    <td><input type="radio" id="account_id_<%= account.id %>" name="account_id" value="<%= account.id %>" required onChange="enableSave('save-button');"></input></td>
+                                    <% } %>
+                                    <td><%= account.bsb %></td>
+                                    <td><%= account.number %></td>
+                                    <td><%= account.name %></td>
+                                </tr>
+                                <% }); %>
+                            </table>
+                        </div>
+                    </div>
+                </form>
             </div>
-        </form>
+        </div>
         <% if (invoice.id != "new") { %>
         <div class="page-action">
             <form action="/invoice/delete/<%= invoice.id %>" method="post">

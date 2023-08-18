@@ -1,20 +1,21 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <link href="/css/style.css" rel="stylesheet" type="text/css">
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <%- include('../partials/head'); %>
     </head>
     <body>
-        <h1>PPC invoicing system</h1>
-        <ul>
-            <li><a href="account/list">Accounts<a></li>
-            <li><a href="billing/list">Billing information<a></li>
-            <li><a href="client/list">Clients<a></li>
-            <li><a href="activity_type/list">Activity types<a></li>
-            <li><a href="activity/list">Activities<a></li>
-            <li><a href="invoices">Invoices<a></li>
-            <li><a href="tax_period/list">Tax periods<a></li>
-        </ul>
+        <%- include('../partials/sidebar'); %>
+
+        <div class="w3-main" style="margin-left:200px">
+            <div>
+                <button class="w3-button w3-xlarge w3-hide-large" onclick="w3_open()">&#9776;</button>
+                <div class="w3-container">
+                    <h1>PPC invoicing system</h1>
+                </div>
+            </div>
+
+            <div class="w3-container">
+            </div>
+        </div>
     </body>
 </html>

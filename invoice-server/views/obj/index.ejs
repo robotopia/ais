@@ -4,36 +4,47 @@
         <%- include('../partials/head'); %>
     </head>
     <body>
-        <form action="/<%= table_name %>/<%= obj.id %>/edit" method="post">
-            <h2 class="nav"><a href="/">Home</a> > <a href="/<%= table_name %>/list"><%= table.parent_display %></a> > <input type="<%= table.fields[table.slug].type %>" id="<%= table.slug %>" name="<%= table.slug %>" value="<%= obj[table.slug] %>" style="font-size: 16px" onChange="enableSave('save-button')" required></input> <button type="submit" method="post" class="btn-fa" id="save-button" disabled><i class="fa fa-save"></i></button></h2>
-            <table class="mytable">
-                <% table.fields_editable.forEach(function(k) { %>
-                <tr>
-                    <td><%= table.fields[k].display %><% if (table.fields[k].required) { %>*<% } %></td>
-                    <td>
-                        <% if (table.fields[k].type == "select") { %>
-                        <select id="<%= k %>" name="<%= k %>" onChange="enableSave('save-button')">
-                            <option value="">---Select---</option>
-                            <% refs[table.fields[k].references].forEach(function(ref) { %>
-                            <option value="<%= ref.id %>"><%= ref.slug %></option>
-                            <% }); %>
-                        </select>
-                        <% } else { %>
-                        <input type="<%= table.fields[k].type %>" id="<%= k %>" name="<%= k %>" value="<%= obj[k] %>" onChange="enableSave('save-button')">
-                        <% } %>
-                    </td>
-                </tr>
-                <% }); %>
-            </table>
-            <div>*Required</div>
-        </form>
-        <% if (obj.id != "new") { %>
-        <div class="page-action">
-            <form action="/<%= table_name %>/<%= obj.id %>/delete" method="post">
-                <button class="delete-button"><i class="fa fa-trash"></i></button>
-            </form>
+        <%- include('../partials/sidebar'); %>
+        <div class="w3-main" style="margin-left:200px">
+            <div class="w3-container">
+                <form action="/<%= table_name %>/<%= obj.id %>/edit" method="post">
+                    <div>
+                        <button class="w3-button w3-xlarge w3-hide-large" onclick="w3_open()">&#9776;</button>
+                        <div class="w3-container">
+                            <h2 class="nav"><a href="/">Home</a> > <a href="/<%= table_name %>/list"><%= table.parent_display %></a> > <input type="<%= table.fields[table.slug].type %>" id="<%= table.slug %>" name="<%= table.slug %>" value="<%= obj[table.slug] %>" style="font-size: 16px" onChange="enableSave('save-button')" required></input> <button type="submit" method="post" class="btn-fa" id="save-button" disabled><i class="fa fa-save"></i></button></h2>
+                        </div>
+                    </div>
+
+                    <table class="mytable">
+                        <% table.fields_editable.forEach(function(k) { %>
+                        <tr>
+                            <td><%= table.fields[k].display %><% if (table.fields[k].required) { %>*<% } %></td>
+                            <td>
+                                <% if (table.fields[k].type == "select") { %>
+                                <select id="<%= k %>" name="<%= k %>" onChange="enableSave('save-button')">
+                                    <option value="">---Select---</option>
+                                    <% refs[table.fields[k].references].forEach(function(ref) { %>
+                                    <option value="<%= ref.id %>"><%= ref.slug %></option>
+                                    <% }); %>
+                                </select>
+                                <% } else { %>
+                                <input type="<%= table.fields[k].type %>" id="<%= k %>" name="<%= k %>" value="<%= obj[k] %>" onChange="enableSave('save-button')">
+                                <% } %>
+                            </td>
+                        </tr>
+                        <% }); %>
+                    </table>
+                    <div>*Required</div>
+                </form>
+                <% if (obj.id != "new") { %>
+                <div class="page-action">
+                    <form action="/<%= table_name %>/<%= obj.id %>/delete" method="post">
+                        <button class="delete-button"><i class="fa fa-trash"></i></button>
+                    </form>
+                </div>
+                <% } %>
+            </div>
         </div>
-        <% } %>
     </body>
     <script type="text/javascript" src="/scripts/enable-save.js"></script>
     <script>

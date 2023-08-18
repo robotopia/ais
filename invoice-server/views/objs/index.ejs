@@ -4,25 +4,37 @@
         <%- include('../partials/head'); %>
     </head>
     <body>
-        <h2 class="nav"><a href="/">Home</a> > <%= table.parent_display %></h2>
-        <table class="mytable">
-            <tr>
-                <th><%= table.fields[table.slug].display %></th>
-                <% table.fields_list.forEach(function(k) { %>
-                <th><%= table.fields[k].display %></th>
-                <% }); %>
-            </tr>
-            <% objs.forEach(function(obj) { %>
-            <tr>
-                <td><a href="/<%= table_name %>/<%= obj.id %>/edit"><%= obj[table.slug] %></a></td>
-                <% table.fields_list.forEach(function(k) { %>
-                <td><%= obj[k] %></td>
-                <% }); %>
-            </tr>
-            <% }); %>
-        </table>
-        <div class="page-action">
-            <a href="/<%= table_name %>/new/edit" class="add-button"><i class="fa fa-circle-plus"></i></a>
+        <%- include('../partials/sidebar'); %>
+
+        <div class="w3-main" style="margin-left:200px">
+            <div>
+                <button class="w3-button w3-xlarge w3-hide-large" onclick="w3_open()">&#9776;</button>
+                <div class="w3-container">
+                    <h2 class="nav"><a href="/">Home</a> > <%= table.parent_display %></h2>
+                </div>
+            </div>
+
+            <div class="w3-container">
+                <table class="mytable">
+                    <tr>
+                        <th><%= table.fields[table.slug].display %></th>
+                        <% table.fields_list.forEach(function(k) { %>
+                        <th><%= table.fields[k].display %></th>
+                        <% }); %>
+                    </tr>
+                    <% objs.forEach(function(obj) { %>
+                    <tr>
+                        <td><a href="/<%= table_name %>/<%= obj.id %>/edit"><%= obj[table.slug] %></a></td>
+                        <% table.fields_list.forEach(function(k) { %>
+                        <td><%= obj[k] %></td>
+                        <% }); %>
+                    </tr>
+                    <% }); %>
+                </table>
+                <div class="page-action">
+                    <a href="/<%= table_name %>/new/edit" class="add-button"><i class="fa fa-circle-plus"></i></a>
+                </div>
+            </div>
         </div>
     </body>
 </html>
