@@ -9,10 +9,14 @@
             <div class="w3-container">
                 <form action="/<%= table_name %>/<%= obj.id %>/edit" method="post">
                     <div>
-                        <button class="w3-button w3-xlarge w3-hide-large" onclick="w3_open()">&#9776;</button>
-                        <div class="w3-container">
-                            <h2 class="nav"><a href="/">Home</a> > <a href="/<%= table_name %>/list"><%= table.parent_display %></a> > <input type="<%= table.fields[table.slug].type %>" id="<%= table.slug %>" name="<%= table.slug %>" value="<%= obj[table.slug] %>" style="font-size: 16px" onChange="enableSave('save-button')" required></input> <button type="submit" method="post" class="btn-fa" id="save-button" disabled><i class="fa fa-save"></i></button></h2>
-                        </div>
+                        <h2>
+                            <button type="button" class="w3-button w3-xlarge w3-hide-large" onclick="w3_open()">&#9776;</button>
+                            <a href="/<%= table_name %>/list"><%= table.parent_display %></a> >
+                            <input type="<%= table.fields[table.slug].type %>" id="<%= table.slug %>" name="<%= table.slug %>" value="<%= obj[table.slug] %>" style="font-size: 16px" onChange="enableSave('save-button')" required></input>
+                            <button type="submit" method="post" class="btn-fa" id="save-button" disabled>
+                                <i class="fa fa-save"></i>
+                            </button>
+                        </h2>
                     </div>
 
                     <table class="mytable">
