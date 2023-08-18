@@ -1,0 +1,72 @@
+\documentclass{article}
+
+\usepackage{fullpage}
+\usepackage{amsmath}
+\usepackage{color}
+\usepackage{xcolor,colortbl}
+
+\begin{document}
+
+\pagestyle{empty}
+
+\center{\huge INVOICE (<name>)} \\[20pt]
+
+\begin{table}[!ht]
+    \begin{tabular}{lrl}
+        {\bf <billing_name>} \hspace{5cm} & Ph:    & <phone> \\
+        <addr1>     & Email: & {\color{blue} <email>} \\
+        <addr2>    & ABN:   & <abn_display>
+    \end{tabular}
+\end{table}
+
+\fbox{\parbox{0.3\textwidth}{
+    \underline{\bf Bill to} \\
+    \\
+    <bill_to_name>\\
+    \\
+    \\}
+}
+\hfill
+\colorbox{lightgray}{\parbox{0.3\textwidth}{
+    \underline{\bf Summary} \\
+    \\
+    \parbox{0.15\textwidth}{Date:}         <issued> \\
+    \parbox{0.15\textwidth}{Amount owing:} \$<total_amount> \\
+    \parbox{0.15\textwidth}{Due Date:}     <due> \\
+    }
+}
+
+\vspace{1cm}
+
+\begin{table}[!ht]
+    \centering
+    \begin{tabular}{|l|l|l|l|l|}
+        \hline
+        \rowcolor{lightgray}
+        {\bf Date} \hspace{1cm} & {\bf Qty} \hspace{0.5cm} & {\bf Rate} \hspace{1cm} & {\bf Description} \hspace{5cm} & {\bf Amount} \hspace{0.1cm} \\
+        \hline
+        6 Jul 2023 & $1\times$ & \$130/reh & Accompaniment & \$130 \\ \hline
+        13 Jul 2023 & $1\times$ & \$130/reh & Accompaniment & \$130 \\ \hline
+        15 Jul 2023 & $1\times$ & \$65/perf & Quiz night performance & \$65 \\ \hline
+        20 Jul 2023 & $1\times$ & \$130/reh & Accompaniment & \$130 \\ \hline
+        27 Jul 2023 & $1\times$ & \$130/reh & Accompaniment & \$130 \\ \hline
+        \multicolumn{4}{r}{\bf Total:} & \multicolumn{1}{l}{\$<total_amount>}
+    \end{tabular}
+\end{table}
+        
+
+\vspace{5cm}
+
+\fbox{\parbox{1.0\textwidth}{
+    {\bf Payment Options:} \\
+    \\
+    Electronic Transfer: \\
+    \parbox{0.25\textwidth}{\hspace{1cm}BSB:}         <bsb> \\
+    \parbox{0.25\textwidth}{\hspace{1cm}Acc. No.:}    <number> \\
+    \parbox{0.25\textwidth}{\hspace{1cm}Acc. Name:}   <account_name> \\
+    }
+}
+
+
+
+\end{document}

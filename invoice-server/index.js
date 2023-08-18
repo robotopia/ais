@@ -1,8 +1,6 @@
 const express = require('express')
 const ejs = require('ejs')
 const mysql = require('mysql')
-//const webpush = require('web-push');
-//const bodyParser = require('body-parser');
 
 const app = express();
 app.use(express.json());
