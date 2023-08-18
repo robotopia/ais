@@ -115,6 +115,17 @@
                                         <td>Paid:</td>
                                         <td><input type="date" id="paid" name="paid" value="<%= invoice.paid %>" onChange="enableSave('save-button')"></input></td>
                                     </tr>
+                                    <tr>
+                                        <td>PDF:</td>
+                                        <td>
+                                            <% if (invoice.pdf) { %>
+                                            <a href="/invoices/pdf/<%= invoice.pdf %>">View <i class="fa fa-file-pdf"></i></a>
+                                            <input type="button" name="update-pdf" value="Update"/>
+                                            <input type="button" name="delete-pdf" value="Delete"/>
+                                            <% } else { %>
+                                            <input type="button" name="generate-pdf" value="Generate PDF"/>
+                                            <% } %>
+                                        </td>
                                 </table>
                             </div>
                             <% if (invoice.id != "new") { %>
