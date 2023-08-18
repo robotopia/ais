@@ -1,6 +1,7 @@
-const express = require('express')
-const ejs = require('ejs')
-const mysql = require('mysql')
+const express = require('express');
+const ejs = require('ejs');
+const mysql = require('mysql');
+const fs = require('fs');
 
 const app = express();
 app.use(express.json());
@@ -444,6 +445,15 @@ app.get('/invoices', function(req, res) {
         }
 
         res.render('invoices', {invoices: result});
+    });
+});
+
+app.get('/invoices/pdf/:pdf', function(req, res) {
+    var filename = "invoices/" + req.params.pdf;
+
+    fs.readFile(filename, function (err, data) {
+        res.contentType("application/pdf");
+        res.send(data);
     });
 });
 

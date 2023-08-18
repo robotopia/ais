@@ -19,6 +19,7 @@
                         <th>Issued</th>
                         <th>Total amount</th>
                         <th>Paid</th>
+                        <th>PDF</th>
                     </tr>
                     <% invoices.forEach(function(invoice) { %>
                     <tr>
@@ -26,6 +27,11 @@
                         <td><%= invoice.issued %></td>
                         <td>$<%= invoice.total_amount %></td>
                         <td><%= invoice.paid %></td>
+                        <td>
+                            <% if (invoice.pdf) { %>
+                            <a href="/invoices/pdf/<%= invoice.pdf %>"><i class="fa fa-file-pdf"></i></a>
+                            <% } %>
+                        </td>
                     </tr>
                     <% }); %>
                 </table>
