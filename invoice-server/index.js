@@ -185,14 +185,16 @@ const tables = {
     },
     activity_type: {
         parent_display: "Activity types",
+        view: "activity_type_view",
         validationFunc: validateActivityTypeForm,
         fields: {
             id: {display: "ID", type: "text"},
             description: {display: "Description", type: "text", required: true},
-            rate: {display: "Rate ($)", type: "text", required: true}
+            rate: {display: "Rate ($)", type: "text", required: true},
+            rate_display: {display: "Rate", type: "text"}
         },
         fields_editable: ["rate"],
-        fields_list: ["rate"],
+        fields_list: ["rate_display"],
         slug: "description"
     },
     billing: {
