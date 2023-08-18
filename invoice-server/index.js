@@ -161,9 +161,9 @@ const tables = {
             bsb: {display: "BSB", type: "text", required: true},
             number: {display: "Account No.", type: "text", required: true}
         },
-        fields_editable: ["bsb", "number"],
-        fields_list: ["bsb", "number"],
-        slug: "name"
+        fields_editable: ["bsb", "name"],
+        fields_list: ["bsb", "name"],
+        slug: "number"
     },
     activity: {
         parent_display: "Activities",
