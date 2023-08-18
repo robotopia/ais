@@ -449,6 +449,7 @@ app.get('/invoices', function(req, res) {
 });
 
 app.get('/invoices/pdf/:pdf', function(req, res) {
+    // TODO FINISH ME OFF!
     var filename = "invoices/" + req.params.pdf;
 
     fs.readFile(filename, function (err, data) {
@@ -456,6 +457,16 @@ app.get('/invoices/pdf/:pdf', function(req, res) {
         res.send(data);
     });
 });
+
+function invoice_to_pdf(invoice) {
+    fs.readFile('/invoices/template.tex', (err, data) => {
+        if (err) {
+            console.error(err);
+            return;
+        }
+        console.log(data);
+    });
+}
 
 app.post('/invoice/:id', function(req, res) {
     if (!assert_connection(res)) {
