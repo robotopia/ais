@@ -319,8 +319,6 @@ app.get('/:table/list', function(req, res) {
     sql = "SELECT * FROM ?? ORDER BY " + order_by;
 
     con.query(sql, [view], function(err, results) {
-        console.log(err);
-        console.log(results);
         res.render("objs", {table: table, table_name: req.params.table, objs: results});
     });
 })
