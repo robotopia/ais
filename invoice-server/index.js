@@ -2,6 +2,8 @@ const express = require('express');
 const ejs = require('ejs');
 const mysql = require('mysql');
 const fs = require('fs');
+const Readable = require('stream').Readable;
+const latex = require('node-latex');
 
 const app = express();
 app.use(express.json());
@@ -470,16 +472,16 @@ function generate_pdf(invoice, activities) {
             template = template.replace("<number>", invoice.number);
             template = template.replace("<account_name>", invoice.account_name);
             template = template.replaceAll("<total_amount>", invoice.total_amount);
-            template = template.replaceAll("<issued>", today());
-            template = template.replaceAll("<due>", invoice.due);
-            template = template.replaceAll("<name>", invoice.name);
-            template = template.replaceAll("<bill_to_name>", invoice.bill_to_name);
-            template = template.replaceAll("<billing_name>", invoice.billing_name);
-            template = template.replaceAll("<email>", invoice.email);
-            template = template.replaceAll("<phone>", invoice.phone);
-            template = template.replaceAll("<addr1>", invoice.addr1);
-            template = template.replaceAll("<addr2>", invoice.addr2);
-            template = template.replaceAll("<abn_display>", invoice.abn_display);
+            template = template.replace("<issued>", today());
+            template = template.replace("<due>", invoice.due);
+            template = template.replace("<name>", invoice.name);
+            template = template.replace("<bill_to_name>", invoice.bill_to_name);
+            template = template.replace("<billing_name>", invoice.billing_name);
+            template = template.replace("<email>", invoice.email);
+            template = template.replace("<phone>", invoice.phone);
+            template = template.replace("<addr1>", invoice.addr1);
+            template = template.replace("<addr2>", invoice.addr2);
+            template = template.replace("<abn_display>", invoice.abn_display);
 
             // Add in the activities
             activities.forEach(function(activity) {
@@ -493,7 +495,30 @@ function generate_pdf(invoice, activities) {
             // Now remove the "<activity>" marker
             template = template.replace("<activity>", "");
 
-            console.log(template);
+            // Convert string to stream to pass to node-latex
+            // https://stackoverflow.com/questions/12755997/how-to-create-streams-from-string-in-node-js
+            const input = new Readable;
+            input.push(template);
+            input.push(null);
+
+            // https://www.npmjs.com/package/node-latex
+            // Generate safe filename
+            filename = invoice.name.replaceAll(" ", "-"); // First, replace spaces with hyphens
+            filename = filename.replace(/[^a-zA-Z0-9_-]/g, ""); // Then remove all non-conforming characters
+            filename = filename + ".pdf";
+            filepath = "invoices/" + filename;
+            console.log("Writing PDF to " + filepath);
+            const output = fs.createWriteStream(filepath);
+            latex(input).pipe(output);
+
+            // Record the new pdf filename to the database
+            sql = "UPDATE invoice SET pdf = ? WHERE id = ?";
+            con.query(sql, [filename, invoice.id], function(err) {
+                if (err) {
+                    console.error(err);
+                    return false;
+                }
+            });
         }
     });
 

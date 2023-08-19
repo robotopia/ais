@@ -120,8 +120,8 @@
                                         <td>
                                             <% if (invoice.pdf) { %>
                                             <a href="/invoices/pdf/<%= invoice.pdf %>">View <i class="fa fa-file-pdf"></i></a>
-                                            <input type="button" name="update-pdf" value="Update"/>
                                             <% if (!invoice.paid) { %>
+                                            <input type="button" name="update-pdf" value="Update"/>
                                             <input type="button" name="delete-pdf" value="Delete"/>
                                             <% } %>
                                             <% } else { %>
