@@ -449,7 +449,6 @@ app.get('/invoices', function(req, res) {
 });
 
 app.get('/invoices/pdf/:pdf', function(req, res) {
-    // TODO FINISH ME OFF!
     var filename = "invoices/" + req.params.pdf;
 
     fs.readFile(filename, function (err, data) {
@@ -458,19 +457,70 @@ app.get('/invoices/pdf/:pdf', function(req, res) {
     });
 });
 
-function invoice_to_pdf(invoice) {
-    fs.readFile('/invoices/template.tex', (err, data) => {
+function generate_pdf(invoice, activities) {
+    // TODO: FINISH ME!!
+    fs.readFile('invoices/template.tex', (err, template) => {
         if (err) {
             console.error(err);
-            return;
+            return false;
+        } else {
+            // Replace all the keywords in template with values drawn from the invoice
+            template = template.toString("utf8");
+            template = template.replace("<bsb>", invoice.bsb);
+            template = template.replace("<number>", invoice.number);
+            template = template.replace("<account_name>", invoice.account_name);
+            template = template.replaceAll("<total_amount>", invoice.total_amount);
+            template = template.replaceAll("<issued>", today());
+            template = template.replaceAll("<due>", invoice.due);
+            template = template.replaceAll("<name>", invoice.name);
+            template = template.replaceAll("<bill_to_name>", invoice.bill_to_name);
+            template = template.replaceAll("<billing_name>", invoice.billing_name);
+            template = template.replaceAll("<email>", invoice.email);
+            template = template.replaceAll("<phone>", invoice.phone);
+            template = template.replaceAll("<addr1>", invoice.addr1);
+            template = template.replaceAll("<addr2>", invoice.addr2);
+            template = template.replaceAll("<abn_display>", invoice.abn_display);
+
+            // Add in the activities
+            activities.forEach(function(activity) {
+                // Sanitize (via escaping) any instances of '$' in the description for LaTeX's benefit
+                description = activity.description.replaceAll("$", "\\$");
+
+                // Construct the LaTeX table row
+                row = activity.date + " & $" + activity.qty + "\\times$ & \\$" + activity.rate + " & " + description + " & \\$" + activity.amount + " \\\\ \\hline\n<activity>"
+                template = template.replace("<activity>", row);
+            });
+            // Now remove the "<activity>" marker
+            template = template.replace("<activity>", "");
+
+            console.log(template);
         }
-        console.log(data);
     });
+
+    return true;
 }
 
 app.post('/invoice/:id', function(req, res) {
     if (!assert_connection(res)) {
         return;
+    }
+
+    if (req.body.hasOwnProperty("action_pdf")) {
+        sql = "SELECT * FROM invoice_view WHERE id = ?; SELECT * FROM invoice_item_view WHERE invoice_id = ?";
+        con.query(sql, [req.params.id, req.params.id], function(err, results) {
+            if (err) {
+                return false;
+            }
+
+            invoice = results[0][0];
+            activities = results[1];
+
+            if (req.body.action_pdf == "generate") {
+                if (!generate_pdf(invoice, activities)) {
+                    res.sendStatus(500);
+                }
+            }
+        });
     }
 
     // Turn empty date strings into nulls
