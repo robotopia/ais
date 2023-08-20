@@ -94,18 +94,40 @@
                                     <% }); %>
                                 </table>
                             </div>
+                            <% if (invoice.id != "new") { %>
                             <div>
                                 <h3>Summary</h3>
                                 <table>
-                                    <% if (invoice.id != "new") { %>
                                     <tr>
                                         <td>Amount:</td>
                                         <td>$<%= invoice.total_amount %></td>
                                     </tr>
-                                    <% } %>
                                     <tr>
                                         <td>Issued:</td>
-                                        <td><input type="date" id="issued" name="issued" value="<%= invoice.issued %>" onChange="enableSave('save-button')"/> Send to <%= invoice.bill_email %></td>
+                                        <td>
+                                            <input id="pdf" name="pdf" value="<%= invoice.pdf %>" hidden/>
+                                            <% if (invoice.issued) { %>
+                                            <%= invoice.issued %>
+                                            <% } %>
+                                            [<a href="/invoices/pdf/<%= invoice.pdf %>">
+                                                <i class="fa fa-file-pdf"></i> <%= invoice.pdf %>
+                                            </a>]
+                                            <% if (!invoice.paid) { %>
+                                            <% if (!invoice.pdf_viewed) { %>
+                                            View PDF before sending
+                                            <% } else { %>
+                                            <button type="submit" name="issue_pdf" value="true">
+                                                <i class="fa fa-paper-plane" style="color: #4C50AF;"></i>
+                                                <% if (invoice.issued) { %>
+                                                Resend
+                                                <% } else { %>
+                                                Send
+                                                <% } %>
+                                                to <%= invoice.bill_email %>
+                                            </button>
+                                            <% } %>
+                                            <% } %>
+                                        </td>
                                     </tr>
                                     <tr>
                                         <td>Due:</td>
@@ -115,28 +137,9 @@
                                         <td>Paid:</td>
                                         <td><input type="date" id="paid" name="paid" value="<%= invoice.paid %>" onChange="enableSave('save-button')"/></td>
                                     </tr>
-                                    <tr>
-                                        <td>PDF:</td>
-                                        <input id="pdf" name="pdf" value="<%= invoice.pdf %>" hidden/>
-                                        <td>
-                                            <% if (invoice.pdf) { %>
-                                            <a href="/invoices/pdf/<%= invoice.pdf %>"><i class="fa fa-file-pdf"></i> <%= invoice.pdf %></a>
-                                            <% if (!invoice.paid) { %>
-                                            <button type="submit" name="action_pdf" value="update"/>
-                                                <i class="fa fa-wand-magic-sparkles" style="color: #4C50AF;"></i> Update PDF
-                                            </button>
-                                            <button type="submit" name="action_pdf" value="delete"/>
-                                                <i class="fa fa-circle-xmark" style="color: #c00;"></i> Delete PDF
-                                            </button>
-                                            <% } %>
-                                            <% } else { %>
-                                            <button type="submit" name="action_pdf" value="generate">
-                                                <i class="fa fa-wand-magic-sparkles" style="color: #4C50AF;"></i> Generate PDF
-                                            </button>
-                                            <% } %>
-                                        </td>
                                 </table>
                             </div>
+                            <% } %>
                             <% if (invoice.id != "new") { %>
                             <table class="mytable">
                                 <tr>

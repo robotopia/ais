@@ -134,7 +134,7 @@ CREATE TABLE `client` (
   `name` varchar(255) NOT NULL,
   `bill_email` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=16 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=17 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -155,6 +155,7 @@ CREATE TABLE `invoice` (
   `account_id` int(11) NOT NULL,
   `name` varchar(255) DEFAULT NULL,
   `bill_to` int(11) NOT NULL,
+  `pdf_viewed` tinyint(1) NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`),
   KEY `billing_id` (`billing_id`),
   KEY `account_id` (`account_id`),
@@ -196,11 +197,13 @@ SET character_set_client = utf8;
   1 AS `account_id`,
   1 AS `bill_to`,
   1 AS `bill_to_name`,
+  1 AS `bill_email`,
   1 AS `name`,
   1 AS `issued`,
   1 AS `due`,
   1 AS `paid`,
   1 AS `pdf`,
+  1 AS `pdf_viewed`,
   1 AS `billing_name`,
   1 AS `addr1`,
   1 AS `addr2`,
@@ -314,7 +317,7 @@ SET character_set_client = @saved_cs_client;
 /*!50001 SET collation_connection      = utf8mb3_general_ci */;
 /*!50001 CREATE ALGORITHM=UNDEFINED */
 /*!50013 DEFINER=`smcsweeney`@`localhost` SQL SECURITY DEFINER */
-/*!50001 VIEW `invoice_view` AS select `i`.`id` AS `id`,`i`.`billing_id` AS `billing_id`,`i`.`account_id` AS `account_id`,`i`.`bill_to` AS `bill_to`,`c`.`name` AS `bill_to_name`,`i`.`name` AS `name`,`i`.`issued` AS `issued`,`i`.`due` AS `due`,`i`.`paid` AS `paid`,`i`.`pdf` AS `pdf`,`b`.`name` AS `billing_name`,`b`.`addr1` AS `addr1`,`b`.`addr2` AS `addr2`,`b`.`phone` AS `phone`,`b`.`email` AS `email`,`b`.`abn` AS `abn`,`b`.`is_gst_registered` AS `is_gst_registered`,`a`.`bsb` AS `bsb`,`a`.`number` AS `number`,`a`.`name` AS `account_name`,sum(`act`.`qty` * `at`.`rate`) AS `total_amount`,if(`b`.`is_gst_registered`,`b`.`abn`,concat(`b`.`abn`,' (Not GST registered)')) AS `abn_display` from (((((`invoice` `i` left join `billing` `b` on(`i`.`billing_id` = `b`.`id`)) left join `account` `a` on(`i`.`account_id` = `a`.`id`)) left join `client` `c` on(`i`.`bill_to` = `c`.`id`)) left join `activity` `act` on(`i`.`id` = `act`.`invoice_id`)) left join `activity_type` `at` on(`act`.`activity_type_id` = `at`.`id`)) group by `i`.`id` */;
+/*!50001 VIEW `invoice_view` AS select `i`.`id` AS `id`,`i`.`billing_id` AS `billing_id`,`i`.`account_id` AS `account_id`,`i`.`bill_to` AS `bill_to`,`c`.`name` AS `bill_to_name`,`c`.`bill_email` AS `bill_email`,`i`.`name` AS `name`,`i`.`issued` AS `issued`,`i`.`due` AS `due`,`i`.`paid` AS `paid`,`i`.`pdf` AS `pdf`,`i`.`pdf_viewed` AS `pdf_viewed`,`b`.`name` AS `billing_name`,`b`.`addr1` AS `addr1`,`b`.`addr2` AS `addr2`,`b`.`phone` AS `phone`,`b`.`email` AS `email`,`b`.`abn` AS `abn`,`b`.`is_gst_registered` AS `is_gst_registered`,`a`.`bsb` AS `bsb`,`a`.`number` AS `number`,`a`.`name` AS `account_name`,sum(`act`.`qty` * `at`.`rate`) AS `total_amount`,if(`b`.`is_gst_registered`,`b`.`abn`,concat(`b`.`abn`,' (Not GST registered)')) AS `abn_display` from (((((`invoice` `i` left join `billing` `b` on(`i`.`billing_id` = `b`.`id`)) left join `account` `a` on(`i`.`account_id` = `a`.`id`)) left join `client` `c` on(`i`.`bill_to` = `c`.`id`)) left join `activity` `act` on(`i`.`id` = `act`.`invoice_id`)) left join `activity_type` `at` on(`act`.`activity_type_id` = `at`.`id`)) group by `i`.`id` */;
 /*!50001 SET character_set_client      = @saved_cs_client */;
 /*!50001 SET character_set_results     = @saved_cs_results */;
 /*!50001 SET collation_connection      = @saved_col_connection */;
@@ -346,4 +349,4 @@ SET character_set_client = @saved_cs_client;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2023-08-19 12:14:49
+-- Dump completed on 2023-08-20 13:41:17

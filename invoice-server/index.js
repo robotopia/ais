@@ -4,6 +4,7 @@ const mysql = require('mysql');
 const fs = require('fs');
 const Readable = require('stream').Readable;
 const latex = require('node-latex');
+const nodemailer = require('nodemailer');
 
 const app = express();
 app.use(express.json());
@@ -26,7 +27,6 @@ function assert_connection(res) {
     if (con == 0) {
         console.log("No connection, redirecting to login");
         res.redirect('/login');
-        return false;
     }
     return true;
 };
@@ -34,6 +34,14 @@ function assert_connection(res) {
 const port = 3000;
 app.listen(port, () => {
     console.log(`Now listening on port ${port}`);
+});
+
+var transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+        user: process.env.MAILER_USER,
+        pass: process.env.MAILER_PASS
+    }
 });
 
 function validateClientForm(data) {
@@ -261,6 +269,7 @@ const tables = {
 
 app.get('/', function(req, res) {
     if (!assert_connection(res)) {
+        res.sendStatus(401);
         return
     }
 
@@ -297,6 +306,7 @@ app.get('/login', function(req, res) {
 
 app.post('/invoice/delete/:id', function(req, res) {
     if (!assert_connection(res)) {
+        res.sendStatus(401);
         return;
     }
 
@@ -309,6 +319,7 @@ app.post('/invoice/delete/:id', function(req, res) {
 
 app.get('/:table/list', function(req, res) {
     if (!assert_connection(res)) {
+        res.sendStatus(401);
         return
     }
 
@@ -326,6 +337,7 @@ app.get('/:table/list', function(req, res) {
 
 app.get('/:table/:id/edit', function(req, res) {
     if (!assert_connection(res)) {
+        res.sendStatus(401);
         return
     }
 
@@ -379,6 +391,7 @@ app.get('/:table/:id/edit', function(req, res) {
 
 app.post('/:table/:id/delete', function(req, res) {
     if (!assert_connection(res)) {
+        res.sendStatus(401);
         return;
     }
 
@@ -390,6 +403,7 @@ app.post('/:table/:id/delete', function(req, res) {
 
 app.post('/:table/:id/edit', function(req, res) {
     if (!assert_connection(res)) {
+        res.sendStatus(401);
         return
     }
 
@@ -437,6 +451,7 @@ app.post('/:table/:id/edit', function(req, res) {
 
 app.get('/invoices', function(req, res) {
     if (!assert_connection(res)) {
+        res.sendStatus(401);
         return
     }
 
@@ -454,10 +469,53 @@ app.get('/invoices/pdf/:pdf', function(req, res) {
     var filename = "invoices/" + req.params.pdf;
 
     fs.readFile(filename, function (err, data) {
-        res.contentType("application/pdf");
-        res.send(data);
+        if (err) {
+            console.error(err);
+            res.sendStatus(400);
+        } else {
+            // Set the "viewed" flag in the database
+            sql = "UPDATE invoice SET pdf_viewed = true WHERE pdf = ?";
+            con.query(sql, [req.params.pdf], function(err) {
+                if (err) {
+                    console.error(err);
+                    res.sendStatus(500);
+                } else {
+                    // Serve the pdf
+                    res.contentType("application/pdf");
+                    res.send(data);
+                }
+            });
+        }
     });
 });
+
+function issue_pdf(invoice) {
+    var mailOptions = {
+        from: invoice.email,
+        to: invoice.bill_email,
+        subject: "Invoice for " + invoice.name,
+        text: "",
+        attachments: [{
+            filename: invoice.pdf,
+            path: 'invoices/' + invoice.pdf
+        }]
+    };
+
+    transporter.sendMail(mailOptions, function(err, info) {
+        if (err) {
+            console.error("Email not sent: " + err);
+        } else {
+            console.log("Invoice " + invoice.name + " sent to " + invoice.bill_email + ": " + info.response);
+
+            sql = "UPDATE invoice SET issued = ? WHERE id = ?";
+            con.query(sql, [today(), invoice.id], function(err) {
+                if (err) {
+                    console.error("Invoice issued, but issued date not updated in database: " + err);
+                }
+            });
+        }
+    });
+}
 
 function generate_pdf(invoice, activities) {
     fs.readFile('invoices/template.tex', (err, template) => {
@@ -517,15 +575,13 @@ function generate_pdf(invoice, activities) {
             latex(input).pipe(output);
 
             // Record the new pdf filename to the database
-            if (!invoice.pdf) {
-                sql = "UPDATE invoice SET pdf = ? WHERE id = ?";
-                con.query(sql, [filename, invoice.id], function(err) {
-                    if (err) {
-                        console.error(err);
-                        return false;
-                    }
-                });
-            }
+            sql = "UPDATE invoice SET pdf = ? WHERE id = ?";
+            con.query(sql, [filename, invoice.id], function(err) {
+                if (err) {
+                    console.error(err);
+                    return false;
+                }
+            });
         }
     });
 
@@ -534,11 +590,11 @@ function generate_pdf(invoice, activities) {
 
 app.post('/invoice/:id', function(req, res) {
     if (!assert_connection(res)) {
+        res.sendStatus(401);
         return;
     }
 
     // Turn empty date strings into nulls
-    issued = req.body.issued.length > 0 ? req.body.issued : null;
     due = req.body.due.length > 0 ? req.body.due : null;
     paid = req.body.paid.length > 0 ? req.body.paid : null;
 
@@ -546,14 +602,13 @@ app.post('/invoice/:id', function(req, res) {
         req.body.client_id,
         req.body.billing_id,
         req.body.account_id,
-        issued,
         due,
         paid];
 
     // Two cases: "id" is an existing invoice id, or "id" = "new"
     if (req.params.id == "new") {
         // Insert new invoice
-        sql = "INSERT INTO invoice (name, bill_to, billing_id, account_id, issued, due, paid, created) VALUES (?)"
+        sql = "INSERT INTO invoice (name, bill_to, billing_id, account_id, due, paid, created) VALUES (?)"
         values.push(today());
 
         con.query(sql, [values], function(err, result) {
@@ -566,7 +621,7 @@ app.post('/invoice/:id', function(req, res) {
         });
     } else {
         // Update existing invoice
-        sql = "UPDATE invoice SET name = ?, bill_to = ?, billing_id = ?, account_id = ?, issued = ?, due = ?, paid = ? WHERE id = ?";
+        sql = "UPDATE invoice SET name = ?, bill_to = ?, billing_id = ?, account_id = ?, due = ?, paid = ?, pdf_viewed = false WHERE id = ?";
 
         values.push(req.params.id);
 
@@ -577,43 +632,25 @@ app.post('/invoice/:id', function(req, res) {
         res.redirect('/invoice/' + req.params.id);
     }
 
-    if (req.body.hasOwnProperty("action_pdf")) {
-        if (req.body.action_pdf == "generate" || req.body.action_pdf == "update") {
-            sql = "SELECT * FROM invoice_view WHERE id = ?; SELECT * FROM invoice_item_view WHERE invoice_id = ?";
-            con.query(sql, [req.params.id, req.params.id], function(err, results) {
-                if (err) {
-                    return false;
-                }
-
-                invoice = results[0][0];
-                activities = results[1];
-
-                if (!generate_pdf(invoice, activities)) {
-                    res.sendStatus(500);
-                }
-            });
-        } else if (req.body.action_pdf == "delete") {
-            if (req.body.pdf) {
-                fs.unlink("invoices/" + req.body.pdf, function(err) {
-                    if (err) {
-                        console.error("Failed to delete " + req.body.pdf, ": ", + err);
-                    } else {
-                        sql = "UPDATE invoice SET pdf = NULL WHERE id = ?";
-                        con.query(sql, [req.params.id], function(err) {
-                            if (err) {
-                                console.error("Failed to set 'pdf' to NULL: ", + err);
-                            }
-                        });
-                    }
-                });
-            }
+    // Generate/update PDF
+    sql = "SELECT * FROM invoice_view WHERE id = ?; SELECT * FROM invoice_item_view WHERE invoice_id = ?";
+    con.query(sql, [req.params.id, req.params.id], function(err, results) {
+        if (err) {
+            return false;
         }
-    }
 
+        invoice = results[0][0];
+        activities = results[1];
+
+        if (!generate_pdf(invoice, activities)) {
+            res.sendStatus(500);
+        }
+    });
 });
 
 app.get('/invoice/:id', function(req, res) {
     if (!assert_connection(res)) {
+        res.sendStatus(401);
         return;
     }
 
@@ -679,6 +716,7 @@ app.get('/invoice/:id', function(req, res) {
 
 app.get('/add_invoice_item/:invoice_id', function (req, res) {
     if (!assert_connection(res)) {
+        res.sendStatus(401);
         return;
     }
 
@@ -700,6 +738,7 @@ app.get('/add_invoice_item/:invoice_id', function (req, res) {
 
 app.post('/add_invoice_item/:invoice_id', function(req, res) {
     if (!assert_connection(res)) {
+        res.sendStatus(401);
         return;
     }
 
