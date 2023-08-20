@@ -105,7 +105,7 @@
                                     <% } %>
                                     <tr>
                                         <td>Issued:</td>
-                                        <td><input type="date" id="issued" name="issued" value="<%= invoice.issued %>" onChange="enableSave('save-button')"/></td>
+                                        <td><input type="date" id="issued" name="issued" value="<%= invoice.issued %>" onChange="enableSave('save-button')"/> Send to <%= invoice.bill_email %></td>
                                     </tr>
                                     <tr>
                                         <td>Due:</td>
