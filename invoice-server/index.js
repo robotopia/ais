@@ -460,7 +460,6 @@ app.get('/invoices/pdf/:pdf', function(req, res) {
 });
 
 function generate_pdf(invoice, activities) {
-    // TODO: FINISH ME!!
     fs.readFile('invoices/template.tex', (err, template) => {
         if (err) {
             console.error(err);
@@ -502,23 +501,31 @@ function generate_pdf(invoice, activities) {
             input.push(null);
 
             // https://www.npmjs.com/package/node-latex
-            // Generate safe filename
-            filename = invoice.name.replaceAll(" ", "-"); // First, replace spaces with hyphens
-            filename = filename.replace(/[^a-zA-Z0-9_-]/g, ""); // Then remove all non-conforming characters
-            filename = filename + ".pdf";
+            var filename;
+            if (invoice.pdf) {
+                filename = invoice.pdf;
+            } else {
+                // Generate safe, unique filename
+                filename = invoice.name.replaceAll(" ", "-"); // First, replace spaces with hyphens
+                filename = filename.replace(/[^a-zA-Z0-9_-]/g, ""); // Then remove all non-conforming characters
+                filename = invoice.id + "-" + filename + ".pdf";
+            }
+
             filepath = "invoices/" + filename;
             console.log("Writing PDF to " + filepath);
             const output = fs.createWriteStream(filepath);
             latex(input).pipe(output);
 
             // Record the new pdf filename to the database
-            sql = "UPDATE invoice SET pdf = ? WHERE id = ?";
-            con.query(sql, [filename, invoice.id], function(err) {
-                if (err) {
-                    console.error(err);
-                    return false;
-                }
-            });
+            if (!invoice.pdf) {
+                sql = "UPDATE invoice SET pdf = ? WHERE id = ?";
+                con.query(sql, [filename, invoice.id], function(err) {
+                    if (err) {
+                        console.error(err);
+                        return false;
+                    }
+                });
+            }
         }
     });
 
@@ -528,24 +535,6 @@ function generate_pdf(invoice, activities) {
 app.post('/invoice/:id', function(req, res) {
     if (!assert_connection(res)) {
         return;
-    }
-
-    if (req.body.hasOwnProperty("action_pdf")) {
-        sql = "SELECT * FROM invoice_view WHERE id = ?; SELECT * FROM invoice_item_view WHERE invoice_id = ?";
-        con.query(sql, [req.params.id, req.params.id], function(err, results) {
-            if (err) {
-                return false;
-            }
-
-            invoice = results[0][0];
-            activities = results[1];
-
-            if (req.body.action_pdf == "generate") {
-                if (!generate_pdf(invoice, activities)) {
-                    res.sendStatus(500);
-                }
-            }
-        });
     }
 
     // Turn empty date strings into nulls
@@ -587,6 +576,40 @@ app.post('/invoice/:id', function(req, res) {
 
         res.redirect('/invoice/' + req.params.id);
     }
+
+    if (req.body.hasOwnProperty("action_pdf")) {
+        if (req.body.action_pdf == "generate" || req.body.action_pdf == "update") {
+            sql = "SELECT * FROM invoice_view WHERE id = ?; SELECT * FROM invoice_item_view WHERE invoice_id = ?";
+            con.query(sql, [req.params.id, req.params.id], function(err, results) {
+                if (err) {
+                    return false;
+                }
+
+                invoice = results[0][0];
+                activities = results[1];
+
+                if (!generate_pdf(invoice, activities)) {
+                    res.sendStatus(500);
+                }
+            });
+        } else if (req.body.action_pdf == "delete") {
+            if (req.body.pdf) {
+                fs.unlink("invoices/" + req.body.pdf, function(err) {
+                    if (err) {
+                        console.error("Failed to delete " + req.body.pdf, ": ", + err);
+                    } else {
+                        sql = "UPDATE invoice SET pdf = NULL WHERE id = ?";
+                        con.query(sql, [req.params.id], function(err) {
+                            if (err) {
+                                console.error("Failed to set 'pdf' to NULL: ", + err);
+                            }
+                        });
+                    }
+                });
+            }
+        }
+    }
+
 });
 
 app.get('/invoice/:id', function(req, res) {
