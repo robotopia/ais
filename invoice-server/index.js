@@ -27,6 +27,7 @@ function assert_connection(res) {
     if (con == 0) {
         console.log("No connection, redirecting to login");
         res.redirect('/login');
+        return false;
     }
     return true;
 };
@@ -269,8 +270,7 @@ const tables = {
 
 app.get('/', function(req, res) {
     if (!assert_connection(res)) {
-        res.sendStatus(401);
-        return
+        return;
     }
 
     res.render('index');
@@ -306,7 +306,6 @@ app.get('/login', function(req, res) {
 
 app.post('/invoice/delete/:id', function(req, res) {
     if (!assert_connection(res)) {
-        res.sendStatus(401);
         return;
     }
 
@@ -319,8 +318,7 @@ app.post('/invoice/delete/:id', function(req, res) {
 
 app.get('/:table/list', function(req, res) {
     if (!assert_connection(res)) {
-        res.sendStatus(401);
-        return
+        return;
     }
 
     table = tables[req.params.table];
@@ -337,8 +335,7 @@ app.get('/:table/list', function(req, res) {
 
 app.get('/:table/:id/edit', function(req, res) {
     if (!assert_connection(res)) {
-        res.sendStatus(401);
-        return
+        return;
     }
 
     table = tables[req.params.table];
@@ -391,7 +388,6 @@ app.get('/:table/:id/edit', function(req, res) {
 
 app.post('/:table/:id/delete', function(req, res) {
     if (!assert_connection(res)) {
-        res.sendStatus(401);
         return;
     }
 
@@ -403,8 +399,7 @@ app.post('/:table/:id/delete', function(req, res) {
 
 app.post('/:table/:id/edit', function(req, res) {
     if (!assert_connection(res)) {
-        res.sendStatus(401);
-        return
+        return;
     }
 
     table = tables[req.params.table];
@@ -451,8 +446,7 @@ app.post('/:table/:id/edit', function(req, res) {
 
 app.get('/invoices', function(req, res) {
     if (!assert_connection(res)) {
-        res.sendStatus(401);
-        return
+        return;
     }
 
     let sql = "SELECT * FROM invoice_view ORDER BY -issued"
@@ -590,7 +584,6 @@ function generate_pdf(invoice, activities) {
 
 app.post('/invoice/:id', function(req, res) {
     if (!assert_connection(res)) {
-        res.sendStatus(401);
         return;
     }
 
@@ -621,7 +614,7 @@ app.post('/invoice/:id', function(req, res) {
         });
     } else {
         // Update existing invoice
-        sql = "UPDATE invoice SET name = ?, bill_to = ?, billing_id = ?, account_id = ?, due = ?, paid = ?, pdf_viewed = false WHERE id = ?";
+        sql = "UPDATE invoice SET name = ?, bill_to = ?, billing_id = ?, account_id = ?, due = ?, paid = ? WHERE id = ?";
 
         values.push(req.params.id);
 
@@ -632,7 +625,7 @@ app.post('/invoice/:id', function(req, res) {
         res.redirect('/invoice/' + req.params.id);
     }
 
-    // Generate/update PDF
+    // Generate/update/send PDF
     sql = "SELECT * FROM invoice_view WHERE id = ?; SELECT * FROM invoice_item_view WHERE invoice_id = ?";
     con.query(sql, [req.params.id, req.params.id], function(err, results) {
         if (err) {
@@ -642,15 +635,18 @@ app.post('/invoice/:id', function(req, res) {
         invoice = results[0][0];
         activities = results[1];
 
-        if (!generate_pdf(invoice, activities)) {
-            res.sendStatus(500);
+        if (req.body.hasOwnProperty("issue_pdf")) {
+            issue_pdf(invoice);
+        } else {
+            generate_pdf(invoice, activities);
+            sql = "UPDATE invoice SET pdf_viewed = false WHERE id = ?";
+            con.query(sql, [req.params.id]);
         }
     });
 });
 
 app.get('/invoice/:id', function(req, res) {
     if (!assert_connection(res)) {
-        res.sendStatus(401);
         return;
     }
 
@@ -716,7 +712,6 @@ app.get('/invoice/:id', function(req, res) {
 
 app.get('/add_invoice_item/:invoice_id', function (req, res) {
     if (!assert_connection(res)) {
-        res.sendStatus(401);
         return;
     }
 
@@ -738,7 +733,6 @@ app.get('/add_invoice_item/:invoice_id', function (req, res) {
 
 app.post('/add_invoice_item/:invoice_id', function(req, res) {
     if (!assert_connection(res)) {
-        res.sendStatus(401);
         return;
     }
 
