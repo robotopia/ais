@@ -523,7 +523,7 @@ function generate_pdf(invoice, activities) {
             template = template.replace("<number>", invoice.number);
             template = template.replace("<account_name>", invoice.account_name);
             template = template.replaceAll("<total_amount>", invoice.total_amount);
-            template = template.replace("<issued>", "[unsent]");
+            template = template.replace("<issued>", today());
             template = template.replace("<due>", invoice.due);
             template = template.replace("<name>", invoice.name);
             template = template.replace("<bill_to_name>", invoice.bill_to_name);
