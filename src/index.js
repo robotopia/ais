@@ -274,19 +274,35 @@ app.get('/', function(req, res) {
     }
 
     res.render('index');
-})
+});
 
-/*
 app.get('/login', function(req, res) {
     res.render('login');
-})
-*/
+});
 
-app.get('/login', function(req, res) {
+app.get('/logout', function(req, res) {
+    if (!assert_connection(res)) {
+        return;
+    }
+    
+    // Close the MySQL connection
+    con.end((err) => {
+        if (err) {
+            console.error('Error closing MySQL connection:', err);
+            return;
+        }
+
+        console.log('MySQL connection closed.');
+    });
+
+    res.redirect('/login');
+});
+
+app.post('/login', function(req, res) {
     con = mysql.createConnection({
         host: "localhost",
-        user: process.env.DB_USER, //req.body.username,
-        password: process.env.DB_PASS, //req.body.password,
+        user: req.body.username,
+        password: req.body.password,
         database: db,
         multipleStatements: true,
         dateStrings: 'date'

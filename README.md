@@ -11,5 +11,6 @@ npm i
 ## Running the server
 
 ```
+cd src
 nodemon index.js
 ```
