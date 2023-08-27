@@ -1,3 +1,6 @@
 # Nodejs
 package-lock.json
 node_modules
+
+# Sensitive information
+.env

@@ -21,7 +21,12 @@ function today() {
     return year + "-" + month + "-" + day;
 }
 
-const db = "ppc_invoices";
+const {
+    DBNAME,
+    DBHOST,
+    DBPORT
+} = process.env;
+
 let con = 0;
 function assert_connection(res) {
     if (con == 0) {
@@ -33,7 +38,7 @@ function assert_connection(res) {
 };
 
 const PORT = 8080;
-const HOST = 'localhost';
+const HOST = '0.0.0.0';
 app.listen(PORT, HOST, () => {
     console.log(`Running on http://${HOST}:${PORT}`);
 });
@@ -286,14 +291,14 @@ app.get('/logout', function(req, res) {
         return;
     }
     
-    // Close the MySQL connection
+    // Close the databse connection
     con.end((err) => {
         if (err) {
-            console.error('Error closing MySQL connection:', err);
+            console.error('Error closing databse connection:', err);
             return;
         }
 
-        console.log('MySQL connection closed.');
+        console.log('Databse connection closed.');
     });
 
     res.redirect('/login');
@@ -301,10 +306,11 @@ app.get('/logout', function(req, res) {
 
 app.post('/login', function(req, res) {
     con = mysql.createConnection({
-        host: "localhost",
+        host: DBHOST,
+        port: DBPORT,
         user: req.body.username,
         password: req.body.password,
-        database: db,
+        database: DBNAME,
         multipleStatements: true,
         dateStrings: 'date'
     });
@@ -313,9 +319,10 @@ app.post('/login', function(req, res) {
         if (err) {
             console.log(err.sqlMessage);
             con = 0;
+            res.redirect('login/');
         }
         else {
-            console.log("Connected to " + db);
+            console.log("Connected to " + DBNAME);
             res.redirect('/');
         }
     });
