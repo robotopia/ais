@@ -4,6 +4,7 @@
 
 ### Added
 
+- Docker containerisation
 - Basic login/logout function
 
 ## v0.1
