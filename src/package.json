@@ -8,14 +8,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@bitbucket.org/smcsweeney/galswa-invoices.git"
+    "url": "git+ssh://git@github.com:robotopia/ais.git"
   },
   "author": "Sam McSweeney",
   "license": "ISC",
   "bugs": {
-    "url": "https://bitbucket.org/smcsweeney/galswa-invoices/issues"
+    "url": "https://github.com/robotopia/ais"
   },
-  "homepage": "https://bitbucket.org/smcsweeney/galswa-invoices#readme",
+  "homepage": "https://github.com/robotopia/ais",
   "dependencies": {
     "body-parser": "^1.20.2",
     "ejs": "^3.1.9",
