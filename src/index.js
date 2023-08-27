@@ -32,9 +32,10 @@ function assert_connection(res) {
     return true;
 };
 
-const port = 3000;
-app.listen(port, () => {
-    console.log(`Now listening on port ${port}`);
+const PORT = 8080;
+const HOST = 'localhost';
+app.listen(PORT, HOST, () => {
+    console.log(`Running on http://${HOST}:${PORT}`);
 });
 
 var transporter = nodemailer.createTransport({
