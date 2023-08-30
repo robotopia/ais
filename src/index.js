@@ -158,7 +158,7 @@ function validateActivityForm(data) {
 }
 
 function validateActivityTypeForm(data) {
-    const str_re = /^[a-zA-Z0-9, ()]+$/;
+    const str_re = /^[a-zA-Z0-9, ()\$]+$/;
     if (str_re.test(String(data.description)) == false) {
         console.log("Invalid description (can contain only alphanumerics, commas, parentheses, and spaces)");
         return false;
@@ -243,6 +243,20 @@ const tables = {
         fields_list: ["bill_email"],
         slug: "name"
     },
+    expense: {
+        parent_display: "Expenses",
+        fields: {
+            id: {display: "ID", type: "text"},
+            date: {display: "Date", type: "date", required: true},
+            amount: {display: "Amount ($)", type: "text", required: true},
+            description: {display: "Description", type: "text"},
+            tax_deductable_amount: {display: "Tax deductable ($)", type: "text"},
+            receipt: {display: "Receipt", type: "image"}
+        },
+        fields_editable: ["amount", "description", "tax_deductable_amount"],
+        fields_list: ["amount", "description", "tax_deductable_amount"],
+        slug: "date"
+    },
     invoice: {
         parent_display: "Invoices",
         /*
@@ -271,6 +285,21 @@ const tables = {
         fields_editable: ["start", "end"],
         fields_list: ["start", "end", "taxable_income"],
         slug: "name"
+    },
+    travel: {
+        parent_display: "Travel diary",
+        fields: {
+            id: {display: "ID", type: "text"},
+            activity: {display: "Activity", type: "text"},
+            activity_id: {display: "Activity", type: "select", required: true, references: "activity"},
+            from_location: {display: "From", type: "text"},
+            to_location: {display: "To", type: "text"},
+            start_odometer_km: {display: "Start odometer reading", type: "text", required: true},
+            end_odometer_km: {display: "End odometer reading", type: "text", required: true}
+        },
+        fields_editable: ["activity_id", "end_odometer_km", "from_location", "to_location"],
+        fields_list: ["end_odometer_km", "from_location", "to_location"],
+        slug: "start_odometer_km"
     }
 };
 
@@ -378,12 +407,17 @@ app.get('/:table/:id/edit', function(req, res) {
         }
     }
 
+    nsqls = ref_sqls.length;
     ref_sql = ref_sqls.join("; ");
 
     con.query(ref_sql, references, function(err, ref_results) {
         // Doesn't matter if this query fails (e.g. if ref_sql is empty)
 
         // "refs" includes all "SELECT *" results from tables to populate select boxes
+        if (nsqls == 1) {
+            ref_results = [ref_results]; // Make sure the following map works
+        }
+
         refs = Object.fromEntries(ref_table_names.map((k, i) => [k, ref_results[i]]));
         if (req.params.id == "new") {
             obj = {};
@@ -427,8 +461,10 @@ app.post('/:table/:id/edit', function(req, res) {
     }
 
     table = tables[req.params.table];
-    if (table.validationFunc(req.body) == false) {
-        return;
+    if (table.hasOwnProperty("validationFunc")) {
+        if (table.validationFunc(req.body) == false) {
+            return;
+        }
     }
 
     data = req.body;
