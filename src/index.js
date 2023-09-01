@@ -250,11 +250,11 @@ const tables = {
             date: {display: "Date", type: "date", required: true},
             amount: {display: "Amount ($)", type: "text", required: true},
             description: {display: "Description", type: "text"},
-            tax_deductable_amount: {display: "Tax deductable ($)", type: "text"},
+            fuel_kms: {display: "Fuel kms", type: "text"},
             receipt: {display: "Receipt", type: "image"}
         },
-        fields_editable: ["amount", "description", "tax_deductable_amount"],
-        fields_list: ["amount", "description", "tax_deductable_amount"],
+        fields_editable: ["amount", "description", "fuel_kms"],
+        fields_list: ["amount", "description", "fuel_kms"],
         slug: "date"
     },
     invoice: {
@@ -288,6 +288,7 @@ const tables = {
     },
     travel: {
         parent_display: "Travel diary",
+        view: "travel_view",
         fields: {
             id: {display: "ID", type: "text"},
             activity: {display: "Activity", type: "text"},
@@ -295,10 +296,12 @@ const tables = {
             from_location: {display: "From", type: "text"},
             to_location: {display: "To", type: "text"},
             start_odometer_km: {display: "Start odometer reading", type: "text", required: true},
-            end_odometer_km: {display: "End odometer reading", type: "text", required: true}
+            end_odometer_km: {display: "End odometer reading", type: "text", required: true},
+            expense: {display: "Expense", type: "text"},
+            expense_id: {display: "Expense", type: "select", references: "expense"}
         },
-        fields_editable: ["activity_id", "end_odometer_km", "from_location", "to_location"],
-        fields_list: ["end_odometer_km", "from_location", "to_location"],
+        fields_editable: ["activity_id", "end_odometer_km", "from_location", "to_location", "expense_id"],
+        fields_list: ["end_odometer_km", "from_location", "to_location", "activity", "expense"],
         slug: "start_odometer_km"
     }
 };
