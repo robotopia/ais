@@ -6,6 +6,7 @@
 
 - Docker containerisation
 - Basic login/logout function
+- Added `travel` and `expense` tables
 
 ## v0.1
 
