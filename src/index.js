@@ -237,24 +237,27 @@ const tables = {
         fields: {
             id: {display: "ID", type: "text"},
             name: {display: "Name", type: "text", required: true},
-            bill_email: {display: "Billing email", type: "text"}
+            bill_email: {display: "Billing email", type: "text"},
+            email_text: {display: "Email text", type: "text"}
         },
-        fields_editable: ["bill_email"],
+        fields_editable: ["bill_email", "email_text"],
         fields_list: ["bill_email"],
         slug: "name"
     },
     expense: {
         parent_display: "Expenses",
+        view: "expense_view",
         fields: {
             id: {display: "ID", type: "text"},
             date: {display: "Date", type: "date", required: true},
             amount: {display: "Amount ($)", type: "text", required: true},
             description: {display: "Description", type: "text"},
             fuel_kms: {display: "Fuel kms", type: "text"},
-            receipt: {display: "Receipt", type: "image"}
+            receipt: {display: "Receipt", type: "image"},
+            tax_deductible_amount: {display: "Tax deductible amount", type: "text"}
         },
         fields_editable: ["amount", "description", "fuel_kms"],
-        fields_list: ["amount", "description", "fuel_kms"],
+        fields_list: ["amount", "description", "fuel_kms", "tax_deductible_amount"],
         slug: "date"
     },
     invoice: {
@@ -291,18 +294,18 @@ const tables = {
         view: "travel_view",
         fields: {
             id: {display: "ID", type: "text"},
+            date: {display: "Date", type: "date"},
             activity: {display: "Activity", type: "text"},
             activity_id: {display: "Activity", type: "select", required: true, references: "activity"},
             from_location: {display: "From", type: "text"},
             to_location: {display: "To", type: "text"},
-            start_odometer_km: {display: "Start odometer reading", type: "text", required: true},
-            end_odometer_km: {display: "End odometer reading", type: "text", required: true},
+            kms: {display: "Kilometers travelled", type: "text", required: true},
             expense: {display: "Expense", type: "text"},
             expense_id: {display: "Expense", type: "select", references: "expense"}
         },
-        fields_editable: ["activity_id", "end_odometer_km", "from_location", "to_location", "expense_id"],
-        fields_list: ["end_odometer_km", "from_location", "to_location", "activity", "expense"],
-        slug: "start_odometer_km"
+        fields_editable: ["from_location", "to_location", "activity_id", "kms", "expense_id"],
+        fields_list: ["from_location", "to_location", "activity", "kms", "expense"],
+        slug: "date"
     }
 };
 
@@ -551,7 +554,7 @@ function issue_pdf(invoice) {
         from: invoice.email,
         to: invoice.bill_email,
         subject: "Invoice for " + invoice.name,
-        text: "",
+        text: invoice.email_text,
         attachments: [{
             filename: invoice.pdf,
             path: 'invoices/' + invoice.pdf

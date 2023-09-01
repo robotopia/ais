@@ -4,3 +4,6 @@ node_modules
 
 # Sensitive information
 .env
+
+# The invoices themselves
+src/invoices/*.pdf
