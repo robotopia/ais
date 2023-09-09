@@ -653,19 +653,15 @@ app.post('/invoice/:id', function(req, res) {
         return;
     }
 
-    // Turn empty date strings into nulls
-    due = req.body.due.length > 0 ? req.body.due : null;
-    paid = req.body.paid.length > 0 ? req.body.paid : null;
-
-    values = [req.body.name,
-        req.body.client_id,
-        req.body.billing_id,
-        req.body.account_id,
-        due,
-        paid];
-
     // Two cases: "id" is an existing invoice id, or "id" = "new"
     if (req.params.id == "new") {
+        values = [req.body.name,
+            req.body.client_id,
+            req.body.billing_id,
+            req.body.account_id,
+            null,
+            null];
+
         // Insert new invoice
         sql = "INSERT INTO invoice (name, bill_to, billing_id, account_id, due, paid, created) VALUES (?)"
         values.push(today());
@@ -679,6 +675,17 @@ app.post('/invoice/:id', function(req, res) {
             }
         });
     } else {
+        // Turn empty date strings into nulls
+        due = req.body.due.length > 0 ? req.body.due : null;
+        paid = req.body.paid.length > 0 ? req.body.paid : null;
+
+        values = [req.body.name,
+            req.body.client_id,
+            req.body.billing_id,
+            req.body.account_id,
+            due,
+            paid];
+
         // Update existing invoice
         sql = "UPDATE invoice SET name = ?, bill_to = ?, billing_id = ?, account_id = ?, due = ?, paid = ? WHERE id = ?";
 
@@ -689,26 +696,26 @@ app.post('/invoice/:id', function(req, res) {
         });
 
         res.redirect('/invoice/' + req.params.id);
+
+        // Generate/update/send PDF
+        sql = "SELECT * FROM invoice_view WHERE id = ?; SELECT * FROM invoice_item_view WHERE invoice_id = ?";
+        con.query(sql, [req.params.id, req.params.id], function(err, results) {
+            if (err) {
+                return false;
+            }
+
+            invoice = results[0][0];
+            activities = results[1];
+
+            if (req.body.hasOwnProperty("issue_pdf")) {
+                issue_pdf(invoice);
+            } else {
+                generate_pdf(invoice, activities);
+                sql = "UPDATE invoice SET pdf_viewed = false WHERE id = ?";
+                con.query(sql, [req.params.id]);
+            }
+        });
     }
-
-    // Generate/update/send PDF
-    sql = "SELECT * FROM invoice_view WHERE id = ?; SELECT * FROM invoice_item_view WHERE invoice_id = ?";
-    con.query(sql, [req.params.id, req.params.id], function(err, results) {
-        if (err) {
-            return false;
-        }
-
-        invoice = results[0][0];
-        activities = results[1];
-
-        if (req.body.hasOwnProperty("issue_pdf")) {
-            issue_pdf(invoice);
-        } else {
-            generate_pdf(invoice, activities);
-            sql = "UPDATE invoice SET pdf_viewed = false WHERE id = ?";
-            con.query(sql, [req.params.id]);
-        }
-    });
 });
 
 app.get('/invoice/:id', function(req, res) {
