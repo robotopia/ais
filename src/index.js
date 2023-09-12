@@ -198,7 +198,7 @@ const tables = {
         fields_editable: ["qty", "activity_type_id", "notes", "invoice_id"],
         fields_list: ["qty", "activity_type", "notes", "invoice"],
         slug: "date",
-        order_by: "-date",
+        order_by: "-date"
     },
     activity_type: {
         parent_display: "Activity types",
@@ -258,7 +258,8 @@ const tables = {
         },
         fields_editable: ["amount", "description", "fuel_kms"],
         fields_list: ["amount", "description", "fuel_kms", "tax_deductible_amount"],
-        slug: "date"
+        slug: "date",
+        order_by: "-date"
     },
     invoice: {
         parent_display: "Invoices",
