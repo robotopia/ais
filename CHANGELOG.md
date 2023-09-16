@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## v0.2
+
 ### Added
 
 - Docker containerisation
