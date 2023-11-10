@@ -306,7 +306,8 @@ const tables = {
         },
         fields_editable: ["from_location", "to_location", "activity_id", "kms", "expense_id"],
         fields_list: ["from_location", "to_location", "activity", "kms", "expense"],
-        slug: "date"
+        slug: "date",
+        order_by: "-date"
     }
 };
 
