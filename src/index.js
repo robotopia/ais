@@ -158,7 +158,7 @@ function validateActivityForm(data) {
 }
 
 function validateActivityTypeForm(data) {
-    const str_re = /^[a-zA-Z0-9, ()\$]+$/;
+    const str_re = /^[-a-zA-Z0-9, ()\$]+$/;
     if (str_re.test(String(data.description)) == false) {
         console.log("Invalid description (can contain only alphanumerics, commas, parentheses, and spaces)");
         return false;
