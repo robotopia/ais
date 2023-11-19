@@ -252,7 +252,7 @@ const tables = {
             date: {display: "Date", type: "date", required: true},
             amount: {display: "Amount ($)", type: "text", required: true},
             description: {display: "Description", type: "text"},
-            fuel_kms: {display: "Fuel kms", type: "text"},
+            fuel_kms: {display: "Fuel kms (leave blank for non-fuel expenses)", type: "text"},
             receipt: {display: "Receipt", type: "image"},
             tax_deductible_amount: {display: "Tax deductible amount", type: "text"}
         },

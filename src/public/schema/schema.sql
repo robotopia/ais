@@ -1,8 +1,8 @@
--- MariaDB dump 10.19-11.0.2-MariaDB, for Linux (x86_64)
+-- MariaDB dump 10.19-11.1.2-MariaDB, for Linux (x86_64)
 --
 -- Host: localhost    Database: ppc_invoices
 -- ------------------------------------------------------
--- Server version	11.0.2-MariaDB
+-- Server version	11.1.2-MariaDB
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -28,7 +28,7 @@ CREATE TABLE `account` (
   `number` varchar(255) DEFAULT NULL,
   `name` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -50,7 +50,7 @@ CREATE TABLE `activity` (
   KEY `invoice_id` (`invoice_id`),
   CONSTRAINT `activity_ibfk_1` FOREIGN KEY (`activity_type_id`) REFERENCES `activity_type` (`id`),
   CONSTRAINT `activity_ibfk_2` FOREIGN KEY (`invoice_id`) REFERENCES `invoice` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=278 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=307 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -65,7 +65,7 @@ CREATE TABLE `activity_type` (
   `description` varchar(255) DEFAULT NULL,
   `rate` decimal(10,2) NOT NULL DEFAULT 100.00,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=17 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=20 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -119,7 +119,7 @@ CREATE TABLE `billing` (
   `abn` varchar(255) DEFAULT NULL,
   `is_gst_registered` tinyint(1) DEFAULT 0,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -133,8 +133,9 @@ CREATE TABLE `client` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(255) NOT NULL,
   `bill_email` varchar(255) DEFAULT NULL,
+  `email_text` text DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=18 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=20 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -150,10 +151,28 @@ CREATE TABLE `expense` (
   `description` text DEFAULT NULL,
   `date` date NOT NULL,
   `receipt` varchar(1024) DEFAULT NULL,
-  `tax_deductable_amount` decimal(10,2) NOT NULL DEFAULT 0.00,
+  `fuel_kms` decimal(10,1) DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Temporary table structure for view `expense_view`
+--
+
+DROP TABLE IF EXISTS `expense_view`;
+/*!50001 DROP VIEW IF EXISTS `expense_view`*/;
+SET @saved_cs_client     = @@character_set_client;
+SET character_set_client = utf8;
+/*!50001 CREATE VIEW `expense_view` AS SELECT
+ 1 AS `id`,
+  1 AS `date`,
+  1 AS `amount`,
+  1 AS `description`,
+  1 AS `fuel_kms`,
+  1 AS `receipt`,
+  1 AS `tax_deductible_amount` */;
+SET character_set_client = @saved_cs_client;
 
 --
 -- Table structure for table `invoice`
@@ -179,7 +198,7 @@ CREATE TABLE `invoice` (
   KEY `account_id` (`account_id`),
   CONSTRAINT `invoice_ibfk_1` FOREIGN KEY (`billing_id`) REFERENCES `billing` (`id`),
   CONSTRAINT `invoice_ibfk_2` FOREIGN KEY (`account_id`) REFERENCES `account` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=72 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=78 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -216,6 +235,7 @@ SET character_set_client = utf8;
   1 AS `bill_to`,
   1 AS `bill_to_name`,
   1 AS `bill_email`,
+  1 AS `email_text`,
   1 AS `name`,
   1 AS `issued`,
   1 AS `due`,
@@ -249,7 +269,7 @@ CREATE TABLE `tax_period` (
   `end` date NOT NULL,
   `name` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -280,13 +300,36 @@ CREATE TABLE `travel` (
   `activity_id` int(11) DEFAULT NULL,
   `from_location` varchar(1023) DEFAULT NULL,
   `to_location` varchar(1023) DEFAULT NULL,
-  `start_odometer_km` int(11) NOT NULL,
-  `end_odometer_km` int(11) NOT NULL,
+  `expense_id` int(11) DEFAULT NULL,
+  `kms` float NOT NULL,
+  `date` date NOT NULL,
   PRIMARY KEY (`id`),
   KEY `activity_id` (`activity_id`),
-  CONSTRAINT `travel_ibfk_1` FOREIGN KEY (`activity_id`) REFERENCES `activity` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  KEY `expense_id` (`expense_id`),
+  CONSTRAINT `travel_ibfk_1` FOREIGN KEY (`activity_id`) REFERENCES `activity` (`id`),
+  CONSTRAINT `travel_ibfk_2` FOREIGN KEY (`expense_id`) REFERENCES `expense` (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=34 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Temporary table structure for view `travel_view`
+--
+
+DROP TABLE IF EXISTS `travel_view`;
+/*!50001 DROP VIEW IF EXISTS `travel_view`*/;
+SET @saved_cs_client     = @@character_set_client;
+SET character_set_client = utf8;
+/*!50001 CREATE VIEW `travel_view` AS SELECT
+ 1 AS `id`,
+  1 AS `date`,
+  1 AS `activity`,
+  1 AS `activity_id`,
+  1 AS `from_location`,
+  1 AS `to_location`,
+  1 AS `kms`,
+  1 AS `expense`,
+  1 AS `expense_id` */;
+SET character_set_client = @saved_cs_client;
 
 --
 -- Final view structure for view `activity_type_view`
@@ -325,6 +368,24 @@ CREATE TABLE `travel` (
 /*!50001 SET collation_connection      = @saved_col_connection */;
 
 --
+-- Final view structure for view `expense_view`
+--
+
+/*!50001 DROP VIEW IF EXISTS `expense_view`*/;
+/*!50001 SET @saved_cs_client          = @@character_set_client */;
+/*!50001 SET @saved_cs_results         = @@character_set_results */;
+/*!50001 SET @saved_col_connection     = @@collation_connection */;
+/*!50001 SET character_set_client      = utf8mb3 */;
+/*!50001 SET character_set_results     = utf8mb3 */;
+/*!50001 SET collation_connection      = utf8mb3_general_ci */;
+/*!50001 CREATE ALGORITHM=UNDEFINED */
+/*!50013 DEFINER=`smcsweeney`@`localhost` SQL SECURITY DEFINER */
+/*!50001 VIEW `expense_view` AS select `e`.`id` AS `id`,`e`.`date` AS `date`,concat('$',`e`.`amount`) AS `amount`,`e`.`description` AS `description`,`e`.`fuel_kms` AS `fuel_kms`,`e`.`receipt` AS `receipt`,concat('$',round(if(`e`.`fuel_kms` is null,`e`.`amount`,`e`.`amount` * sum(`t`.`kms`) / `e`.`fuel_kms`),2)) AS `tax_deductible_amount` from (`expense` `e` left join `travel` `t` on(`t`.`expense_id` = `e`.`id`)) group by `e`.`id` */;
+/*!50001 SET character_set_client      = @saved_cs_client */;
+/*!50001 SET character_set_results     = @saved_cs_results */;
+/*!50001 SET collation_connection      = @saved_col_connection */;
+
+--
 -- Final view structure for view `invoice_item_view`
 --
 
@@ -355,7 +416,7 @@ CREATE TABLE `travel` (
 /*!50001 SET collation_connection      = utf8mb3_general_ci */;
 /*!50001 CREATE ALGORITHM=UNDEFINED */
 /*!50013 DEFINER=`smcsweeney`@`localhost` SQL SECURITY DEFINER */
-/*!50001 VIEW `invoice_view` AS select `i`.`id` AS `id`,`i`.`billing_id` AS `billing_id`,`i`.`account_id` AS `account_id`,`i`.`bill_to` AS `bill_to`,`c`.`name` AS `bill_to_name`,`c`.`bill_email` AS `bill_email`,`i`.`name` AS `name`,`i`.`issued` AS `issued`,`i`.`due` AS `due`,`i`.`paid` AS `paid`,`i`.`pdf` AS `pdf`,`i`.`pdf_viewed` AS `pdf_viewed`,`b`.`name` AS `billing_name`,`b`.`addr1` AS `addr1`,`b`.`addr2` AS `addr2`,`b`.`phone` AS `phone`,`b`.`email` AS `email`,`b`.`abn` AS `abn`,`b`.`is_gst_registered` AS `is_gst_registered`,`a`.`bsb` AS `bsb`,`a`.`number` AS `number`,`a`.`name` AS `account_name`,sum(`act`.`qty` * `at`.`rate`) AS `total_amount`,if(`b`.`is_gst_registered`,`b`.`abn`,concat(`b`.`abn`,' (Not GST registered)')) AS `abn_display` from (((((`invoice` `i` left join `billing` `b` on(`i`.`billing_id` = `b`.`id`)) left join `account` `a` on(`i`.`account_id` = `a`.`id`)) left join `client` `c` on(`i`.`bill_to` = `c`.`id`)) left join `activity` `act` on(`i`.`id` = `act`.`invoice_id`)) left join `activity_type` `at` on(`act`.`activity_type_id` = `at`.`id`)) group by `i`.`id` */;
+/*!50001 VIEW `invoice_view` AS select `i`.`id` AS `id`,`i`.`billing_id` AS `billing_id`,`i`.`account_id` AS `account_id`,`i`.`bill_to` AS `bill_to`,`c`.`name` AS `bill_to_name`,`c`.`bill_email` AS `bill_email`,`c`.`email_text` AS `email_text`,`i`.`name` AS `name`,`i`.`issued` AS `issued`,`i`.`due` AS `due`,`i`.`paid` AS `paid`,`i`.`pdf` AS `pdf`,`i`.`pdf_viewed` AS `pdf_viewed`,`b`.`name` AS `billing_name`,`b`.`addr1` AS `addr1`,`b`.`addr2` AS `addr2`,`b`.`phone` AS `phone`,`b`.`email` AS `email`,`b`.`abn` AS `abn`,`b`.`is_gst_registered` AS `is_gst_registered`,`a`.`bsb` AS `bsb`,`a`.`number` AS `number`,`a`.`name` AS `account_name`,sum(`act`.`qty` * `at`.`rate`) AS `total_amount`,if(`b`.`is_gst_registered`,`b`.`abn`,concat(`b`.`abn`,' (Not GST registered)')) AS `abn_display` from (((((`invoice` `i` left join `billing` `b` on(`i`.`billing_id` = `b`.`id`)) left join `account` `a` on(`i`.`account_id` = `a`.`id`)) left join `client` `c` on(`i`.`bill_to` = `c`.`id`)) left join `activity` `act` on(`i`.`id` = `act`.`invoice_id`)) left join `activity_type` `at` on(`act`.`activity_type_id` = `at`.`id`)) group by `i`.`id` */;
 /*!50001 SET character_set_client      = @saved_cs_client */;
 /*!50001 SET character_set_results     = @saved_cs_results */;
 /*!50001 SET collation_connection      = @saved_col_connection */;
@@ -377,6 +438,24 @@ CREATE TABLE `travel` (
 /*!50001 SET character_set_client      = @saved_cs_client */;
 /*!50001 SET character_set_results     = @saved_cs_results */;
 /*!50001 SET collation_connection      = @saved_col_connection */;
+
+--
+-- Final view structure for view `travel_view`
+--
+
+/*!50001 DROP VIEW IF EXISTS `travel_view`*/;
+/*!50001 SET @saved_cs_client          = @@character_set_client */;
+/*!50001 SET @saved_cs_results         = @@character_set_results */;
+/*!50001 SET @saved_col_connection     = @@collation_connection */;
+/*!50001 SET character_set_client      = utf8mb3 */;
+/*!50001 SET character_set_results     = utf8mb3 */;
+/*!50001 SET collation_connection      = utf8mb3_general_ci */;
+/*!50001 CREATE ALGORITHM=UNDEFINED */
+/*!50013 DEFINER=`smcsweeney`@`localhost` SQL SECURITY DEFINER */
+/*!50001 VIEW `travel_view` AS select `t`.`id` AS `id`,`t`.`date` AS `date`,concat(`at`.`description`,' (',`a`.`date`,')') AS `activity`,`a`.`id` AS `activity_id`,`t`.`from_location` AS `from_location`,`t`.`to_location` AS `to_location`,`t`.`kms` AS `kms`,concat('$',`e`.`amount`,' on ',`e`.`date`) AS `expense`,`e`.`id` AS `expense_id` from (((`travel` `t` left join `activity` `a` on(`t`.`activity_id` = `a`.`id`)) left join `activity_type` `at` on(`a`.`activity_type_id` = `at`.`id`)) left join `expense` `e` on(`t`.`expense_id` = `e`.`id`)) */;
+/*!50001 SET character_set_client      = @saved_cs_client */;
+/*!50001 SET character_set_results     = @saved_cs_results */;
+/*!50001 SET collation_connection      = @saved_col_connection */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
@@ -387,4 +466,4 @@ CREATE TABLE `travel` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2023-08-30 19:53:11
+-- Dump completed on 2023-11-19 12:54:07
