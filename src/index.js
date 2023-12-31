@@ -24,20 +24,22 @@ function today() {
 const {
     DBNAME,
     DBHOST,
-    DBPORT
+    DBPORT,
+    DBUSER,
+    DBPASS
 } = process.env;
 
-let con = 0;
-function assert_connection(res) {
-    if (con == 0) {
-        console.log("No connection, redirecting to login");
-        res.redirect('/login');
-        return false;
-    }
-    return true;
-};
+let con = mysql.createConnection({
+        host: DBHOST,
+        port: DBPORT,
+        user: DBUSER,
+        password: DBPASS,
+        database: DBNAME,
+        multipleStatements: true,
+        dateStrings: 'date'
+});
 
-const PORT = 8080;
+const PORT = 3000;
 const HOST = '0.0.0.0';
 app.listen(PORT, HOST, () => {
     console.log(`Running on http://${HOST}:${PORT}`);
@@ -312,10 +314,6 @@ const tables = {
 };
 
 app.get('/', function(req, res) {
-    if (!assert_connection(res)) {
-        return;
-    }
-
     res.render('index');
 });
 
@@ -323,53 +321,14 @@ app.get('/login', function(req, res) {
     res.render('login');
 });
 
-app.get('/logout', function(req, res) {
-    if (!assert_connection(res)) {
-        return;
+con.connect(function(err) {
+    if (err) {
+        console.log(err.sqlMessage);
+        res.redirect('/');
     }
-    
-    // Close the databse connection
-    con.end((err) => {
-        if (err) {
-            console.error('Error closing databse connection:', err);
-            return;
-        }
-
-        console.log('Databse connection closed.');
-    });
-
-    res.redirect('/login');
 });
 
-app.post('/login', function(req, res) {
-    con = mysql.createConnection({
-        host: DBHOST,
-        port: DBPORT,
-        user: req.body.username,
-        password: req.body.password,
-        database: DBNAME,
-        multipleStatements: true,
-        dateStrings: 'date'
-    });
-
-    con.connect(function(err) {
-        if (err) {
-            console.log(err.sqlMessage);
-            con = 0;
-            res.redirect('login/');
-        }
-        else {
-            console.log("Connected to " + DBNAME);
-            res.redirect('/');
-        }
-    });
-})
-
 app.post('/invoice/delete/:id', function(req, res) {
-    if (!assert_connection(res)) {
-        return;
-    }
-
     sql = "DELETE FROM invoice WHERE id = ?"
     con.query(sql, [req.params.id]);
 
@@ -378,10 +337,6 @@ app.post('/invoice/delete/:id', function(req, res) {
 
 
 app.get('/:table/list', function(req, res) {
-    if (!assert_connection(res)) {
-        return;
-    }
-
     table = tables[req.params.table];
 
     view = table.hasOwnProperty("view") ? table.view : req.params.table;
@@ -395,10 +350,6 @@ app.get('/:table/list', function(req, res) {
 })
 
 app.get('/:table/:id/edit', function(req, res) {
-    if (!assert_connection(res)) {
-        return;
-    }
-
     table = tables[req.params.table];
     view = table.hasOwnProperty("view") ? table.view : req.params.table;
 
@@ -453,10 +404,6 @@ app.get('/:table/:id/edit', function(req, res) {
 
 
 app.post('/:table/:id/delete', function(req, res) {
-    if (!assert_connection(res)) {
-        return;
-    }
-
     sql = "DELETE FROM ?? WHERE id = ?"
     con.query(sql, [req.params.table, req.params.id]);
 
@@ -464,10 +411,6 @@ app.post('/:table/:id/delete', function(req, res) {
 });
 
 app.post('/:table/:id/edit', function(req, res) {
-    if (!assert_connection(res)) {
-        return;
-    }
-
     table = tables[req.params.table];
     if (table.hasOwnProperty("validationFunc")) {
         if (table.validationFunc(req.body) == false) {
@@ -513,10 +456,6 @@ app.post('/:table/:id/edit', function(req, res) {
 
 
 app.get('/invoices', function(req, res) {
-    if (!assert_connection(res)) {
-        return;
-    }
-
     let sql = "SELECT * FROM invoice_view ORDER BY -issued"
     con.query(sql, function(err, result, field) {
         if (err) {
@@ -651,10 +590,6 @@ function generate_pdf(invoice, activities) {
 }
 
 app.post('/invoice/:id', function(req, res) {
-    if (!assert_connection(res)) {
-        return;
-    }
-
     // Two cases: "id" is an existing invoice id, or "id" = "new"
     if (req.params.id == "new") {
         values = [req.body.name,
@@ -721,10 +656,6 @@ app.post('/invoice/:id', function(req, res) {
 });
 
 app.get('/invoice/:id', function(req, res) {
-    if (!assert_connection(res)) {
-        return;
-    }
-
     // Prepare a few queries
     sql_clients = "SELECT * FROM client";
     sql_billings = "SELECT * FROM billing";
@@ -786,10 +717,6 @@ app.get('/invoice/:id', function(req, res) {
 
 
 app.get('/add_invoice_item/:invoice_id', function (req, res) {
-    if (!assert_connection(res)) {
-        return;
-    }
-
     sql1 = "SELECT * FROM invoice_item_view ORDER BY date DESC";
     sql2 = "SELECT * FROM invoice WHERE id = ?";
 
@@ -802,15 +729,10 @@ app.get('/add_invoice_item/:invoice_id', function (req, res) {
             invoice: results[1][0]
         });
     });
-
 });
 
 
 app.post('/add_invoice_item/:invoice_id', function(req, res) {
-    if (!assert_connection(res)) {
-        return;
-    }
-
     if (! req.body.hasOwnProperty("activities")) {
         res.sendStatus(204);
     }
