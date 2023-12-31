@@ -39,6 +39,14 @@ app.use(session({
 app.use(passport.initialize());
 app.use(passport.session());
 
+function authenticationMiddleware () {
+  return function (req, res, next) {
+    if (req.isAuthenticated()) {
+      return next()
+    }
+    res.redirect('/')
+  }
+}
 
 function today() {
     date = new Date();
@@ -367,17 +375,24 @@ passport.deserializeUser(function(obj, cb) {
   cb(null, obj);
 });
 
-//app.get('/login', function(req, res) {
-//    res.render('login');
-//});
+app.get('/about',
+    authenticationMiddleware(),
+function(req, res) {
+    res.send('Testing testing 1 2 3');
+});
 
 con.connect(function(err) {
     if (err) {
         console.log(err.sqlMessage);
     }
+    else {
+        console.log("Connected to database");
+    }
 });
 
 app.post('/invoice/delete/:id', function(req, res) {
+    authenticationMiddleware(),
+
     sql = "DELETE FROM invoice WHERE id = ?"
     con.query(sql, [req.params.id]);
 
@@ -385,7 +400,10 @@ app.post('/invoice/delete/:id', function(req, res) {
 });
 
 
-app.get('/:table/list', function(req, res) {
+app.get('/:table/list',
+    authenticationMiddleware(),
+
+    function(req, res) {
     table = tables[req.params.table];
 
     view = table.hasOwnProperty("view") ? table.view : req.params.table;
@@ -398,7 +416,9 @@ app.get('/:table/list', function(req, res) {
     });
 })
 
-app.get('/:table/:id/edit', function(req, res) {
+app.get('/:table/:id/edit',
+    authenticationMiddleware(),
+function(req, res) {
     table = tables[req.params.table];
     view = table.hasOwnProperty("view") ? table.view : req.params.table;
 
@@ -452,14 +472,18 @@ app.get('/:table/:id/edit', function(req, res) {
 });
 
 
-app.post('/:table/:id/delete', function(req, res) {
+app.post('/:table/:id/delete',
+    authenticationMiddleware(),
+function(req, res) {
     sql = "DELETE FROM ?? WHERE id = ?"
     con.query(sql, [req.params.table, req.params.id]);
 
     res.redirect('/' + req.params.table + '/list');
 });
 
-app.post('/:table/:id/edit', function(req, res) {
+app.post('/:table/:id/edit',
+    authenticationMiddleware(),
+function(req, res) {
     table = tables[req.params.table];
     if (table.hasOwnProperty("validationFunc")) {
         if (table.validationFunc(req.body) == false) {
@@ -504,7 +528,9 @@ app.post('/:table/:id/edit', function(req, res) {
 })
 
 
-app.get('/invoices', function(req, res) {
+app.get('/invoices',
+    authenticationMiddleware(),
+function(req, res) {
     let sql = "SELECT * FROM invoice_view ORDER BY -issued"
     con.query(sql, function(err, result, field) {
         if (err) {
@@ -515,7 +541,9 @@ app.get('/invoices', function(req, res) {
     });
 });
 
-app.get('/invoices/pdf/:pdf', function(req, res) {
+app.get('/invoices/pdf/:pdf',
+    authenticationMiddleware(),
+function(req, res) {
     var filename = "invoices/" + req.params.pdf;
 
     fs.readFile(filename, function (err, data) {
@@ -638,7 +666,9 @@ function generate_pdf(invoice, activities) {
     return true;
 }
 
-app.post('/invoice/:id', function(req, res) {
+app.post('/invoice/:id',
+    authenticationMiddleware(),
+function(req, res) {
     // Two cases: "id" is an existing invoice id, or "id" = "new"
     if (req.params.id == "new") {
         values = [req.body.name,
@@ -704,7 +734,9 @@ app.post('/invoice/:id', function(req, res) {
     }
 });
 
-app.get('/invoice/:id', function(req, res) {
+app.get('/invoice/:id',
+    authenticationMiddleware(),
+function(req, res) {
     // Prepare a few queries
     sql_clients = "SELECT * FROM client";
     sql_billings = "SELECT * FROM billing";
@@ -765,7 +797,9 @@ app.get('/invoice/:id', function(req, res) {
 })
 
 
-app.get('/add_invoice_item/:invoice_id', function (req, res) {
+app.get('/add_invoice_item/:invoice_id',
+    authenticationMiddleware(),
+function (req, res) {
     sql1 = "SELECT * FROM invoice_item_view ORDER BY date DESC";
     sql2 = "SELECT * FROM invoice WHERE id = ?";
 
@@ -781,7 +815,9 @@ app.get('/add_invoice_item/:invoice_id', function (req, res) {
 });
 
 
-app.post('/add_invoice_item/:invoice_id', function(req, res) {
+app.post('/add_invoice_item/:invoice_id',
+    authenticationMiddleware(),
+    function(req, res) {
     if (! req.body.hasOwnProperty("activities")) {
         res.sendStatus(204);
     }
