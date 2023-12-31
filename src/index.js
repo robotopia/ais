@@ -1,4 +1,6 @@
 const express = require('express');
+const session = require('express-session');
+const passport = require('passport');
 const ejs = require('ejs');
 const mysql = require('mysql');
 const fs = require('fs');
@@ -11,6 +13,32 @@ app.use(express.json());
 app.use(express.urlencoded({extended: true}));
 app.use(express.static(__dirname + '/public'));
 app.set('view engine', 'ejs');
+
+var userProfile;
+
+const GoogleStrategy = require('passport-google-oauth').OAuth2Strategy;
+const GOOGLE_CLIENT_ID = '295479698757-eu3bbtn4uap3rc1i9hu9eu1pa4hohr7e.apps.googleusercontent.com';
+const GOOGLE_CLIENT_SECRET = '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';
+passport.use(new GoogleStrategy({
+    clientID: GOOGLE_CLIENT_ID,
+    clientSecret: GOOGLE_CLIENT_SECRET,
+    callbackURL: "https://ais.gazza.rocks/redirect"
+  },
+  function(accessToken, refreshToken, profile, done) {
+      userProfile=profile;
+      return done(null, userProfile);
+  }
+));
+
+app.use(session({
+        resave: false,
+        saveUninitialized: true,
+        secret: 'SECRET',
+}));
+
+app.use(passport.initialize());
+app.use(passport.session());
+
 
 function today() {
     date = new Date();
@@ -314,7 +342,29 @@ const tables = {
 };
 
 app.get('/', function(req, res) {
-    res.render('index');
+    //res.render('index');
+    res.render('pages/auth');
+});
+
+app.get('/success', (req, res) => res.send(userProfile));
+app.get('/error', (req, res) => res.send("error logging in"));
+
+app.get('/auth/google',
+  passport.authenticate('google', { scope : ['profile', 'email'] }));
+
+app.get('/redirect',
+  passport.authenticate('google', { failureRedirect: '/error' }),
+  function(req, res) {
+    // Successful authentication, redirect success.
+    res.redirect('/success');
+  });
+
+passport.serializeUser(function(user, cb) {
+  cb(null, user);
+});
+
+passport.deserializeUser(function(obj, cb) {
+  cb(null, obj);
 });
 
 app.get('/login', function(req, res) {
