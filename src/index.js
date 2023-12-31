@@ -17,8 +17,8 @@ app.set('view engine', 'ejs');
 var userProfile;
 
 const GoogleStrategy = require('passport-google-oauth').OAuth2Strategy;
-const GOOGLE_CLIENT_ID = '295479698757-eu3bbtn4uap3rc1i9hu9eu1pa4hohr7e.apps.googleusercontent.com';
-const GOOGLE_CLIENT_SECRET = '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';
+const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID
+const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET
 passport.use(new GoogleStrategy({
     clientID: GOOGLE_CLIENT_ID,
     clientSecret: GOOGLE_CLIENT_SECRET,
