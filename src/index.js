@@ -367,14 +367,13 @@ passport.deserializeUser(function(obj, cb) {
   cb(null, obj);
 });
 
-app.get('/login', function(req, res) {
-    res.render('login');
-});
+//app.get('/login', function(req, res) {
+//    res.render('login');
+//});
 
 con.connect(function(err) {
     if (err) {
         console.log(err.sqlMessage);
-        res.redirect('/');
     }
 });
 
