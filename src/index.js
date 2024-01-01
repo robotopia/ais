@@ -415,6 +415,10 @@ app.get('/:table/list',
     sql = "SELECT * FROM ?? ORDER BY " + order_by;
 
     con.query(sql, [view], function(err, results) {
+	if (err) {
+            console.log("SQL: " + sql);
+            console.log(err);
+        }
         res.render("objs", {table: table, table_name: req.params.table, objs: results});
     });
 })
