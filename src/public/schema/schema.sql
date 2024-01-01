@@ -16,21 +16,12 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Current Database: `ppc_invoices`
---
-
-CREATE DATABASE /*!32312 IF NOT EXISTS*/ `ppc_invoices` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci */;
-
-USE `ppc_invoices`;
-
---
 -- Table structure for table `account`
 --
 
-DROP TABLE IF EXISTS `account`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `account` (
+CREATE TABLE IF NOT EXISTS `account` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `bsb` varchar(255) DEFAULT NULL,
   `number` varchar(255) DEFAULT NULL,
@@ -43,10 +34,9 @@ CREATE TABLE `account` (
 -- Table structure for table `activity`
 --
 
-DROP TABLE IF EXISTS `activity`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `activity` (
+CREATE TABLE IF NOT EXISTS `activity` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `date` date NOT NULL,
   `qty` float DEFAULT NULL,
@@ -65,10 +55,9 @@ CREATE TABLE `activity` (
 -- Table structure for table `activity_type`
 --
 
-DROP TABLE IF EXISTS `activity_type`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `activity_type` (
+CREATE TABLE IF NOT EXISTS `activity_type` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `description` varchar(255) DEFAULT NULL,
   `rate` decimal(10,2) NOT NULL DEFAULT 100.00,
@@ -80,8 +69,6 @@ CREATE TABLE `activity_type` (
 -- Temporary table structure for view `activity_type_view`
 --
 
-DROP TABLE IF EXISTS `activity_type_view`;
-/*!50001 DROP VIEW IF EXISTS `activity_type_view`*/;
 SET @saved_cs_client     = @@character_set_client;
 SET character_set_client = utf8;
 /*!50001 CREATE VIEW `activity_type_view` AS SELECT
@@ -95,8 +82,6 @@ SET character_set_client = @saved_cs_client;
 -- Temporary table structure for view `activity_view`
 --
 
-DROP TABLE IF EXISTS `activity_view`;
-/*!50001 DROP VIEW IF EXISTS `activity_view`*/;
 SET @saved_cs_client     = @@character_set_client;
 SET character_set_client = utf8;
 /*!50001 CREATE VIEW `activity_view` AS SELECT
@@ -114,10 +99,9 @@ SET character_set_client = @saved_cs_client;
 -- Table structure for table `billing`
 --
 
-DROP TABLE IF EXISTS `billing`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `billing` (
+CREATE TABLE IF NOT EXISTS `billing` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(255) DEFAULT NULL,
   `addr1` varchar(255) DEFAULT NULL,
@@ -134,10 +118,9 @@ CREATE TABLE `billing` (
 -- Table structure for table `client`
 --
 
-DROP TABLE IF EXISTS `client`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `client` (
+CREATE TABLE IF NOT EXISTS `client` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(255) NOT NULL,
   `bill_email` varchar(255) DEFAULT NULL,
@@ -150,10 +133,9 @@ CREATE TABLE `client` (
 -- Table structure for table `expense`
 --
 
-DROP TABLE IF EXISTS `expense`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `expense` (
+CREATE TABLE IF NOT EXISTS `expense` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `amount` decimal(10,2) NOT NULL,
   `description` text DEFAULT NULL,
@@ -168,8 +150,6 @@ CREATE TABLE `expense` (
 -- Temporary table structure for view `expense_view`
 --
 
-DROP TABLE IF EXISTS `expense_view`;
-/*!50001 DROP VIEW IF EXISTS `expense_view`*/;
 SET @saved_cs_client     = @@character_set_client;
 SET character_set_client = utf8;
 /*!50001 CREATE VIEW `expense_view` AS SELECT
@@ -186,10 +166,9 @@ SET character_set_client = @saved_cs_client;
 -- Table structure for table `invoice`
 --
 
-DROP TABLE IF EXISTS `invoice`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `invoice` (
+CREATE TABLE IF NOT EXISTS `invoice` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `created` date DEFAULT NULL,
   `issued` date DEFAULT NULL,
@@ -213,8 +192,6 @@ CREATE TABLE `invoice` (
 -- Temporary table structure for view `invoice_item_view`
 --
 
-DROP TABLE IF EXISTS `invoice_item_view`;
-/*!50001 DROP VIEW IF EXISTS `invoice_item_view`*/;
 SET @saved_cs_client     = @@character_set_client;
 SET character_set_client = utf8;
 /*!50001 CREATE VIEW `invoice_item_view` AS SELECT
@@ -232,8 +209,6 @@ SET character_set_client = @saved_cs_client;
 -- Temporary table structure for view `invoice_view`
 --
 
-DROP TABLE IF EXISTS `invoice_view`;
-/*!50001 DROP VIEW IF EXISTS `invoice_view`*/;
 SET @saved_cs_client     = @@character_set_client;
 SET character_set_client = utf8;
 /*!50001 CREATE VIEW `invoice_view` AS SELECT
@@ -268,10 +243,9 @@ SET character_set_client = @saved_cs_client;
 -- Table structure for table `tax_period`
 --
 
-DROP TABLE IF EXISTS `tax_period`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `tax_period` (
+CREATE TABLE IF NOT EXISTS `tax_period` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `start` date NOT NULL,
   `end` date NOT NULL,
@@ -284,8 +258,6 @@ CREATE TABLE `tax_period` (
 -- Temporary table structure for view `tax_period_view`
 --
 
-DROP TABLE IF EXISTS `tax_period_view`;
-/*!50001 DROP VIEW IF EXISTS `tax_period_view`*/;
 SET @saved_cs_client     = @@character_set_client;
 SET character_set_client = utf8;
 /*!50001 CREATE VIEW `tax_period_view` AS SELECT
@@ -300,10 +272,9 @@ SET character_set_client = @saved_cs_client;
 -- Table structure for table `travel`
 --
 
-DROP TABLE IF EXISTS `travel`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `travel` (
+CREATE TABLE IF NOT EXISTS `travel` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `activity_id` int(11) DEFAULT NULL,
   `from_location` varchar(1023) DEFAULT NULL,
@@ -323,8 +294,6 @@ CREATE TABLE `travel` (
 -- Temporary table structure for view `travel_view`
 --
 
-DROP TABLE IF EXISTS `travel_view`;
-/*!50001 DROP VIEW IF EXISTS `travel_view`*/;
 SET @saved_cs_client     = @@character_set_client;
 SET character_set_client = utf8;
 /*!50001 CREATE VIEW `travel_view` AS SELECT
@@ -338,12 +307,6 @@ SET character_set_client = utf8;
   1 AS `expense`,
   1 AS `expense_id` */;
 SET character_set_client = @saved_cs_client;
-
---
--- Current Database: `ppc_invoices`
---
-
-USE `ppc_invoices`;
 
 --
 -- Final view structure for view `activity_type_view`
