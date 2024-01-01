@@ -2,6 +2,21 @@
 
 ## [Unreleased]
 
+### Changed
+
+- Authentication changed from manual database login to OAuth2 through Google
+- Anonymised schema dump
+
+## v0.3
+
+### Added
+
+- Handling of non-fuel expenses
+
+### Changed
+
+- Relaxed validation rules for some fields
+
 ## v0.2
 
 ### Added
