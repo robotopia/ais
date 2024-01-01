@@ -1,4 +1,4 @@
-FROM node:18
+FROM node:21
 
 # Adapted from https://nodejs.org/en/docs/guides/nodejs-docker-webapp
 # docker build to be run from parent directory
@@ -18,6 +18,6 @@ RUN npm ci --omit=dev
 # Bundle app source
 COPY . .
 
-EXPOSE 8080
+EXPOSE 3000
 
-CMD [ "node", "index.js" ]
+CMD [ "npm", "run", "startmon" ]
