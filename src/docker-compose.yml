@@ -1,18 +1,10 @@
 version: "3.9"
 
+networks:
+    frontend:
+    backend:
+
 services:
-  ais:
-    container_name: ais-app
-    image: ais-app:latest
-    restart: always
-    tty: true
-    networks:
-      - frontend
-      - backend
-    ports:
-      - 3000:3000
-    depends_on:
-      - mariadb
   mariadb:
     container_name: mariadb
     image: mariadb
@@ -25,10 +17,19 @@ services:
     volumes:
       - ./mysql:/var/lib/mysql
       - ./public/schema/schema.sql:/docker-entrypoint-initdb.d/init.sql:ro
-      #- db_data:/var/lib/mysql
     networks:
       - backend
 
-networks:
-    frontend:
-    backend:
+  ais:
+    container_name: ais-app
+    image: ais-app:latest
+    restart: always
+    tty: true
+    networks:
+      - frontend
+      - backend
+    ports:
+      - 3000:3000
+    depends_on:
+      - mariadb
+

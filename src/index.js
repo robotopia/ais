@@ -1,15 +1,15 @@
 const express = require('express');
-const session = require('express-session');
-const passport = require('passport');
+//const session = require('express-session');
+//const passport = require('passport');
 const ejs = require('ejs');
 const mysql = require('mysql');
 const fs = require('fs');
 const Readable = require('stream').Readable;
 const latex = require('node-latex');
 const nodemailer = require('nodemailer');
-const dotenv = require('dotenv');
+//const dotenv = require('dotenv');
 
-dotenv.config()
+//dotenv.config()
 
 const app = express();
 app.use(express.json());
@@ -19,6 +19,7 @@ app.set('view engine', 'ejs');
 
 var userProfile;
 
+/*
 const GoogleStrategy = require('passport-google-oauth').OAuth2Strategy;
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID
 const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET
@@ -42,12 +43,13 @@ app.use(session({
 app.use(passport.initialize());
 app.use(passport.session());
 
+*/
 function authenticationMiddleware () {
   return function (req, res, next) {
-    if (req.isAuthenticated()) {
-      return next()
-    }
-    res.redirect('/')
+    //if (req.isAuthenticated() && whitelist.includes(req.body.email)) {
+      return next();
+    //}
+    //res.send(500);
   }
 }
 
@@ -60,6 +62,10 @@ function today() {
     return year + "-" + month + "-" + day;
 }
 
+const whitelist = [
+    "sammy.mcsweeney@gmail.com"
+];
+
 const {
     DBNAME,
     DBHOST,
@@ -68,15 +74,18 @@ const {
     DBPASS
 } = process.env;
 
-let con = mysql.createConnection({
-        host: DBHOST,
-        port: DBPORT,
-        user: DBUSER,
-        password: DBPASS,
-        database: DBNAME,
-        multipleStatements: true,
-        dateStrings: 'date'
+var connectionLimit = 10;
+var pool = mysql.createPool({
+    connectionLimit: connectionLimit,
+    host: DBHOST,
+    port: DBPORT,
+    user: DBUSER,
+    password: DBPASS,
+    database: DBNAME,
+    multipleStatements: true,
+    dateStrings: 'date'
 });
+console.log("Created pool for database " + DBNAME + " with a limit of " + connectionLimit + " connections");
 
 const PORT = 3000;
 const HOST = '0.0.0.0';
@@ -353,13 +362,14 @@ const tables = {
 };
 
 app.get('/', function(req, res) {
-    //res.render('index');
-    res.render('pages/auth');
+    res.render('index');
+    //res.render('pages/auth');
 });
 
 app.get('/success', (req, res) => res.send(userProfile));
 app.get('/error', (req, res) => res.send("error logging in"));
 
+/*
 app.get('/auth/google',
   passport.authenticate('google', { scope : ['profile', 'email'] }));
 
@@ -377,6 +387,7 @@ passport.serializeUser(function(user, cb) {
 passport.deserializeUser(function(obj, cb) {
   cb(null, obj);
 });
+*/
 
 app.get('/about',
     authenticationMiddleware(),
@@ -384,22 +395,16 @@ function(req, res) {
     res.send('Testing testing 1 2 3');
 });
 
-con.connect(function(err) {
-    if (err) {
-        console.log(err.sqlMessage);
-    }
-    else {
-        console.log("Connected to database");
-    }
-});
-
 app.post('/invoice/delete/:id', function(req, res) {
     authenticationMiddleware(),
 
     sql = "DELETE FROM invoice WHERE id = ?"
-    con.query(sql, [req.params.id]);
+    pool.getConnection(function(err, con) {
+        con.query(sql, [req.params.id]);
 
-    res.redirect('/invoices');
+        res.redirect('/invoices');
+        con.release();
+    });
 });
 
 
@@ -407,172 +412,197 @@ app.get('/:table/list',
     authenticationMiddleware(),
 
     function(req, res) {
-    table = tables[req.params.table];
+        table = tables[req.params.table];
 
-    view = table.hasOwnProperty("view") ? table.view : req.params.table;
-    order_by = table.hasOwnProperty("order_by") ? table.order_by : table.slug;
+        view = table.hasOwnProperty("view") ? table.view : req.params.table;
+        order_by = table.hasOwnProperty("order_by") ? table.order_by : table.slug;
 
-    sql = "SELECT * FROM ?? ORDER BY " + order_by;
+        sql = "SELECT * FROM ?? ORDER BY " + order_by;
 
-    con.query(sql, [view], function(err, results) {
-	if (err) {
-            console.log("SQL: " + sql);
-            console.log(err);
-        }
-        res.render("objs", {table: table, table_name: req.params.table, objs: results});
-    });
-})
+        pool.getConnection(function(err, con) {
+            con.query(sql, [view], function(err, results) {
+                if (err) {
+                    console.log("SQL: " + sql);
+                    console.log(err);
+                }
+                res.render("objs", {table: table, table_name: req.params.table, objs: results});
+            });
+
+            con.release();
+        });
+    }
+);
 
 app.get('/:table/:id/edit',
     authenticationMiddleware(),
-function(req, res) {
-    table = tables[req.params.table];
-    view = table.hasOwnProperty("view") ? table.view : req.params.table;
+    function(req, res) {
+        table = tables[req.params.table];
+        view = table.hasOwnProperty("view") ? table.view : req.params.table;
 
-    ref_sqls = [];
-    references = [];
-    ref_table_names = [];
-    for (var k in table.fields) {
-        if (table.fields[k].hasOwnProperty("references")) {
-            ref_sqls.push("SELECT id, ?? AS slug FROM ??");
-            ref = table.fields[k].references;
-            references.push(tables[ref].slug);
-            references.push(ref);
-            ref_table_names.push(ref);
-        }
-    }
-
-    nsqls = ref_sqls.length;
-    ref_sql = ref_sqls.join("; ");
-
-    con.query(ref_sql, references, function(err, ref_results) {
-        // Doesn't matter if this query fails (e.g. if ref_sql is empty)
-
-        // "refs" includes all "SELECT *" results from tables to populate select boxes
-        if (nsqls == 1) {
-            ref_results = [ref_results]; // Make sure the following map works
-        }
-
-        refs = Object.fromEntries(ref_table_names.map((k, i) => [k, ref_results[i]]));
-        if (req.params.id == "new") {
-            obj = {};
-            for (var k in table.fields) {
-                obj[k] = "";
+        ref_sqls = [];
+        references = [];
+        ref_table_names = [];
+        for (var k in table.fields) {
+            if (table.fields[k].hasOwnProperty("references")) {
+                ref_sqls.push("SELECT id, ?? AS slug FROM ??");
+                ref = table.fields[k].references;
+                references.push(tables[ref].slug);
+                references.push(ref);
+                ref_table_names.push(ref);
             }
-            obj.id = "new";
-            res.render('obj', {table: table, table_name: req.params.table, obj: obj, refs: refs});
-        } else {
-            sql = "SELECT * FROM ?? WHERE id = ?";
-            con.query(sql, [view, req.params.id], function(err, results) {
-                if (err) {
-                    console.log(err);
-                    res.sendStatus(404);
-                } else if (results.length == 0) {
-                    res.sendStatus(404);
+        }
+
+        nsqls = ref_sqls.length;
+        ref_sql = ref_sqls.join("; ");
+
+        pool.getConnection(function(err, con) {
+            con.query(ref_sql, references, function(err, ref_results) {
+                // Doesn't matter if this query fails (e.g. if ref_sql is empty)
+
+                // "refs" includes all "SELECT *" results from tables to populate select boxes
+                if (nsqls == 1) {
+                    ref_results = [ref_results]; // Make sure the following map works
+                }
+
+                refs = Object.fromEntries(ref_table_names.map((k, i) => [k, ref_results[i]]));
+                if (req.params.id == "new") {
+                    obj = {};
+                    for (var k in table.fields) {
+                        obj[k] = "";
+                    }
+                    obj.id = "new";
+                    res.render('obj', {table: table, table_name: req.params.table, obj: obj, refs: refs});
                 } else {
-                    obj = results[0];
-                    res.render('obj', {table: table, table_name: req.params.table, obj: obj});
+                    sql = "SELECT * FROM ?? WHERE id = ?";
+                    con.query(sql, [view, req.params.id], function(err, results) {
+                        if (err) {
+                            console.log(err);
+                            res.sendStatus(404);
+                        } else if (results.length == 0) {
+                            res.sendStatus(404);
+                        } else {
+                            obj = results[0];
+                            res.render('obj', {table: table, table_name: req.params.table, obj: obj});
+                        }
+                    });
                 }
             });
-        }
+
+            con.release();
+        });
     });
-});
 
 
 app.post('/:table/:id/delete',
     authenticationMiddleware(),
-function(req, res) {
-    sql = "DELETE FROM ?? WHERE id = ?"
-    con.query(sql, [req.params.table, req.params.id]);
+    function(req, res) {
+        sql = "DELETE FROM ?? WHERE id = ?"
+        pool.getConnection(function(err, con) {
+            con.query(sql, [req.params.table, req.params.id]);
 
-    res.redirect('/' + req.params.table + '/list');
-});
+            res.redirect('/' + req.params.table + '/list');
+
+            con.release();
+        });
+    });
 
 app.post('/:table/:id/edit',
     authenticationMiddleware(),
-function(req, res) {
-    table = tables[req.params.table];
-    if (table.hasOwnProperty("validationFunc")) {
-        if (table.validationFunc(req.body) == false) {
-            return;
-        }
-    }
-
-    data = req.body;
-    table.fields_editable.forEach(function(k) {
-        // Ensure checkbox values are always present
-        if (table.fields[k].type == "checkbox") {
-            data[k] = req.body.hasOwnProperty(k) ? 1 : 0;
+    function(req, res) {
+        table = tables[req.params.table];
+        if (table.hasOwnProperty("validationFunc")) {
+            if (table.validationFunc(req.body) == false) {
+                return;
+            }
         }
 
-        // Force all empty strings to be nulls
-        if (data[k].length == 0) {
-            data[k] = null;
-        }
-    });
+        data = req.body;
+        table.fields_editable.forEach(function(k) {
+            // Ensure checkbox values are always present
+            if (table.fields[k].type == "checkbox") {
+                data[k] = req.body.hasOwnProperty(k) ? 1 : 0;
+            }
 
-    if (req.params.id == "new") {
-        sql = "INSERT INTO ?? (??) VALUES (?)"
-        con.query(sql, [req.params.table, Object.keys(data), Object.values(data)], function(err, result) {
-            if (err) {
-                console.log(err);
-                res.redirect('/' + req.params.table + '/list');
-            } else {
-                res.redirect('/' + req.params.table + '/' + result.insertId + '/edit');
+            // Force all empty strings to be nulls
+            if (data[k].length == 0) {
+                data[k] = null;
             }
         });
-    } else {
-        sql = "UPDATE ?? SET ? WHERE id = ?";
-        con.query(sql, [req.params.table, data, req.params.id], function(err) {
-            if (err) {
-                console.log(err);
-                res.redirect('/' + req.params.table + '/list');
+
+        pool.getConnection(function(err, con) {
+            if (req.params.id == "new") {
+                sql = "INSERT INTO ?? (??) VALUES (?)"
+                con.query(sql, [req.params.table, Object.keys(data), Object.values(data)], function(err, result) {
+                    if (err) {
+                        console.log(err);
+                        res.redirect('/' + req.params.table + '/list');
+                    } else {
+                        res.redirect('/' + req.params.table + '/' + result.insertId + '/edit');
+                    }
+                });
             } else {
-                res.redirect('/' + req.params.table + '/' + req.params.id + '/edit');
+                sql = "UPDATE ?? SET ? WHERE id = ?";
+                con.query(sql, [req.params.table, data, req.params.id], function(err) {
+                    if (err) {
+                        console.log(err);
+                        res.redirect('/' + req.params.table + '/list');
+                    } else {
+                        res.redirect('/' + req.params.table + '/' + req.params.id + '/edit');
+                    }
+                });
             }
+
+            con.release();
         });
-    }
-})
+    })
 
 
 app.get('/invoices',
     authenticationMiddleware(),
-function(req, res) {
-    let sql = "SELECT * FROM invoice_view ORDER BY -issued"
-    con.query(sql, function(err, result, field) {
-        if (err) {
-            console.log(err);
-        }
+    function(req, res) {
+        let sql = "SELECT * FROM invoice_view ORDER BY -issued"
+        pool.getConnection(function(err, con) {
+            con.query(sql, function(err, result, field) {
+                if (err) {
+                    console.log(err);
+                }
 
-        res.render('invoices', {invoices: result});
+                res.render('invoices', {invoices: result});
+            });
+
+            con.release();
+        });
     });
-});
 
 app.get('/invoices/pdf/:pdf',
     authenticationMiddleware(),
-function(req, res) {
-    var filename = "invoices/" + req.params.pdf;
+    function(req, res) {
+        var filename = "invoices/" + req.params.pdf;
 
-    fs.readFile(filename, function (err, data) {
-        if (err) {
-            console.error(err);
-            res.sendStatus(400);
-        } else {
-            // Set the "viewed" flag in the database
-            sql = "UPDATE invoice SET pdf_viewed = true WHERE pdf = ?";
-            con.query(sql, [req.params.pdf], function(err) {
-                if (err) {
-                    console.error(err);
-                    res.sendStatus(500);
-                } else {
-                    // Serve the pdf
-                    res.contentType("application/pdf");
-                    res.send(data);
-                }
-            });
-        }
+        fs.readFile(filename, function (err, data) {
+            if (err) {
+                console.error(err);
+                res.sendStatus(400);
+            } else {
+                // Set the "viewed" flag in the database
+                sql = "UPDATE invoice SET pdf_viewed = true WHERE pdf = ?";
+                pool.getConnection(function(err, con) {
+                    con.query(sql, [req.params.pdf], function(err) {
+                        if (err) {
+                            console.error(err);
+                            res.sendStatus(500);
+                        } else {
+                            // Serve the pdf
+                            res.contentType("application/pdf");
+                            res.send(data);
+                        }
+                    });
+
+                    con.release();
+                });
+            }
+        });
     });
-});
 
 function issue_pdf(invoice) {
     var mailOptions = {
@@ -593,10 +623,14 @@ function issue_pdf(invoice) {
             console.log("Invoice " + invoice.name + " sent to " + invoice.bill_email + ": " + info.response);
 
             sql = "UPDATE invoice SET issued = ? WHERE id = ?";
-            con.query(sql, [today(), invoice.id], function(err) {
-                if (err) {
-                    console.error("Invoice issued, but issued date not updated in database: " + err);
-                }
+            pool.getConnection(function(err, con) {
+                con.query(sql, [today(), invoice.id], function(err) {
+                    if (err) {
+                        console.error("Invoice issued, but issued date not updated in database: " + err);
+                    }
+                });
+
+                con.release();
             });
         }
     });
@@ -661,11 +695,15 @@ function generate_pdf(invoice, activities) {
 
             // Record the new pdf filename to the database
             sql = "UPDATE invoice SET pdf = ? WHERE id = ?";
-            con.query(sql, [filename, invoice.id], function(err) {
-                if (err) {
-                    console.error(err);
-                    return false;
-                }
+            pool.getConnection(function(err, con) {
+                con.query(sql, [filename, invoice.id], function(err) {
+                    if (err) {
+                        console.error(err);
+                        return false;
+                    }
+                });
+
+                con.release();
             });
         }
     });
@@ -675,179 +713,195 @@ function generate_pdf(invoice, activities) {
 
 app.post('/invoice/:id',
     authenticationMiddleware(),
-function(req, res) {
-    // Two cases: "id" is an existing invoice id, or "id" = "new"
-    if (req.params.id == "new") {
-        values = [req.body.name,
-            req.body.client_id,
-            req.body.billing_id,
-            req.body.account_id,
-            null,
-            null];
+    function(req, res) {
+        // Two cases: "id" is an existing invoice id, or "id" = "new"
+        pool.getConnection(function(err, con) {
+            if (req.params.id == "new") {
+                values = [req.body.name,
+                    req.body.client_id,
+                    req.body.billing_id,
+                    req.body.account_id,
+                    null,
+                    null];
 
-        // Insert new invoice
-        sql = "INSERT INTO invoice (name, bill_to, billing_id, account_id, due, paid, created) VALUES (?)"
-        values.push(today());
+                // Insert new invoice
+                sql = "INSERT INTO invoice (name, bill_to, billing_id, account_id, due, paid, created) VALUES (?)"
+                values.push(today());
 
-        con.query(sql, [values], function(err, result) {
-            if (err) {
-                console.log(err);
-                res.redirect("/invoices");
+                con.query(sql, [values], function(err, result) {
+                    if (err) {
+                        console.log(err);
+                        res.redirect("/invoices");
+                    } else {
+                        res.redirect("/invoice/" + result.insertId);
+                    }
+                });
             } else {
-                res.redirect("/invoice/" + result.insertId);
+                // Turn empty date strings into nulls
+                due = req.body.due.length > 0 ? req.body.due : null;
+                paid = req.body.paid.length > 0 ? req.body.paid : null;
+
+                values = [req.body.name,
+                    req.body.client_id,
+                    req.body.billing_id,
+                    req.body.account_id,
+                    due,
+                    paid];
+
+                // Update existing invoice
+                sql = "UPDATE invoice SET name = ?, bill_to = ?, billing_id = ?, account_id = ?, due = ?, paid = ? WHERE id = ?";
+
+                values.push(req.params.id);
+
+                con.query(sql, values, function(err) {
+                    if (err) console.log(err);
+                });
+
+                res.redirect('/invoice/' + req.params.id);
+
+                // Generate/update/send PDF
+                sql = "SELECT * FROM invoice_view WHERE id = ?; SELECT * FROM invoice_item_view WHERE invoice_id = ?";
+                con.query(sql, [req.params.id, req.params.id], function(err, results) {
+                    if (err) {
+                        return false;
+                    }
+
+                    invoice = results[0][0];
+                    activities = results[1];
+
+                    if (req.body.hasOwnProperty("issue_pdf")) {
+                        issue_pdf(invoice);
+                    } else {
+                        generate_pdf(invoice, activities);
+                        sql = "UPDATE invoice SET pdf_viewed = false WHERE id = ?";
+                        con.query(sql, [req.params.id]);
+                    }
+                });
             }
+
+            con.release();
         });
-    } else {
-        // Turn empty date strings into nulls
-        due = req.body.due.length > 0 ? req.body.due : null;
-        paid = req.body.paid.length > 0 ? req.body.paid : null;
-
-        values = [req.body.name,
-            req.body.client_id,
-            req.body.billing_id,
-            req.body.account_id,
-            due,
-            paid];
-
-        // Update existing invoice
-        sql = "UPDATE invoice SET name = ?, bill_to = ?, billing_id = ?, account_id = ?, due = ?, paid = ? WHERE id = ?";
-
-        values.push(req.params.id);
-
-        con.query(sql, values, function(err) {
-            if (err) console.log(err);
-        });
-
-        res.redirect('/invoice/' + req.params.id);
-
-        // Generate/update/send PDF
-        sql = "SELECT * FROM invoice_view WHERE id = ?; SELECT * FROM invoice_item_view WHERE invoice_id = ?";
-        con.query(sql, [req.params.id, req.params.id], function(err, results) {
-            if (err) {
-                return false;
-            }
-
-            invoice = results[0][0];
-            activities = results[1];
-
-            if (req.body.hasOwnProperty("issue_pdf")) {
-                issue_pdf(invoice);
-            } else {
-                generate_pdf(invoice, activities);
-                sql = "UPDATE invoice SET pdf_viewed = false WHERE id = ?";
-                con.query(sql, [req.params.id]);
-            }
-        });
-    }
-});
+    });
 
 app.get('/invoice/:id',
     authenticationMiddleware(),
-function(req, res) {
-    // Prepare a few queries
-    sql_clients = "SELECT * FROM client";
-    sql_billings = "SELECT * FROM billing";
-    sql_accounts = "SELECT * FROM account";
+    function(req, res) {
+        // Prepare a few queries
+        sql_clients = "SELECT * FROM client";
+        sql_billings = "SELECT * FROM billing";
+        sql_accounts = "SELECT * FROM account";
 
-    // If "id" is existing invoice id, display invoice,
-    // but if "id" = "new", display empty form
+        // If "id" is existing invoice id, display invoice,
+        // but if "id" = "new", display empty form
 
-    if (req.params.id == "new") {
-        sql = sql_clients;
-        sql += "; " + sql_billings;
-        sql += "; " + sql_accounts;
+        pool.getConnection(function(err, con) {
+            if (req.params.id == "new") {
+                sql = sql_clients;
+                sql += "; " + sql_billings;
+                sql += "; " + sql_accounts;
 
-        con.query(sql, function(err, results, field) {
-            if (err) {
-                console.log(err);
-            }
+                con.query(sql, function(err, results, field) {
+                    if (err) {
+                        console.log(err);
+                    }
 
-            context = {
-                invoice: {id: "new"},
-                activities: [],
-                clients: results[0],
-                billings: results[1],
-                accounts: results[2]
-            };
-
-            res.render('invoice', context);
-        });
-    } else {
-        // Find the matching invoice
-        sql = "SELECT * FROM invoice_view WHERE id = ?";
-        sql += "; SELECT * FROM invoice_item_view WHERE invoice_id = ?";
-        sql += "; " + sql_clients;
-        sql += "; " + sql_billings;
-        sql += "; " + sql_accounts;
-
-        con.query(sql, [req.params.id, req.params.id], function(err, results, field) {
-            if (err) {
-                console.log(err);
-                res.sendStatus(404);
-            } else {
-                if (results[0].length == 0) {
-                    res.sendStatus(404);
-                } else {
                     context = {
-                        invoice: results[0][0], // There can only be 1 invoice
-                        activities: results[1],
-                        clients: results[2],
-                        billings: results[3],
-                        accounts: results[4]
+                        invoice: {id: "new"},
+                        activities: [],
+                        clients: results[0],
+                        billings: results[1],
+                        accounts: results[2]
                     };
 
-                    res.render('invoice', context)
-                }
+                    res.render('invoice', context);
+                });
+            } else {
+                // Find the matching invoice
+                sql = "SELECT * FROM invoice_view WHERE id = ?";
+                sql += "; SELECT * FROM invoice_item_view WHERE invoice_id = ?";
+                sql += "; " + sql_clients;
+                sql += "; " + sql_billings;
+                sql += "; " + sql_accounts;
+
+                con.query(sql, [req.params.id, req.params.id], function(err, results, field) {
+                    if (err) {
+                        console.log(err);
+                        res.sendStatus(404);
+                    } else {
+                        if (results[0].length == 0) {
+                            res.sendStatus(404);
+                        } else {
+                            context = {
+                                invoice: results[0][0], // There can only be 1 invoice
+                                activities: results[1],
+                                clients: results[2],
+                                billings: results[3],
+                                accounts: results[4]
+                            };
+
+                            res.render('invoice', context)
+                        }
+                    }
+                });
             }
+
+            con.release();
         });
-    }
-})
+    })
 
 
 app.get('/add_invoice_item/:invoice_id',
     authenticationMiddleware(),
-function (req, res) {
-    sql1 = "SELECT * FROM invoice_item_view ORDER BY date DESC";
-    sql2 = "SELECT * FROM invoice WHERE id = ?";
+    function (req, res) {
+        sql1 = "SELECT * FROM invoice_item_view ORDER BY date DESC";
+        sql2 = "SELECT * FROM invoice WHERE id = ?";
 
-    sql = sql1 + "; " + sql2;
-    con.query(sql, [req.params.invoice_id], function(err, results, fields) {
-        if (err) console.log(err);
+        sql = sql1 + "; " + sql2;
+        pool.getConnection(function(err, con) {
+            con.query(sql, [req.params.invoice_id], function(err, results, fields) {
+                if (err) console.log(err);
 
-        res.render('add_invoice_item', {
-            activities: results[0],
-            invoice: results[1][0]
+                res.render('add_invoice_item', {
+                    activities: results[0],
+                    invoice: results[1][0]
+                });
+            });
+
+            con.release();
         });
     });
-});
 
 
 app.post('/add_invoice_item/:invoice_id',
     authenticationMiddleware(),
     function(req, res) {
-    if (! req.body.hasOwnProperty("activities")) {
-        res.sendStatus(204);
-    }
-    else {
-        var activity_ids = [];
-        if (Array.isArray(req.body.activities)) {
-            req.body.activities.forEach(function(activity_id) {
-                activity_ids.push(activity_id);
-            });
+        if (! req.body.hasOwnProperty("activities")) {
+            res.sendStatus(204);
         }
         else {
-            activity_ids = [req.body.activities];
+            var activity_ids = [];
+            if (Array.isArray(req.body.activities)) {
+                req.body.activities.forEach(function(activity_id) {
+                    activity_ids.push(activity_id);
+                });
+            }
+            else {
+                activity_ids = [req.body.activities];
+            }
+
+            sql1 = "UPDATE activity SET invoice_id = NULL WHERE invoice_id = ?"; // Clear out the existing invoice associations
+            sql2 = "UPDATE activity SET invoice_id = ? WHERE id IN (?)"; // Add the selected ones
+
+            sql = sql1 + "; " + sql2;
+            pool.getConnection(function(err, con) {
+                con.query(sql, [req.params.invoice_id, req.params.invoice_id, activity_ids], function(err) {
+                    if (err) console.log(err);
+                })
+
+                res.redirect('/add_invoice_item/' + req.params.invoice_id);
+
+                con.release();
+            });
         }
-
-        sql1 = "UPDATE activity SET invoice_id = NULL WHERE invoice_id = ?"; // Clear out the existing invoice associations
-        sql2 = "UPDATE activity SET invoice_id = ? WHERE id IN (?)"; // Add the selected ones
-
-        sql = sql1 + "; " + sql2;
-        con.query(sql, [req.params.invoice_id, req.params.invoice_id, activity_ids], function(err) {
-            if (err) console.log(err);
-        })
-
-        res.redirect('/add_invoice_item/' + req.params.invoice_id);
-    }
-});
+    });
 
