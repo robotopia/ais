@@ -358,14 +358,13 @@ const tables = {
 };
 
 app.get('/', function(req, res) {
-    res.render('index');
-    //res.render('pages/auth');
+    //res.render('index');
+    res.render('pages/auth');
 });
 
 app.get('/success', (req, res) => res.send(userProfile));
 app.get('/error', (req, res) => res.send("error logging in"));
 
-/*
 app.get('/auth/google',
   passport.authenticate('google', { scope : ['profile', 'email'] }));
 
@@ -383,7 +382,6 @@ passport.serializeUser(function(user, cb) {
 passport.deserializeUser(function(obj, cb) {
   cb(null, obj);
 });
-*/
 
 app.get('/about',
     authenticationMiddleware(),
