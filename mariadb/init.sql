@@ -29,7 +29,7 @@ USE `ppc_invoices`;
 
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE IF NOT EXISTS `account` (
+CREATE TABLE `account` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `bsb` varchar(255) DEFAULT NULL,
   `number` varchar(255) DEFAULT NULL,
@@ -44,7 +44,7 @@ CREATE TABLE IF NOT EXISTS `account` (
 
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE IF NOT EXISTS `activity` (
+CREATE TABLE `activity` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `date` date NOT NULL,
   `qty` float DEFAULT NULL,
@@ -65,7 +65,7 @@ CREATE TABLE IF NOT EXISTS `activity` (
 
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE IF NOT EXISTS `activity_type` (
+CREATE TABLE `activity_type` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `description` varchar(255) DEFAULT NULL,
   `rate` decimal(10,2) NOT NULL DEFAULT 100.00,
@@ -109,7 +109,7 @@ SET character_set_client = @saved_cs_client;
 
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE IF NOT EXISTS `billing` (
+CREATE TABLE `billing` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(255) DEFAULT NULL,
   `addr1` varchar(255) DEFAULT NULL,
@@ -128,7 +128,7 @@ CREATE TABLE IF NOT EXISTS `billing` (
 
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE IF NOT EXISTS `client` (
+CREATE TABLE `client` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(255) NOT NULL,
   `bill_email` varchar(255) DEFAULT NULL,
@@ -143,7 +143,7 @@ CREATE TABLE IF NOT EXISTS `client` (
 
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE IF NOT EXISTS `expense` (
+CREATE TABLE `expense` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `amount` decimal(10,2) NOT NULL,
   `description` text DEFAULT NULL,
@@ -176,7 +176,7 @@ SET character_set_client = @saved_cs_client;
 
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE IF NOT EXISTS `invoice` (
+CREATE TABLE `invoice` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `created` date DEFAULT NULL,
   `issued` date DEFAULT NULL,
@@ -253,7 +253,7 @@ SET character_set_client = @saved_cs_client;
 
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE IF NOT EXISTS `tax_period` (
+CREATE TABLE `tax_period` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `start` date NOT NULL,
   `end` date NOT NULL,
@@ -282,7 +282,7 @@ SET character_set_client = @saved_cs_client;
 
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE IF NOT EXISTS `travel` (
+CREATE TABLE `travel` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `activity_id` int(11) DEFAULT NULL,
   `from_location` varchar(1023) DEFAULT NULL,
@@ -334,7 +334,7 @@ USE `ppc_invoices`;
 /*!50001 SET character_set_results     = utf8mb3 */;
 /*!50001 SET collation_connection      = utf8mb3_general_ci */;
 /*!50001 CREATE ALGORITHM=UNDEFINED */
-/*!50013 DEFINER=CURRENT_USER@`localhost` SQL SECURITY DEFINER */
+/*!50013 DEFINER=`smcsweeney`@`localhost` SQL SECURITY DEFINER */
 /*!50001 VIEW `activity_type_view` AS select `activity_type`.`id` AS `id`,`activity_type`.`description` AS `description`,concat('$',`activity_type`.`rate`) AS `rate_display`,`activity_type`.`rate` AS `rate` from `activity_type` */;
 /*!50001 SET character_set_client      = @saved_cs_client */;
 /*!50001 SET character_set_results     = @saved_cs_results */;
@@ -352,7 +352,7 @@ USE `ppc_invoices`;
 /*!50001 SET character_set_results     = utf8mb3 */;
 /*!50001 SET collation_connection      = utf8mb3_general_ci */;
 /*!50001 CREATE ALGORITHM=UNDEFINED */
-/*!50013 DEFINER=CURRENT_USER@`localhost` SQL SECURITY DEFINER */
+/*!50013 DEFINER=`smcsweeney`@`localhost` SQL SECURITY DEFINER */
 /*!50001 VIEW `activity_view` AS select `activity`.`id` AS `id`,`activity`.`date` AS `date`,`activity`.`qty` AS `qty`,`activity`.`activity_type_id` AS `activity_type_id`,`activity`.`notes` AS `notes`,`activity`.`invoice_id` AS `invoice_id`,`activity_type`.`description` AS `activity_type`,`invoice`.`name` AS `invoice` from ((`activity` left join `activity_type` on(`activity`.`activity_type_id` = `activity_type`.`id`)) left join `invoice` on(`activity`.`invoice_id` = `invoice`.`id`)) */;
 /*!50001 SET character_set_client      = @saved_cs_client */;
 /*!50001 SET character_set_results     = @saved_cs_results */;
@@ -370,7 +370,7 @@ USE `ppc_invoices`;
 /*!50001 SET character_set_results     = utf8mb3 */;
 /*!50001 SET collation_connection      = utf8mb3_general_ci */;
 /*!50001 CREATE ALGORITHM=UNDEFINED */
-/*!50013 DEFINER=CURRENT_USER@`localhost` SQL SECURITY DEFINER */
+/*!50013 DEFINER=`smcsweeney`@`localhost` SQL SECURITY DEFINER */
 /*!50001 VIEW `expense_view` AS select `e`.`id` AS `id`,`e`.`date` AS `date`,concat('$',`e`.`amount`) AS `amount`,`e`.`description` AS `description`,`e`.`fuel_kms` AS `fuel_kms`,`e`.`receipt` AS `receipt`,concat('$',round(if(`e`.`fuel_kms` is null,`e`.`amount`,`e`.`amount` * sum(`t`.`kms`) / `e`.`fuel_kms`),2)) AS `tax_deductible_amount` from (`expense` `e` left join `travel` `t` on(`t`.`expense_id` = `e`.`id`)) group by `e`.`id` */;
 /*!50001 SET character_set_client      = @saved_cs_client */;
 /*!50001 SET character_set_results     = @saved_cs_results */;
@@ -388,7 +388,7 @@ USE `ppc_invoices`;
 /*!50001 SET character_set_results     = utf8mb3 */;
 /*!50001 SET collation_connection      = utf8mb3_general_ci */;
 /*!50001 CREATE ALGORITHM=UNDEFINED */
-/*!50013 DEFINER=CURRENT_USER@`localhost` SQL SECURITY DEFINER */
+/*!50013 DEFINER=`smcsweeney`@`localhost` SQL SECURITY DEFINER */
 /*!50001 VIEW `invoice_item_view` AS select `a`.`id` AS `id`,`a`.`invoice_id` AS `invoice_id`,`a`.`date` AS `date`,`a`.`qty` AS `qty`,`at`.`description` AS `description`,`at`.`rate` AS `rate`,`a`.`qty` * `at`.`rate` AS `amount`,`i`.`name` AS `invoice_name` from ((`activity` `a` left join `activity_type` `at` on(`a`.`activity_type_id` = `at`.`id`)) left join `invoice` `i` on(`a`.`invoice_id` = `i`.`id`)) */;
 /*!50001 SET character_set_client      = @saved_cs_client */;
 /*!50001 SET character_set_results     = @saved_cs_results */;
@@ -406,7 +406,7 @@ USE `ppc_invoices`;
 /*!50001 SET character_set_results     = utf8mb3 */;
 /*!50001 SET collation_connection      = utf8mb3_general_ci */;
 /*!50001 CREATE ALGORITHM=UNDEFINED */
-/*!50013 DEFINER=CURRENT_USER@`localhost` SQL SECURITY DEFINER */
+/*!50013 DEFINER=`smcsweeney`@`localhost` SQL SECURITY DEFINER */
 /*!50001 VIEW `invoice_view` AS select `i`.`id` AS `id`,`i`.`billing_id` AS `billing_id`,`i`.`account_id` AS `account_id`,`i`.`bill_to` AS `bill_to`,`c`.`name` AS `bill_to_name`,`c`.`bill_email` AS `bill_email`,`c`.`email_text` AS `email_text`,`i`.`name` AS `name`,`i`.`issued` AS `issued`,`i`.`due` AS `due`,`i`.`paid` AS `paid`,`i`.`pdf` AS `pdf`,`i`.`pdf_viewed` AS `pdf_viewed`,`b`.`name` AS `billing_name`,`b`.`addr1` AS `addr1`,`b`.`addr2` AS `addr2`,`b`.`phone` AS `phone`,`b`.`email` AS `email`,`b`.`abn` AS `abn`,`b`.`is_gst_registered` AS `is_gst_registered`,`a`.`bsb` AS `bsb`,`a`.`number` AS `number`,`a`.`name` AS `account_name`,sum(`act`.`qty` * `at`.`rate`) AS `total_amount`,if(`b`.`is_gst_registered`,`b`.`abn`,concat(`b`.`abn`,' (Not GST registered)')) AS `abn_display` from (((((`invoice` `i` left join `billing` `b` on(`i`.`billing_id` = `b`.`id`)) left join `account` `a` on(`i`.`account_id` = `a`.`id`)) left join `client` `c` on(`i`.`bill_to` = `c`.`id`)) left join `activity` `act` on(`i`.`id` = `act`.`invoice_id`)) left join `activity_type` `at` on(`act`.`activity_type_id` = `at`.`id`)) group by `i`.`id` */;
 /*!50001 SET character_set_client      = @saved_cs_client */;
 /*!50001 SET character_set_results     = @saved_cs_results */;
@@ -424,7 +424,7 @@ USE `ppc_invoices`;
 /*!50001 SET character_set_results     = utf8mb3 */;
 /*!50001 SET collation_connection      = utf8mb3_general_ci */;
 /*!50001 CREATE ALGORITHM=UNDEFINED */
-/*!50013 DEFINER=CURRENT_USER@`localhost` SQL SECURITY DEFINER */
+/*!50013 DEFINER=`smcsweeney`@`localhost` SQL SECURITY DEFINER */
 /*!50001 VIEW `tax_period_view` AS select `t`.`id` AS `id`,`t`.`start` AS `start`,`t`.`end` AS `end`,`t`.`name` AS `name`,concat('$',sum(`i`.`total_amount`)) AS `taxable_income` from (`tax_period` `t` left join `invoice_view` `i` on(`i`.`paid` >= `t`.`start` and `i`.`paid` <= `t`.`end`)) group by `t`.`id` */;
 /*!50001 SET character_set_client      = @saved_cs_client */;
 /*!50001 SET character_set_results     = @saved_cs_results */;
@@ -442,7 +442,7 @@ USE `ppc_invoices`;
 /*!50001 SET character_set_results     = utf8mb3 */;
 /*!50001 SET collation_connection      = utf8mb3_general_ci */;
 /*!50001 CREATE ALGORITHM=UNDEFINED */
-/*!50013 DEFINER=CURRENT_USER@`localhost` SQL SECURITY DEFINER */
+/*!50013 DEFINER=`smcsweeney`@`localhost` SQL SECURITY DEFINER */
 /*!50001 VIEW `travel_view` AS select `t`.`id` AS `id`,`t`.`date` AS `date`,concat(`at`.`description`,' (',`a`.`date`,')') AS `activity`,`a`.`id` AS `activity_id`,`t`.`from_location` AS `from_location`,`t`.`to_location` AS `to_location`,`t`.`kms` AS `kms`,concat('$',`e`.`amount`,' on ',`e`.`date`) AS `expense`,`e`.`id` AS `expense_id` from (((`travel` `t` left join `activity` `a` on(`t`.`activity_id` = `a`.`id`)) left join `activity_type` `at` on(`a`.`activity_type_id` = `at`.`id`)) left join `expense` `e` on(`t`.`expense_id` = `e`.`id`)) */;
 /*!50001 SET character_set_client      = @saved_cs_client */;
 /*!50001 SET character_set_results     = @saved_cs_results */;
