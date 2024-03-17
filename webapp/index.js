@@ -7,9 +7,7 @@ const fs = require('fs');
 const Readable = require('stream').Readable;
 const latex = require('node-latex');
 const nodemailer = require('nodemailer');
-const dotenv = require('dotenv');
-
-dotenv.config()
+require('dotenv').config();
 
 const app = express();
 app.use(express.json());
