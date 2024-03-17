@@ -47,9 +47,11 @@ const whitelist = [
 function authenticationMiddleware () {
   return function (req, res, next) {
     if (req.isAuthenticated() && whitelist.includes(req.body.email)) {
-      return next();
+      next();
     }
-    res.sendStatus(500);
+
+    console.log("Something when wrong with authentication");
+    return res.sendStatus(500);
   }
 }
 
@@ -385,9 +387,10 @@ passport.deserializeUser(function(obj, cb) {
 
 app.get('/about',
     authenticationMiddleware(),
-function(req, res) {
-    res.send('Testing testing 1 2 3');
-});
+    function(req, res) {
+        res.send('Testing testing 1 2 3');
+    }
+);
 
 app.post('/invoice/delete/:id', function(req, res) {
     authenticationMiddleware(),
