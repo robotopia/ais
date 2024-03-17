@@ -5,6 +5,7 @@ networks:
 
 volumes:
   mariadb:
+  invoices:
 
 services:
   mariadb:
@@ -32,6 +33,8 @@ services:
     image: ais-webapp
     restart: always
     tty: true
+    volumes:
+      - invoices:/ais/invoices
     networks:
       - backend
     ports:

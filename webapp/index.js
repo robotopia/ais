@@ -49,7 +49,7 @@ function authenticationMiddleware () {
     if (req.isAuthenticated() && whitelist.includes(req.body.email)) {
       return next();
     }
-    res.send(500);
+    res.sendStatus(500);
   }
 }
 
