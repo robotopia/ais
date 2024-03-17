@@ -16,6 +16,14 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
+-- Current Database: `ppc_invoices`
+--
+
+CREATE DATABASE /*!32312 IF NOT EXISTS*/ `ppc_invoices` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci */;
+
+USE `ppc_invoices`;
+
+--
 -- Table structure for table `account`
 --
 
@@ -307,6 +315,12 @@ SET character_set_client = utf8;
   1 AS `expense`,
   1 AS `expense_id` */;
 SET character_set_client = @saved_cs_client;
+
+--
+-- Current Database: `ppc_invoices`
+--
+
+USE `ppc_invoices`;
 
 --
 -- Final view structure for view `activity_type_view`
