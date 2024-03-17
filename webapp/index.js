@@ -414,6 +414,7 @@ app.get('/:table/list',
         sql = "SELECT * FROM ?? ORDER BY " + order_by;
 
         pool.getConnection(function(err, con) {
+	    if (err) throw err;
             con.query(sql, [view], function(err, results) {
                 if (err) {
                     console.log("SQL: " + sql);
