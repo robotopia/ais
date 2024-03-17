@@ -1,11 +1,14 @@
 version: "3.9"
 
 networks:
-    frontend:
-    backend:
+  backend:
+
+volumes:
+  mariadb:
 
 services:
   mariadb:
+    hostname: mariadb
     container_name: ais-mariadb
     build: mariadb
     image: ais-mariadb
@@ -18,18 +21,19 @@ services:
     ports:
       - "3307:3306"
     volumes:
-      - ais-data
+      - mariadb:/var/lib/mysql
     networks:
-      - ais-network
+      - backend
 
-  node:
-    container_name: ais-node
+  webapp:
+    hostname: webapp
+    container_name: ais-webapp
     build: webapp
     image: ais-webapp
     restart: always
     tty: true
     networks:
-      - ais-network
+      - backend
     ports:
       - "3000:3000"
     depends_on:
