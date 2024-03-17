@@ -6,30 +6,32 @@ networks:
 
 services:
   mariadb:
-    container_name: mariadb
-    image: mariadb
+    container_name: ais-mariadb
+    build: mariadb
+    image: ais-mariadb
     restart: always
     environment:
       MYSQL_DATABASE: ${DBNAME}
       MYSQL_USER: ${DBUSER}
       MYSQL_PASSWORD: ${DBPASS}
       MYSQL_RANDOM_ROOT_PASSWORD: ${DBPASS}
+    ports:
+      - "3307:3306"
     volumes:
-      - ./mysql:/var/lib/mysql
-      - ./public/schema/schema.sql:/docker-entrypoint-initdb.d/init.sql:ro
+      - ais-data
     networks:
-      - backend
+      - ais-network
 
-  ais:
-    container_name: ais-app
-    image: ais-app:latest
+  node:
+    container_name: ais-node
+    build: webapp
+    image: ais-webapp
     restart: always
     tty: true
     networks:
-      - frontend
-      - backend
+      - ais-network
     ports:
-      - 3000:3000
+      - "3000:3000"
     depends_on:
       - mariadb
 
