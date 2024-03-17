@@ -1,15 +1,15 @@
 const express = require('express');
-//const session = require('express-session');
-//const passport = require('passport');
+const session = require('express-session');
+const passport = require('passport');
 const ejs = require('ejs');
 const mysql = require('mysql');
 const fs = require('fs');
 const Readable = require('stream').Readable;
 const latex = require('node-latex');
 const nodemailer = require('nodemailer');
-//const dotenv = require('dotenv');
+const dotenv = require('dotenv');
 
-//dotenv.config()
+dotenv.config()
 
 const app = express();
 app.use(express.json());
@@ -19,7 +19,6 @@ app.set('view engine', 'ejs');
 
 var userProfile;
 
-/*
 const GoogleStrategy = require('passport-google-oauth').OAuth2Strategy;
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID
 const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET
@@ -43,13 +42,16 @@ app.use(session({
 app.use(passport.initialize());
 app.use(passport.session());
 
-*/
+const whitelist = [
+    "sammy.mcsweeney@gmail.com"
+];
+
 function authenticationMiddleware () {
   return function (req, res, next) {
-    //if (req.isAuthenticated() && whitelist.includes(req.body.email)) {
+    if (req.isAuthenticated() && whitelist.includes(req.body.email)) {
       return next();
-    //}
-    //res.send(500);
+    }
+    res.send(500);
   }
 }
 
@@ -61,10 +63,6 @@ function today() {
 
     return year + "-" + month + "-" + day;
 }
-
-const whitelist = [
-    "sammy.mcsweeney@gmail.com"
-];
 
 const {
     DBNAME,
