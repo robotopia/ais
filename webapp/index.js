@@ -358,8 +358,8 @@ const tables = {
 };
 
 app.get('/', function(req, res) {
-    //res.render('index');
-    res.render('pages/auth');
+    res.render('index');
+    //res.render('pages/auth');
 });
 
 app.get('/success', (req, res) => res.send(userProfile));
