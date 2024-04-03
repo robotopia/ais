@@ -17,6 +17,7 @@ app.set('view engine', 'ejs');
 
 var userProfile;
 
+/*
 const GoogleStrategy = require('passport-google-oauth').OAuth2Strategy;
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID
 const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET
@@ -43,15 +44,16 @@ app.use(passport.session());
 const whitelist = [
     "sammy.mcsweeney@gmail.com"
 ];
+*/
 
 function authenticationMiddleware () {
   return function (req, res, next) {
-    if (req.isAuthenticated() && whitelist.includes(req.body.email)) {
+    //if (req.isAuthenticated() && whitelist.includes(req.body.email)) {
       next();
-    }
+    //}
 
-    console.log("Something when wrong with authentication");
-    return res.sendStatus(500);
+    //console.log("Something when wrong with authentication");
+    //return res.sendStatus(500);
   }
 }
 
@@ -90,6 +92,7 @@ const HOST = '0.0.0.0';
 app.listen(PORT, HOST, () => {
     console.log(`Running on http://${HOST}:${PORT}`);
 });
+
 
 var transporter = nodemailer.createTransport({
     service: 'gmail',
@@ -367,6 +370,7 @@ app.get('/', function(req, res) {
 app.get('/success', (req, res) => res.send(userProfile));
 app.get('/error', (req, res) => res.send("error logging in"));
 
+/*
 app.get('/auth/google',
   passport.authenticate('google', { scope : ['profile', 'email'] }));
 
@@ -384,6 +388,7 @@ passport.serializeUser(function(user, cb) {
 passport.deserializeUser(function(obj, cb) {
   cb(null, obj);
 });
+*/
 
 app.get('/about',
     authenticationMiddleware(),
