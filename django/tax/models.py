@@ -10,9 +10,13 @@ class Expense(models.Model):
     receipt = models.CharField(max_length=1024, blank=True, null=True)
     fuel_kms = models.DecimalField(max_digits=10, decimal_places=1, blank=True, null=True)
 
+    def __str__(self) -> str:
+        return f'${self.amount} on {self.date}'
+
     class Meta:
         managed = False
         db_table = 'expense'
+        ordering = ['-date']
 
 
 class TaxPeriod(models.Model):
@@ -20,9 +24,13 @@ class TaxPeriod(models.Model):
     end = models.DateField()
     name = models.CharField(max_length=255, blank=True, null=True)
 
+    def __str__(self) -> str:
+        return f'{self.name}'
+
     class Meta:
         managed = False
         db_table = 'tax_period'
+        ordering = ['-start', '-end']
 
 
 class Travel(models.Model):
@@ -33,6 +41,11 @@ class Travel(models.Model):
     kms = models.FloatField()
     date = models.DateField()
 
+    def __str__(self) -> str:
+        return f'{self.date} ({self.kms} km)'
+
     class Meta:
         managed = False
         db_table = 'travel'
+        verbose_name_plural = 'Travel'
+        ordering = ['-date']
