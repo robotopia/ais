@@ -26,8 +26,8 @@ class Activity(models.Model):
     date = models.DateField()
     qty = models.FloatField(blank=True, null=True)
     activity_type = models.ForeignKey('ActivityType', models.DO_NOTHING)
-    notes = models.CharField(max_length=1023, blank=True, null=True)
     invoice = models.ForeignKey('Invoice', models.DO_NOTHING, blank=True, null=True)
+    notes = models.TextField(blank=True, null=True)
 
     def __str__(self) -> str:
         return f'{self.qty}x {self.activity_type.description} on {self.date}'
