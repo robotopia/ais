@@ -22,19 +22,7 @@ class BillingAdmin(admin.ModelAdmin):
 class ClientAdmin(admin.ModelAdmin):
     list_display = ['name', 'bill_email']
 
-@admin.register(Expense)
-class ExpenseAdmin(admin.ModelAdmin):
-    list_display = ['date', 'amount', 'fuel_kms']
-
 @admin.register(Invoice)
 class InvoiceAdmin(admin.ModelAdmin):
     list_display = ['name', 'bill_to', 'created', 'issued', 'due', 'paid']
-
-@admin.register(TaxPeriod)
-class TaxPeriodAdmin(admin.ModelAdmin):
-    list_display = ['name', 'start', 'end']
-
-@admin.register(Travel)
-class TravelAdmin(admin.ModelAdmin):
-    list_display = ['date', 'activity', 'from_location', 'to_location', 'expense', 'kms']
 
