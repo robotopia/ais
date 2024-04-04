@@ -4,7 +4,7 @@ from .models import *
 # Register your models here.
 @admin.register(Account)
 class AccountAdmin(admin.ModelAdmin):
-    list_display = ['name', 'name', 'bsb']
+    list_display = ['name', 'number', 'bsb']
 
 @admin.register(Activity)
 class ActivityAdmin(admin.ModelAdmin):
