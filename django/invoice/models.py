@@ -21,6 +21,7 @@ class Account(models.Model):
         return f'{self.name} ({self.number})'
 
     class Meta:
+        managed = False
         db_table = 'account'
         ordering = ['name', 'bsb', 'number']
 
@@ -28,8 +29,8 @@ class Account(models.Model):
 class Activity(models.Model):
     date = models.DateField(default=now)
     qty = models.FloatField(default=1.0)
-    activity_type = models.ForeignKey('ActivityType', models.RESTRICT)
-    invoice = models.ForeignKey('Invoice', models.RESTRICT, blank=True, null=True)
+    activity_type = models.ForeignKey('ActivityType', on_delete=models.RESTRICT)
+    invoice = models.ForeignKey('Invoice', on_delete=models.RESTRICT, blank=True, null=True)
     notes = models.TextField(blank=True, null=True)
 
     @property
@@ -57,16 +58,17 @@ class ActivityType(models.Model):
         return f'{self.description}'
 
     class Meta:
+        managed = False
         db_table = 'activity_type'
         ordering = ['description', 'rate']
 
 
 class Billing(models.Model):
-    name = models.CharField(max_length=255, blank=True, null=True)
+    name = models.CharField(max_length=255)
     addr1 = models.CharField(max_length=255, blank=True, null=True)
     addr2 = models.CharField(max_length=255, blank=True, null=True)
-    phone = models.CharField(max_length=255, blank=True, null=True)
-    email = models.CharField(max_length=255, blank=True, null=True)
+    phone = models.CharField(max_length=255)
+    email = models.CharField(max_length=255)
     abn = models.CharField(max_length=255, blank=True, null=True, verbose_name="ABN")
     is_gst_registered = models.BooleanField(default=False, verbose_name="GST registered?")
 
