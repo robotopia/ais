@@ -96,8 +96,20 @@ class Invoice(models.Model):
     bill_to = models.ForeignKey(Client, models.DO_NOTHING, db_column='bill_to')
     pdf_viewed = models.BooleanField(default=False)
 
+
+    def status_str(self) -> str:
+        if self.paid is not None:
+            return 'Paid: ' + f'{self.paid}'
+
+        if self.issued is not None:
+            return 'Issued: ' + f'{self.issued}'
+
+        return 'Created: ' + f'{self.created}'
+
+
     def __str__(self) -> str:
-        return f'{self.name}, {self.billing} ({self.created})'
+        return f'{self.name}, {self.bill_to} ({self.status_str()})'
+
 
     class Meta:
         managed = False
