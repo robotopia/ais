@@ -87,15 +87,15 @@ class Client(models.Model):
 
 class Invoice(models.Model):
     created = models.DateField(auto_now_add=True)
+    name = models.CharField(max_length=255, blank=True, null=True)
+    bill_to = models.ForeignKey(Client, models.DO_NOTHING, db_column='bill_to')
     issued = models.DateField(blank=True, null=True)
     due = models.DateField(blank=True, null=True)
     paid = models.DateField(blank=True, null=True)
     pdf = models.CharField(max_length=255, blank=True, null=True)
+    pdf_viewed = models.BooleanField(default=False)
     billing = models.ForeignKey(Billing, models.DO_NOTHING)
     account = models.ForeignKey(Account, models.DO_NOTHING)
-    name = models.CharField(max_length=255, blank=True, null=True)
-    bill_to = models.ForeignKey(Client, models.DO_NOTHING, db_column='bill_to')
-    pdf_viewed = models.BooleanField(default=False)
 
     @property
     def status(self) -> str:
@@ -121,7 +121,7 @@ class Invoice(models.Model):
         return None
 
     def __str__(self) -> str:
-        return f'{self.name}, {self.bill_to} ({self.status})'
+        return f'{self.name}, {self.bill_to}'
 
 
     class Meta:
