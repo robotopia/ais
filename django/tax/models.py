@@ -66,10 +66,10 @@ class TaxPeriod(models.Model):
 
 
 class Travel(models.Model):
-    activity = models.ForeignKey(invoice_models.Activity, models.DO_NOTHING, blank=True, null=True)
+    activity = models.ForeignKey(invoice_models.Activity, models.RESTRICT)
     from_location = models.CharField(max_length=1023, blank=True, null=True)
     to_location = models.CharField(max_length=1023, blank=True, null=True)
-    expense = models.ForeignKey(Expense, models.DO_NOTHING, blank=True, null=True)
+    expense = models.ForeignKey(Expense, models.RESTRICT, blank=True, null=True)
     kms = models.FloatField()
     date = models.DateField()
 

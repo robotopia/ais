@@ -7,26 +7,26 @@
 # Feel free to rename the models, but don't rename db_table values or field names.
 from django.db import models
 from django.utils.html import format_html
+from django.utils.timezone import now
 
 from datetime import date
 import decimal
 
 class Account(models.Model):
-    bsb = models.CharField(max_length=255, blank=True, null=True)
-    number = models.CharField(max_length=255, blank=True, null=True)
-    name = models.CharField(max_length=255, blank=True, null=True)
+    bsb = models.CharField(max_length=255)
+    number = models.CharField(max_length=255)
+    name = models.CharField(max_length=255)
 
     def __str__(self) -> str:
         return f'{self.name} ({self.number})'
 
     class Meta:
-        managed = False
         db_table = 'account'
         ordering = ['name', 'bsb', 'number']
 
 
 class Activity(models.Model):
-    date = models.DateField()
+    date = models.DateField(default=now)
     qty = models.FloatField(default=1.0)
     activity_type = models.ForeignKey('ActivityType', models.RESTRICT)
     invoice = models.ForeignKey('Invoice', models.RESTRICT, blank=True, null=True)
@@ -50,14 +50,13 @@ class Activity(models.Model):
 
 
 class ActivityType(models.Model):
-    description = models.CharField(max_length=255, blank=True, null=True)
+    description = models.CharField(max_length=255)
     rate = models.DecimalField(max_digits=10, decimal_places=2)
 
     def __str__(self) -> str:
         return f'{self.description}'
 
     class Meta:
-        managed = False
         db_table = 'activity_type'
         ordering = ['description', 'rate']
 
