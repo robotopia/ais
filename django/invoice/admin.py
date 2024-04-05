@@ -109,12 +109,22 @@ class ActivityAdmin(admin.ModelAdmin):
             kwargs['queryset'] = Invoice.objects.filter(issued__isnull=True)
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
+    def get_readonly_fields(self, request, obj=None):
+        if obj.invoice is not None:
+            if obj.invoice.issued is not None:
+                return ['invoice']
+
 @admin.register(ActivityType)
 class ActivityTypeAdmin(admin.ModelAdmin):
-    list_display = ['contract', 'description', 'rate']
+    list_display = ['contract', 'description', 'rate_str']
     list_filter = ['contract']
     list_display_links = ['description']
     search_fields = ['description']
+
+    @admin.display(description='Rate')
+    def rate_str(self, obj):
+        return f'${obj.rate}'
+
 
 @admin.register(Billing)
 class BillingAdmin(admin.ModelAdmin):
@@ -127,6 +137,8 @@ class ClientAdmin(admin.ModelAdmin):
 @admin.register(Contract)
 class ContractAdmin(admin.ModelAdmin):
     list_display = ['start', 'end', 'employer', 'employee']
+    list_filter = ['employer', 'employee']
+    date_hierarchy = 'start'
 
 @admin.register(Invoice)
 class InvoiceAdmin(admin.ModelAdmin):
