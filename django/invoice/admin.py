@@ -88,7 +88,7 @@ class AccountAdmin(admin.ModelAdmin):
 @admin.register(Activity)
 class ActivityAdmin(admin.ModelAdmin):
     list_display = ['date', 'qty', 'activity_type', 'invoice', 'is_paid']
-    list_filter = ['invoice__bill_to', IsInvoicedListFilter, IsPaidListFilter, 'activity_type']
+    list_filter = ['invoice__bill_to', IsInvoicedListFilter, IsPaidListFilter, 'activity_type__description']
     autocomplete_fields = ['activity_type']
     date_hierarchy = 'date'
 
@@ -116,7 +116,7 @@ class ActivityAdmin(admin.ModelAdmin):
 
 @admin.register(ActivityType)
 class ActivityTypeAdmin(admin.ModelAdmin):
-    list_display = ['contract', 'description', 'rate_str']
+    list_display = ['description', 'rate_str', 'contract']
     list_filter = ['contract']
     list_display_links = ['description']
     search_fields = ['description']
