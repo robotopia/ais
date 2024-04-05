@@ -60,20 +60,24 @@ class IsOverdueListFilter(admin.SimpleListFilter):
 class ActivityInline(admin.TabularInline):
     model = Activity
     fields = ['date', 'qty', 'rate', 'activity_type', 'amount']
-    readonly_fields = ['date', 'qty', 'rate', 'activity_type', 'amount']
+    readonly_fields = ['rate', 'amount']
     extra = 0
+
     show_change_link = True
-    can_delete = False
+    def has_change_permission(self, request, obj):
+        return obj.issued is None
+
+    def has_add_permission(self, request, obj):
+        return obj.issued is None
+
+    def has_delete_permission(self, request, obj):
+        return obj.issued is None
 
     def rate(self, obj):
         return f'${obj.activity_type.rate}'
 
     def amount(self, obj):
-        if not obj.qty:
-            return None
-
-        decimal.getcontext().rounding = decimal.ROUND_UP
-        return f'${decimal.Decimal(obj.qty) * obj.activity_type.rate}'
+        return f'${obj.amount}'
 
 # Admin classes
 
@@ -125,20 +129,46 @@ class InvoiceAdmin(admin.ModelAdmin):
     inlines = [ActivityInline]
     fieldsets = [
         (
-            None, {'fields': ['name', 'billing', ('issued', 'due', 'paid')]},
+            None, {'fields': ['name', 'billing', 'issued', 'due', 'paid']},
         ),
         (
-            "Bill to", {'fields': [('bill_to', 'bill_email')]}
+            "Bill to", {'fields': ['bill_to', 'bill_email']}
         ),
         (
             'PDF', {'fields': ['pdf', 'pdf_viewed']}
         ),
         (
-            'Payment advice', {'fields': ['account']}
+            'Payment advice', {'fields': ['account', 'account_name', 'account_bsb', 'account_number', 'total_amount']}
         ),
     ]
-    readonly_fields = ['bill_email']
+    readonly_fields = ['bill_email', 'account_name', 'account_bsb', 'account_number', 'total_amount']
 
     def bill_email(self, obj):
         return obj.bill_to.bill_email
     bill_email.short_description = "Email"
+
+    def account_name(self, obj):
+        return obj.account.name
+    account_name.short_description = "Name"
+
+    def account_bsb(self, obj):
+        return obj.account.bsb
+    account_bsb.short_description = "BSB"
+
+    def account_number(self, obj):
+        return obj.account.number
+    account_number.short_description = "Number"
+
+    def total_amount(self, obj):
+        activities = obj.activity_set.all()
+        total = sum([activity.amount for activity in activities])
+        return f'${total}'
+
+    def get_readonly_fields(self, request, obj=None):
+        if obj is None:
+            return None
+
+        if obj.issued is None:
+            return ['bill_email', 'account_name', 'account_bsb', 'account_number', 'total_amount']
+
+        return ['bill_email', 'account_name', 'account_bsb', 'account_number', 'total_amount', 'billing', 'due', 'bill_to', 'pdf', 'pdf_viewed', 'account']

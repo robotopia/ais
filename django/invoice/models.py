@@ -6,8 +6,10 @@
 #   * Remove `managed = False` lines if you wish to allow Django to create, modify, and delete the table
 # Feel free to rename the models, but don't rename db_table values or field names.
 from django.db import models
-from datetime import date
 from django.utils.html import format_html
+
+from datetime import date
+import decimal
 
 class Account(models.Model):
     bsb = models.CharField(max_length=255, blank=True, null=True)
@@ -25,10 +27,18 @@ class Account(models.Model):
 
 class Activity(models.Model):
     date = models.DateField()
-    qty = models.FloatField(blank=True, null=True)
-    activity_type = models.ForeignKey('ActivityType', models.DO_NOTHING)
-    invoice = models.ForeignKey('Invoice', models.DO_NOTHING, blank=True, null=True)
+    qty = models.FloatField(default=1.0)
+    activity_type = models.ForeignKey('ActivityType', models.RESTRICT)
+    invoice = models.ForeignKey('Invoice', models.RESTRICT, blank=True, null=True)
     notes = models.TextField(blank=True, null=True)
+
+    @property
+    def amount(self):
+        if not self.qty:
+            return None
+
+        decimal.getcontext().rounding = decimal.ROUND_UP
+        return decimal.Decimal(self.qty) * self.activity_type.rate
 
     def __str__(self) -> str:
         return f'{self.qty}x {self.activity_type.description} on {self.date}'
@@ -45,7 +55,7 @@ class ActivityType(models.Model):
     rate = models.DecimalField(max_digits=10, decimal_places=2)
 
     def __str__(self) -> str:
-        return f'{self.description} (${self.rate})'
+        return f'{self.description}'
 
     class Meta:
         managed = False
@@ -59,8 +69,8 @@ class Billing(models.Model):
     addr2 = models.CharField(max_length=255, blank=True, null=True)
     phone = models.CharField(max_length=255, blank=True, null=True)
     email = models.CharField(max_length=255, blank=True, null=True)
-    abn = models.CharField(max_length=255, blank=True, null=True)
-    is_gst_registered = models.BooleanField(default=False)
+    abn = models.CharField(max_length=255, blank=True, null=True, verbose_name="ABN")
+    is_gst_registered = models.BooleanField(default=False, verbose_name="GST registered?")
 
     def __str__(self) -> str:
         return self.name
@@ -88,14 +98,14 @@ class Client(models.Model):
 class Invoice(models.Model):
     created = models.DateField(auto_now_add=True)
     name = models.CharField(max_length=255, blank=True, null=True)
-    bill_to = models.ForeignKey(Client, models.DO_NOTHING, db_column='bill_to')
+    bill_to = models.ForeignKey(Client, models.RESTRICT, db_column='bill_to')
     issued = models.DateField(blank=True, null=True)
     due = models.DateField(blank=True, null=True)
     paid = models.DateField(blank=True, null=True)
     pdf = models.CharField(max_length=255, blank=True, null=True)
     pdf_viewed = models.BooleanField(default=False)
-    billing = models.ForeignKey(Billing, models.DO_NOTHING)
-    account = models.ForeignKey(Account, models.DO_NOTHING)
+    billing = models.ForeignKey(Billing, models.RESTRICT)
+    account = models.ForeignKey(Account, models.RESTRICT)
 
     @property
     def status(self) -> str:
