@@ -37,8 +37,7 @@ class Activity(models.Model):
         if not self.qty:
             return None
 
-        decimal.getcontext().rounding = decimal.ROUND_UP
-        return decimal.Decimal(self.qty) * self.activity_type.rate
+        return (decimal.Decimal(self.qty) * self.activity_type.rate).quantize(decimal.Decimal('0.01'))
 
     def __str__(self) -> str:
         return f'{self.qty}x {self.activity_type.description} on {self.date}'
@@ -99,7 +98,7 @@ class Invoice(models.Model):
     created = models.DateField(auto_now_add=True)
     name = models.CharField(max_length=255, blank=True, null=True)
     bill_to = models.ForeignKey(Client, models.RESTRICT, db_column='bill_to')
-    issued = models.DateField(blank=True, null=True)
+    issued = models.DateField(blank=True, null=True, help_text="This field controls the editability of other fields.")
     due = models.DateField(blank=True, null=True)
     paid = models.DateField(blank=True, null=True)
     pdf = models.CharField(max_length=255, blank=True, null=True)

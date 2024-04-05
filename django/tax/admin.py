@@ -5,7 +5,15 @@ from .models import *
 
 @admin.register(Expense)
 class ExpenseAdmin(admin.ModelAdmin):
-    list_display = ['date', 'amount', 'fuel_kms']
+    list_display = ['date', 'amount_str', 'fuel_kms', 'tax_deductible_amount_str']
+
+    def amount_str(self, obj):
+        return f'${obj.amount}'
+    amount_str.short_description = "Amount"
+
+    def tax_deductible_amount_str(self, obj):
+        return f'${obj.tax_deductible_amount}'
+    tax_deductible_amount_str.short_description = "Tax deductible amount"
 
 @admin.register(Travel)
 class TravelAdmin(admin.ModelAdmin):
@@ -13,5 +21,13 @@ class TravelAdmin(admin.ModelAdmin):
 
 @admin.register(TaxPeriod)
 class TaxPeriodAdmin(admin.ModelAdmin):
-    list_display = ['name', 'start', 'end']
+    list_display = ['name', 'start', 'end', 'taxable_income', 'tax_deductible_expenses_str']
+
+    def taxable_income(self, obj):
+        return f'${obj.taxable_income}'
+    taxable_income.short_description = "Taxable income"
+
+    def tax_deductible_expenses_str(self, obj):
+        return f'${obj.tax_deductible_expenses}'
+    tax_deductible_expenses_str.short_description = "Tax-deductible expenses"
 

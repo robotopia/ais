@@ -1,7 +1,6 @@
 from django.contrib import admin
 from .models import *
 from datetime import date
-import decimal
 
 # Custom filters
 class IsPaidListFilter(admin.SimpleListFilter):
@@ -62,8 +61,9 @@ class ActivityInline(admin.TabularInline):
     fields = ['date', 'qty', 'rate', 'activity_type', 'amount']
     readonly_fields = ['rate', 'amount']
     extra = 0
-
     show_change_link = True
+    ordering = ['date']
+
     def has_change_permission(self, request, obj):
         return obj.issued is None
 
@@ -124,7 +124,7 @@ class ClientAdmin(admin.ModelAdmin):
 
 @admin.register(Invoice)
 class InvoiceAdmin(admin.ModelAdmin):
-    list_display = ['name', 'bill_to', 'issued', 'due', 'paid_or_overdue']
+    list_display = ['name', 'bill_to', 'total_amount', 'issued', 'due', 'paid_or_overdue']
     list_filter = ['bill_to', IsOverdueListFilter]
     inlines = [ActivityInline]
     fieldsets = [
@@ -163,6 +163,7 @@ class InvoiceAdmin(admin.ModelAdmin):
         activities = obj.activity_set.all()
         total = sum([activity.amount for activity in activities])
         return f'${total}'
+    total_amount.short_description = "Total amount"
 
     def get_readonly_fields(self, request, obj=None):
         if obj is None:
