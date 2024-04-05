@@ -122,6 +122,10 @@ class BillingAdmin(admin.ModelAdmin):
 class ClientAdmin(admin.ModelAdmin):
     list_display = ['name', 'bill_email']
 
+@admin.register(Contract)
+class ContractAdmin(admin.ModelAdmin):
+    list_display = ['start', 'end', 'employer', 'employee']
+
 @admin.register(Invoice)
 class InvoiceAdmin(admin.ModelAdmin):
     list_display = ['name', 'bill_to', 'total_amount', 'issued', 'due', 'paid_or_overdue']

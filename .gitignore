@@ -5,8 +5,13 @@ node_modules
 # Sensitive information
 .env
 
-# The invoices themselves
-src/invoices/*.pdf
+# Media files
+media
+*.pdf
+
+# Python virtual environments, etc.
+venv
+__pycache__
 
 # The persistent database folder
 mysql

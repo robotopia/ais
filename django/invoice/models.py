@@ -95,6 +95,21 @@ class Client(models.Model):
         ordering = ['name']
 
 
+class Contract(models.Model):
+    employee = models.ForeignKey("Billing", models.RESTRICT, db_column='employee')
+    employer = models.ForeignKey("Client", models.RESTRICT, db_column='employer')
+    start = models.DateField()
+    end = models.DateField()
+    pdf = models.FileField(upload_to='contracts', max_length=1023)
+
+    class Meta:
+        managed = False
+        db_table = 'contract'
+
+
+#class
+
+
 class Invoice(models.Model):
     created = models.DateField(auto_now_add=True)
     name = models.CharField(max_length=255, blank=True, null=True)
