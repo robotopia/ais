@@ -111,7 +111,9 @@ class ActivityAdmin(admin.ModelAdmin):
 
 @admin.register(ActivityType)
 class ActivityTypeAdmin(admin.ModelAdmin):
-    list_display = ['description', 'rate']
+    list_display = ['contract', 'description', 'rate']
+    list_filter = ['contract']
+    list_display_links = ['description']
     search_fields = ['description']
 
 @admin.register(Billing)
@@ -133,13 +135,10 @@ class InvoiceAdmin(admin.ModelAdmin):
     inlines = [ActivityInline]
     fieldsets = [
         (
-            None, {'fields': ['name', 'billing', 'issued', 'due', 'paid']},
+            None, {'fields': ['name', 'billing', 'issued', 'due', 'paid', 'pdf']},
         ),
         (
             "Bill to", {'fields': ['bill_to', 'bill_email']}
-        ),
-        (
-            'PDF', {'fields': ['pdf', 'pdf_viewed']}
         ),
         (
             'Payment advice', {'fields': ['account', 'account_name', 'account_bsb', 'account_number', 'total_amount']}
@@ -169,11 +168,25 @@ class InvoiceAdmin(admin.ModelAdmin):
         return f'${total}'
     total_amount.short_description = "Total amount"
 
-    def get_readonly_fields(self, request, obj=None):
+    def get_inline_instances(self, request, obj=None):
+        # Only show the (inline) activities if not creating a new invoice
         if obj is None:
-            return None
+            return []
+
+        return [inline(self.model, self.admin_site) for inline in self.inlines]
+
+    def get_readonly_fields(self, request, obj=None):
+        fields = ['bill_email', 'account_name', 'account_bsb', 'account_number', 'total_amount']
+        if obj is None:
+            return fields
 
         if obj.issued is None:
-            return ['bill_email', 'account_name', 'account_bsb', 'account_number', 'total_amount']
+            return fields
 
-        return ['bill_email', 'account_name', 'account_bsb', 'account_number', 'total_amount', 'billing', 'due', 'bill_to', 'pdf', 'pdf_viewed', 'account']
+        fields += ['billing', 'due', 'bill_to', 'pdf', 'account']
+        if obj.paid is None:
+            return fields
+
+        fields += ['issued']
+        return fields
+

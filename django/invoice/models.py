@@ -51,6 +51,7 @@ class Activity(models.Model):
 
 
 class ActivityType(models.Model):
+    contract = models.ForeignKey("Contract", models.RESTRICT, blank=True, null=True)
     description = models.CharField(max_length=255)
     rate = models.DecimalField(max_digits=10, decimal_places=2)
 
@@ -100,14 +101,15 @@ class Contract(models.Model):
     employer = models.ForeignKey("Client", models.RESTRICT, db_column='employer')
     start = models.DateField()
     end = models.DateField()
-    pdf = models.FileField(upload_to='contracts', max_length=1023)
+    pdf = models.FileField(upload_to='contracts', max_length=1023, blank=True, null=True, verbose_name='PDF')
+
+    def __str__(self) -> str:
+        return f'{self.employer} ({self.start} - {self.end})'
 
     class Meta:
         managed = False
         db_table = 'contract'
-
-
-#class
+        ordering = ['-start', '-end']
 
 
 class Invoice(models.Model):
@@ -117,8 +119,7 @@ class Invoice(models.Model):
     issued = models.DateField(blank=True, null=True, help_text="This field controls the editability of other fields.")
     due = models.DateField(blank=True, null=True)
     paid = models.DateField(blank=True, null=True)
-    pdf = models.CharField(max_length=255, blank=True, null=True)
-    pdf_viewed = models.BooleanField(default=False)
+    pdf = models.FileField(upload_to='invoices', max_length=255, blank=True, null=True, verbose_name='PDF')
     billing = models.ForeignKey(Billing, models.RESTRICT)
     account = models.ForeignKey(Account, models.RESTRICT)
 
