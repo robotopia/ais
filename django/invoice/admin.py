@@ -1,6 +1,7 @@
 from django.contrib import admin
 from .models import *
 from datetime import date
+import decimal
 
 # Custom filters
 class IsPaidListFilter(admin.SimpleListFilter):
@@ -54,6 +55,25 @@ class IsOverdueListFilter(admin.SimpleListFilter):
         else:
             return queryset
 
+# Admin inlines
+
+class ActivityInline(admin.TabularInline):
+    model = Activity
+    fields = ['date', 'qty', 'rate', 'activity_type', 'amount']
+    readonly_fields = ['date', 'qty', 'rate', 'activity_type', 'amount']
+    extra = 0
+    show_change_link = True
+    can_delete = False
+
+    def rate(self, obj):
+        return f'${obj.activity_type.rate}'
+
+    def amount(self, obj):
+        if not obj.qty:
+            return None
+
+        decimal.getcontext().rounding = decimal.ROUND_UP
+        return f'${decimal.Decimal(obj.qty) * obj.activity_type.rate}'
 
 # Admin classes
 
@@ -65,6 +85,7 @@ class AccountAdmin(admin.ModelAdmin):
 class ActivityAdmin(admin.ModelAdmin):
     list_display = ['date', 'qty', 'activity_type', 'invoice', 'is_paid']
     list_filter = ['invoice__bill_to', IsInvoicedListFilter, IsPaidListFilter, 'activity_type']
+    autocomplete_fields = ['activity_type']
     date_hierarchy = 'date'
 
     # A column to say whether this activity has been paid or not
@@ -79,14 +100,15 @@ class ActivityAdmin(admin.ModelAdmin):
 
     # On the create/edit form, restrict the choice of available invoices to only those
     # which have not yet been issued
-    def get_form(self, request, obj=None, **kwargs):
-        form = super(ActivityAdmin, self).get_form(request, obj, **kwargs)
-        form.base_fields['invoice'].queryset = Invoice.objects.filter(issued__isnull=True)
-        return form
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == 'invoice':
+            kwargs['queryset'] = Invoice.objects.filter(issued__isnull=True)
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
 @admin.register(ActivityType)
 class ActivityTypeAdmin(admin.ModelAdmin):
     list_display = ['description', 'rate']
+    search_fields = ['description']
 
 @admin.register(Billing)
 class BillingAdmin(admin.ModelAdmin):
@@ -100,3 +122,23 @@ class ClientAdmin(admin.ModelAdmin):
 class InvoiceAdmin(admin.ModelAdmin):
     list_display = ['name', 'bill_to', 'issued', 'due', 'paid_or_overdue']
     list_filter = ['bill_to', IsOverdueListFilter]
+    inlines = [ActivityInline]
+    fieldsets = [
+        (
+            None, {'fields': ['name', 'billing', ('issued', 'due', 'paid')]},
+        ),
+        (
+            "Bill to", {'fields': [('bill_to', 'bill_email')]}
+        ),
+        (
+            'PDF', {'fields': ['pdf', 'pdf_viewed']}
+        ),
+        (
+            'Payment advice', {'fields': ['account']}
+        ),
+    ]
+    readonly_fields = ['bill_email']
+
+    def bill_email(self, obj):
+        return obj.bill_to.bill_email
+    bill_email.short_description = "Email"
