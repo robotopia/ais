@@ -24,5 +24,5 @@ class ClientAdmin(admin.ModelAdmin):
 
 @admin.register(Invoice)
 class InvoiceAdmin(admin.ModelAdmin):
-    list_display = ['name', 'bill_to', 'created', 'issued', 'due', 'paid']
+    list_display = ['name', 'bill_to', 'created', 'issued', 'due', 'paid_or_overdue']
 

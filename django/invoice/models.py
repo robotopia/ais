@@ -6,7 +6,8 @@
 #   * Remove `managed = False` lines if you wish to allow Django to create, modify, and delete the table
 # Feel free to rename the models, but don't rename db_table values or field names.
 from django.db import models
-
+from datetime import date
+from django.utils.html import format_html
 
 class Account(models.Model):
     bsb = models.CharField(max_length=255, blank=True, null=True)
@@ -85,7 +86,7 @@ class Client(models.Model):
 
 
 class Invoice(models.Model):
-    created = models.DateField(blank=True, null=True)
+    created = models.DateField(auto_now_add=True)
     issued = models.DateField(blank=True, null=True)
     due = models.DateField(blank=True, null=True)
     paid = models.DateField(blank=True, null=True)
@@ -96,8 +97,8 @@ class Invoice(models.Model):
     bill_to = models.ForeignKey(Client, models.DO_NOTHING, db_column='bill_to')
     pdf_viewed = models.BooleanField(default=False)
 
-
-    def status_str(self) -> str:
+    @property
+    def status(self) -> str:
         if self.paid is not None:
             return 'Paid: ' + f'{self.paid}'
 
@@ -106,14 +107,26 @@ class Invoice(models.Model):
 
         return 'Created: ' + f'{self.created}'
 
+    @property
+    def paid_or_overdue(self) -> str:
+        if self.paid:
+            return self.paid
+
+        if not self.due:
+            return None
+
+        if self.due < date.today():
+            return format_html("<span style='color: red;'><b>OVERDUE</b></span>")
+
+        return None
 
     def __str__(self) -> str:
-        return f'{self.name}, {self.bill_to} ({self.status_str()})'
+        return f'{self.name}, {self.bill_to} ({self.status})'
 
 
     class Meta:
         managed = False
         db_table = 'invoice'
-        ordering = ['billing', 'created']
+        ordering = ['billing', '-created']
 
 
