@@ -124,7 +124,6 @@ class Invoice(models.Model):
     pdf = models.FileField(upload_to='invoices', max_length=255, blank=True, null=True, verbose_name='PDF')
     billing = models.ForeignKey(Billing, models.RESTRICT)
     account = models.ForeignKey(Account, models.RESTRICT)
-    published = models.BooleanField(default=False)
 
     @property
     def status(self) -> str:

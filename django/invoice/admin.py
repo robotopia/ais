@@ -269,5 +269,5 @@ class InvoiceAdmin(admin.ModelAdmin):
         qs = super().get_queryset(request)
         if request.user.is_superuser:
             return qs
-        return qs.filter(bill_to__in=request.user.client_set.all())
+        return qs.filter(bill_to__in=request.user.client_set.all(), issued__isnull=False)
 
