@@ -57,7 +57,7 @@ class ActivityType(models.Model):
     rate = models.DecimalField(max_digits=10, decimal_places=2)
 
     def __str__(self) -> str:
-        return f'{self.description} ({self.contract})'
+        return f'{self.description}'
 
     class Meta:
         managed = False
@@ -98,17 +98,6 @@ class Client(models.Model):
         ordering = ['name']
 
 
-'''
-class ClientUser(models.Model):
-    client = models.ForeignKey("Client", models.CASCADE)
-    user = models.ForeignKey(User, models.CASCADE)
-
-    class Meta:
-        managed = False
-        db_table = 'client_user'
-        ordering = ['client', 'user']
-'''
-
 class Contract(models.Model):
     employee = models.ForeignKey("Billing", models.RESTRICT, db_column='employee')
     employer = models.ForeignKey("Client", models.RESTRICT, db_column='employer')
@@ -135,6 +124,7 @@ class Invoice(models.Model):
     pdf = models.FileField(upload_to='invoices', max_length=255, blank=True, null=True, verbose_name='PDF')
     billing = models.ForeignKey(Billing, models.RESTRICT)
     account = models.ForeignKey(Account, models.RESTRICT)
+    published = models.BooleanField(default=False)
 
     @property
     def status(self) -> str:

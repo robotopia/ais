@@ -19,9 +19,12 @@ class IsPaidListFilter(admin.SimpleListFilter):
 
     def queryset(self, request, queryset):
         if self.value() is not None:
-            return queryset.filter(invoice__paid__isnull=not bool(int(self.value())))
-        else:
-            return queryset
+            if queryset.model is Invoice:
+                return queryset.filter(paid__isnull=not bool(int(self.value())))
+            if queryset.model is Activity:
+                return queryset.filter(invoice__paid__isnull=not bool(int(self.value())))
+
+        return queryset
 
 class IsInvoicedListFilter(admin.SimpleListFilter):
     title = 'invoiced?'
@@ -85,13 +88,13 @@ class InvoiceActivityInline(admin.TabularInline):
     form = InvoiceActivityInlineForm
 
     def has_change_permission(self, request, obj):
-        return obj.issued is None
+        return obj.issued is None and request.user.is_superuser
 
     def has_add_permission(self, request, obj):
-        return obj.issued is None
+        return obj.issued is None and request.user.is_superuser
 
     def has_delete_permission(self, request, obj):
-        return obj.issued is None
+        return obj.issued is None and request.user.is_superuser
 
     def rate(self, obj):
         return f'${obj.activity_type.rate}'
@@ -102,7 +105,7 @@ class InvoiceActivityInline(admin.TabularInline):
 
 class ActivityInline(admin.TabularInline):
     model = Activity
-    fields = ['date', 'qty', 'activity_type', 'amount', 'notes', 'invoice']
+    fields = ['date', 'qty', 'amount', 'notes', 'invoice']
     readonly_fields = ['amount']
     extra = 0
     ordering = ['date']
@@ -146,6 +149,12 @@ class ActivityAdmin(admin.ModelAdmin):
             if obj.invoice.issued is not None:
                 return ['invoice']
 
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        if request.user.is_superuser:
+            return qs
+        return qs.filter(invoice__bill_to__in=request.user.client_set.all())
+
 @admin.register(ActivityType)
 class ActivityTypeAdmin(admin.ModelAdmin):
     list_display = ['description', 'rate_str', 'contract']
@@ -177,20 +186,7 @@ class ContractAdmin(admin.ModelAdmin):
 @admin.register(Invoice)
 class InvoiceAdmin(admin.ModelAdmin):
     list_display = ['name', 'bill_to', 'total_amount', 'issued', 'paid_or_overdue']
-    list_filter = ['bill_to', IsOverdueListFilter]
     inlines = [InvoiceActivityInline]
-    fieldsets = [
-        (
-            None, {'fields': ['name', 'billing', 'issued', 'due', 'paid', 'pdf']},
-        ),
-        (
-            "Bill to", {'fields': ['bill_to', 'bill_email']}
-        ),
-        (
-            'Payment advice', {'fields': ['account', 'account_name', 'account_bsb', 'account_number', 'total_amount']}
-        ),
-    ]
-    readonly_fields = ['bill_email', 'account_name', 'account_bsb', 'account_number', 'total_amount']
 
     def bill_email(self, obj):
         return obj.bill_to.bill_email
@@ -214,6 +210,39 @@ class InvoiceAdmin(admin.ModelAdmin):
         return f'${total}'
     total_amount.short_description = "Total amount"
 
+    def get_fieldsets(self, request, obj=None):
+        if request.user.is_superuser:
+            return [
+                (
+                    None, {'fields': ['name', 'billing', 'issued', 'due', 'paid', 'pdf', 'published']},
+                ),
+                (
+                    "Bill to", {'fields': ['bill_to', 'bill_email']}
+                ),
+                (
+                    'Payment advice', {'fields': ['account', 'account_name', 'account_bsb', 'account_number', 'total_amount']}
+                ),
+            ]
+
+        return [
+            (
+                None, {'fields': ['name', 'billing', 'issued', 'due', 'paid', 'pdf']},
+            ),
+            (
+                "Bill to", {'fields': ['bill_to', 'bill_email']}
+            ),
+            (
+                'Payment advice', {'fields': ['account', 'account_name', 'account_bsb', 'account_number', 'total_amount']}
+            ),
+        ]
+
+
+    def get_list_filter(self, request, obj=None):
+        if request.user.is_superuser:
+            return ['bill_to', IsPaidListFilter, IsOverdueListFilter]
+
+        return [IsPaidListFilter, IsOverdueListFilter]
+
     def get_inline_instances(self, request, obj=None):
         # Only show the (inline) activities if not creating a new invoice
         if obj is None:
@@ -235,4 +264,10 @@ class InvoiceAdmin(admin.ModelAdmin):
 
         fields += ['issued']
         return fields
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        if request.user.is_superuser:
+            return qs
+        return qs.filter(bill_to__in=request.user.client_set.all())
 
