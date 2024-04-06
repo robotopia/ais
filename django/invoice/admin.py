@@ -204,6 +204,11 @@ class InvoiceAdmin(admin.ModelAdmin):
         return obj.account.number
     account_number.short_description = "Number"
 
+    def payment_received_qstn(self, obj):
+        return obj.payment_received is not None
+    payment_received_qstn.boolean = True
+    payment_received_qstn.short_description = "Payment received?"
+
     def total_amount(self, obj):
         activities = obj.activity_set.all()
         total = sum([activity.amount for activity in activities])
@@ -212,9 +217,17 @@ class InvoiceAdmin(admin.ModelAdmin):
 
     def get_fieldsets(self, request, obj=None):
         if request.user.is_superuser:
+            payment_status_fields = ['issued', 'due']
+
+            if obj.issued is not None:
+                payment_status_fields.append('paid')
+
+            if obj.paid is not None:
+                payment_status_fields.append('payment_received_qstn')
+
             return [
                 (
-                    None, {'fields': ['name', 'billing', 'issued', 'due', 'paid', 'pdf', 'published']},
+                    None, {'fields': ['name', 'billing', 'pdf']},
                 ),
                 (
                     "Bill to", {'fields': ['bill_to', 'bill_email']}
@@ -222,17 +235,27 @@ class InvoiceAdmin(admin.ModelAdmin):
                 (
                     'Payment advice', {'fields': ['account', 'account_name', 'account_bsb', 'account_number', 'total_amount']}
                 ),
+                (
+                    'Payment status', {'fields': payment_status_fields},
+                ),
             ]
+
+        payment_status_fields = ['issued', 'due', 'paid']
+        if obj.paid is not None:
+            payment_status_fields.append('payment_received_qstn')
 
         return [
             (
-                None, {'fields': ['name', 'billing', 'issued', 'due', 'paid', 'pdf']},
+                None, {'fields': ['name', 'billing', 'pdf']},
             ),
             (
                 "Bill to", {'fields': ['bill_to', 'bill_email']}
             ),
             (
                 'Payment advice', {'fields': ['account', 'account_name', 'account_bsb', 'account_number', 'total_amount']}
+            ),
+            (
+                'Payment status', {'fields': payment_status_fields},
             ),
         ]
 
@@ -251,18 +274,24 @@ class InvoiceAdmin(admin.ModelAdmin):
         return [inline(self.model, self.admin_site) for inline in self.inlines]
 
     def get_readonly_fields(self, request, obj=None):
-        fields = ['bill_email', 'account_name', 'account_bsb', 'account_number', 'total_amount']
         if obj is None:
             return fields
 
-        if obj.issued is None:
+        if request.user.is_superuser:
+            fields = ['bill_email', 'account_name', 'account_bsb', 'account_number', 'total_amount']
+
+            if obj.issued is None:
+                return fields
+
+            fields += ['billing', 'due', 'bill_to', 'pdf', 'account']
+            if obj.paid is None:
+                return fields
+
+            fields += ['issued']
             return fields
 
-        fields += ['billing', 'due', 'bill_to', 'pdf', 'account']
-        if obj.paid is None:
-            return fields
+        fields = ['bill_email', 'account_name', 'account_bsb', 'account_number', 'total_amount', 'payment_received_qstn', 'billing', 'due', 'bill_to', 'pdf', 'account', 'issued', 'name']
 
-        fields += ['issued']
         return fields
 
     def get_queryset(self, request):

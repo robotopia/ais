@@ -121,6 +121,7 @@ class Invoice(models.Model):
     issued = models.DateField(blank=True, null=True, help_text="This field controls the editability of other fields.")
     due = models.DateField(blank=True, null=True)
     paid = models.DateField(blank=True, null=True)
+    payment_received = models.DateField(blank=True, null=True)
     pdf = models.FileField(upload_to='invoices', max_length=255, blank=True, null=True, verbose_name='PDF')
     billing = models.ForeignKey(Billing, models.RESTRICT)
     account = models.ForeignKey(Account, models.RESTRICT)
