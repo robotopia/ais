@@ -192,9 +192,41 @@ class InvoiceAdmin(admin.ModelAdmin):
         return obj.bill_to.bill_email
     bill_email.short_description = "Email"
 
+    def bill_to__name(self, obj):
+        return obj.bill_to.name
+    bill_to__name.short_description = "Name"
+
+    def billing__name(self, obj):
+        return obj.billing.name
+    billing__name.short_description = "Name"
+
+    def billing__address(self, obj):
+        addr = f"{obj.billing.addr1}"
+        if obj.billing.addr2 is not None:
+            addr += f"\n{obj.billing.addr2}"
+        return addr
+    billing__address.short_description = "Address"
+
+    def billing__phone(self, obj):
+        return obj.billing.phone
+    billing__phone.short_description = "Phone"
+
+    def billing__email(self, obj):
+        return obj.billing.email
+    billing__email.short_description = "Email"
+
+    def billing__abn(self, obj):
+        return obj.billing.abn
+    billing__abn.short_description = "ABN"
+
+    def billing__is_gst_registered(self, obj):
+        return obj.billing.is_gst_registered
+    billing__is_gst_registered.short_description = "GST registered?"
+    billing__is_gst_registered.boolean = True
+
     def account_name(self, obj):
         return obj.account.name
-    account_name.short_description = "Name"
+    account_name.short_description = "Account name"
 
     def account_bsb(self, obj):
         return obj.account.bsb
@@ -202,7 +234,7 @@ class InvoiceAdmin(admin.ModelAdmin):
 
     def account_number(self, obj):
         return obj.account.number
-    account_number.short_description = "Number"
+    account_number.short_description = "Account number"
 
     def payment_received_qstn(self, obj):
         return obj.payment_received is not None
@@ -253,10 +285,10 @@ class InvoiceAdmin(admin.ModelAdmin):
 
         return [
             (
-                None, {'fields': ['name', 'billing', 'pdf']},
+                None, {'fields': ['billing__name', 'billing__address', 'billing__phone', 'billing__email', 'billing__abn', 'billing__is_gst_registered', 'pdf']},
             ),
             (
-                "Bill to", {'fields': ['bill_to']}
+                "Bill to", {'fields': ['bill_to__name']}
             ),
             (
                 'Payment advice', {'fields': ['account_name', 'account_bsb', 'account_number', 'total_amount']}
@@ -300,7 +332,7 @@ class InvoiceAdmin(admin.ModelAdmin):
             return fields
 
         # Assert: user is a client
-        fields = ['bill_email', 'account_name', 'account_bsb', 'account_number', 'total_amount', 'payment_received_qstn', 'billing', 'due', 'bill_to', 'pdf', 'account', 'issued', 'name']
+        fields = ['bill_email', 'account_name', 'account_bsb', 'account_number', 'total_amount', 'payment_received_qstn', 'billing', 'due', 'bill_to', 'pdf', 'account', 'issued', 'name', 'bill_to__name', 'billing__name', 'billing__address', 'billing__phone', 'billing__email', 'billing__abn', 'billing__is_gst_registered']
 
         if obj.payment_received is not None:
             fields.append('paid')

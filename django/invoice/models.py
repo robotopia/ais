@@ -14,9 +14,9 @@ from datetime import date
 import decimal
 
 class Account(models.Model):
-    bsb = models.CharField(max_length=255)
-    number = models.CharField(max_length=255)
-    name = models.CharField(max_length=255)
+    bsb = models.CharField(max_length=255, verbose_name="BSB")
+    number = models.CharField(max_length=255, verbose_name="Account number")
+    name = models.CharField(max_length=255, verbose_name="Account name")
 
     def __str__(self) -> str:
         return f'{self.name} ({self.number})'
@@ -73,6 +73,13 @@ class Billing(models.Model):
     email = models.CharField(max_length=255)
     abn = models.CharField(max_length=255, blank=True, null=True, verbose_name="ABN")
     is_gst_registered = models.BooleanField(default=False, verbose_name="GST registered?")
+
+    @property
+    def addr(self):
+        address = f"{self.addr1}"
+        if self.addr2 is not None:
+            address += f"\n{self.addr2}"
+        return address
 
     def __str__(self) -> str:
         return self.name
