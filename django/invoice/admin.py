@@ -246,6 +246,7 @@ class InvoiceAdmin(admin.ModelAdmin):
                 ),
             ]
 
+        # Assert: user is a client
         payment_status_fields = ['issued', 'due', 'paid']
         if obj.paid is not None:
             payment_status_fields.append('payment_received_qstn')
@@ -255,10 +256,10 @@ class InvoiceAdmin(admin.ModelAdmin):
                 None, {'fields': ['name', 'billing', 'pdf']},
             ),
             (
-                "Bill to", {'fields': ['bill_to', 'bill_email']}
+                "Bill to", {'fields': ['bill_to']}
             ),
             (
-                'Payment advice', {'fields': ['account', 'account_name', 'account_bsb', 'account_number', 'total_amount']}
+                'Payment advice', {'fields': ['account_name', 'account_bsb', 'account_number', 'total_amount']}
             ),
             (
                 'Payment status', {'fields': payment_status_fields},
@@ -298,7 +299,11 @@ class InvoiceAdmin(admin.ModelAdmin):
             fields += ['issued']
             return fields
 
+        # Assert: user is a client
         fields = ['bill_email', 'account_name', 'account_bsb', 'account_number', 'total_amount', 'payment_received_qstn', 'billing', 'due', 'bill_to', 'pdf', 'account', 'issued', 'name']
+
+        if obj.payment_received is not None:
+            fields.append('paid')
 
         return fields
 
