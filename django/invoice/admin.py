@@ -209,6 +209,11 @@ class InvoiceAdmin(admin.ModelAdmin):
     payment_received_qstn.boolean = True
     payment_received_qstn.short_description = "Payment received?"
 
+    def is_paid(self, obj):
+        return obj.paid is not None
+    is_paid.boolean = True
+    is_paid.short_description = "Paid?"
+
     def total_amount(self, obj):
         activities = obj.activity_set.all()
         total = sum([activity.amount for activity in activities])
@@ -220,10 +225,11 @@ class InvoiceAdmin(admin.ModelAdmin):
             payment_status_fields = ['issued', 'due']
 
             if obj.issued is not None:
-                payment_status_fields.append('paid')
-
-            if obj.paid is not None:
-                payment_status_fields.append('payment_received_qstn')
+                if obj.paid is not None:
+                    payment_status_fields.append('paid')
+                    payment_status_fields.append('payment_received')
+                else:
+                    payment_status_fields.append('is_paid')
 
             return [
                 (
@@ -274,11 +280,13 @@ class InvoiceAdmin(admin.ModelAdmin):
         return [inline(self.model, self.admin_site) for inline in self.inlines]
 
     def get_readonly_fields(self, request, obj=None):
+        fields = ['bill_email', 'account_name', 'account_bsb', 'account_number', 'total_amount', 'payment_received_qstn', 'is_paid']
+
         if obj is None:
             return fields
 
         if request.user.is_superuser:
-            fields = ['bill_email', 'account_name', 'account_bsb', 'account_number', 'total_amount']
+            fields.append('paid')
 
             if obj.issued is None:
                 return fields
