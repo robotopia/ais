@@ -1,4 +1,8 @@
+from django import forms
 from django.contrib import admin
+from django.utils.html import format_html
+from django.urls import reverse
+
 from .models import *
 from datetime import date
 
@@ -56,13 +60,29 @@ class IsOverdueListFilter(admin.SimpleListFilter):
 
 # Admin inlines
 
-class ActivityInline(admin.TabularInline):
+class InvoiceActivityInlineForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        # Only list activity types whose contracts' employee and employer match
+        # the invoice's "billing" and "bill_to", respectively
+        super().__init__(*args, **kwargs)
+        if self.instance.invoice is not None:
+            qs = self.fields["activity_type"].queryset = ActivityType.objects.filter(
+                contract__employee=self.instance.invoice.billing,
+                contract__employer=self.instance.invoice.bill_to,
+                contract__start__lte=self.instance.date,
+                contract__end__gte=self.instance.date,
+            )
+
+            self.fields["activity_type"].queryset = qs
+
+class InvoiceActivityInline(admin.TabularInline):
     model = Activity
-    fields = ['date', 'qty', 'rate', 'activity_type', 'amount']
+    fields = ['date', 'qty', 'rate', 'activity_type', 'notes', 'amount']
     readonly_fields = ['rate', 'amount']
     extra = 0
     show_change_link = True
     ordering = ['date']
+    form = InvoiceActivityInlineForm
 
     def has_change_permission(self, request, obj):
         return obj.issued is None
@@ -75,6 +95,18 @@ class ActivityInline(admin.TabularInline):
 
     def rate(self, obj):
         return f'${obj.activity_type.rate}'
+
+    def amount(self, obj):
+        return f'${obj.amount}'
+
+
+class ActivityInline(admin.TabularInline):
+    model = Activity
+    fields = ['date', 'qty', 'activity_type', 'amount', 'notes', 'invoice']
+    readonly_fields = ['amount']
+    extra = 0
+    ordering = ['date']
+    show_change_link = True
 
     def amount(self, obj):
         return f'${obj.amount}'
@@ -117,9 +149,10 @@ class ActivityAdmin(admin.ModelAdmin):
 @admin.register(ActivityType)
 class ActivityTypeAdmin(admin.ModelAdmin):
     list_display = ['description', 'rate_str', 'contract']
-    list_filter = ['contract']
+    list_filter = ['contract__employer']
     list_display_links = ['description']
     search_fields = ['description']
+    inlines = [ActivityInline]
 
     @admin.display(description='Rate')
     def rate_str(self, obj):
@@ -133,6 +166,7 @@ class BillingAdmin(admin.ModelAdmin):
 @admin.register(Client)
 class ClientAdmin(admin.ModelAdmin):
     list_display = ['name', 'bill_email']
+    fields = ['name', 'bill_email', 'email_text', 'users']
 
 @admin.register(Contract)
 class ContractAdmin(admin.ModelAdmin):
@@ -142,9 +176,9 @@ class ContractAdmin(admin.ModelAdmin):
 
 @admin.register(Invoice)
 class InvoiceAdmin(admin.ModelAdmin):
-    list_display = ['name', 'bill_to', 'total_amount', 'issued', 'due', 'paid_or_overdue']
+    list_display = ['name', 'bill_to', 'total_amount', 'issued', 'paid_or_overdue']
     list_filter = ['bill_to', IsOverdueListFilter]
-    inlines = [ActivityInline]
+    inlines = [InvoiceActivityInline]
     fieldsets = [
         (
             None, {'fields': ['name', 'billing', 'issued', 'due', 'paid', 'pdf']},

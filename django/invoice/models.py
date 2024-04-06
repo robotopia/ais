@@ -8,6 +8,7 @@
 from django.db import models
 from django.utils.html import format_html
 from django.utils.timezone import now
+from django.contrib.auth.models import User
 
 from datetime import date
 import decimal
@@ -31,7 +32,7 @@ class Activity(models.Model):
     qty = models.FloatField(default=1.0)
     activity_type = models.ForeignKey('ActivityType', on_delete=models.RESTRICT)
     invoice = models.ForeignKey('Invoice', on_delete=models.RESTRICT, blank=True, null=True)
-    notes = models.TextField(blank=True, null=True)
+    notes = models.CharField(max_length=1023, blank=True, null=True)
 
     @property
     def amount(self):
@@ -56,7 +57,7 @@ class ActivityType(models.Model):
     rate = models.DecimalField(max_digits=10, decimal_places=2)
 
     def __str__(self) -> str:
-        return f'{self.description}'
+        return f'{self.description} ({self.contract})'
 
     class Meta:
         managed = False
@@ -86,6 +87,7 @@ class Client(models.Model):
     name = models.CharField(max_length=255)
     bill_email = models.CharField(max_length=255, blank=True, null=True)
     email_text = models.TextField(blank=True, null=True)
+    users = models.ManyToManyField(User, db_table='client_user', verbose_name='Authorised users')
 
     def __str__(self) -> str:
         return self.name
@@ -95,6 +97,17 @@ class Client(models.Model):
         db_table = 'client'
         ordering = ['name']
 
+
+'''
+class ClientUser(models.Model):
+    client = models.ForeignKey("Client", models.CASCADE)
+    user = models.ForeignKey(User, models.CASCADE)
+
+    class Meta:
+        managed = False
+        db_table = 'client_user'
+        ordering = ['client', 'user']
+'''
 
 class Contract(models.Model):
     employee = models.ForeignKey("Billing", models.RESTRICT, db_column='employee')
@@ -136,13 +149,13 @@ class Invoice(models.Model):
     @property
     def paid_or_overdue(self) -> str:
         if self.paid:
-            return self.paid
+            return format_html("<span style='color: green;'><b>Paid</b></span>")
 
         if not self.due:
             return None
 
         if self.due < date.today():
-            return format_html("<span style='color: red;'><b>OVERDUE</b></span>")
+            return format_html("<span style='color: red;'><b>OVERDUE</b></span> ({} days)", (date.today() - self.due).days)
 
         return None
 
