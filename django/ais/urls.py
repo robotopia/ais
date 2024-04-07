@@ -26,3 +26,8 @@ urlpatterns = [
 
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+admin.site.site_header = 'Automatic Invoicing System'
+admin.site.index_title = 'Home'
+admin.site.site_title = 'AIS'
+admin.site.site_url = None
