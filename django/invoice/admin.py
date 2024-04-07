@@ -247,9 +247,7 @@ class InvoiceAdmin(admin.ModelAdmin):
     is_paid.short_description = "Paid?"
 
     def total_amount(self, obj):
-        activities = obj.activity_set.all()
-        total = sum([activity.amount for activity in activities])
-        return f'${total}'
+        return f'${obj.total_amount}'
     total_amount.short_description = "Total amount"
 
     def get_fieldsets(self, request, obj=None):

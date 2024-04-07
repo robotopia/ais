@@ -134,6 +134,12 @@ class Invoice(models.Model):
     account = models.ForeignKey(Account, models.RESTRICT)
 
     @property
+    def total_amount(self):
+        activities = self.activity_set.all()
+        total = sum([activity.amount for activity in activities])
+        return total
+
+    @property
     def status(self) -> str:
         if self.paid is not None:
             return 'Paid: ' + f'{self.paid}'

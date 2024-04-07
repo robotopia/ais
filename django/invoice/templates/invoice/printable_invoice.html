@@ -33,10 +33,62 @@
         </tr>
       </table>
     </div>
+    <div class="card">
+      <h2>Bill to</h2>
+      {{ invoice.bill_to }}
+    </div>
+    <div class="card">
+      <h2>Summary</h2>
+      <table>
+        <tr>
+          <td>Date:</td>
+          <td>{{ invoice.issued }}</td>
+        </tr>
+        <tr>
+          <td>Amount owing:</td>
+          <td>${{ invoice.total_amount }}</td>
+        </tr>
+        <tr>
+          <td>Due date:</td>
+          <td>{{ invoice.due }}</td>
+        </tr>
+      </table>
+    </div>
+    <table>
+      <tr>
+        <th>Date</th>
+        <th>Qty</th>
+        <th>Rate</th>
+        <th>Activity</th>
+        <th>Notes</th>
+        <th>Amount</th>
+      </tr>
+      {% for activity in invoice.activity_set.all %}
+      <tr>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+      </tr>
+      {% endfor %}
+    </table>
   </body>
 </html>
 <style>
 td {
   padding: 0px 30px;
+}
+
+.card > h2 {
+  font-size: 20px;
+  margin: 0px 0px 10px 0px;
+}
+
+.card {
+  border: 1px solid black;
+  padding: 10px;
+  margin: 10px;
 }
 </style>
