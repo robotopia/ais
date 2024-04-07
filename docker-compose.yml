@@ -5,7 +5,12 @@ networks:
 
 volumes:
   mariadb:
-  invoices:
+  ais-django:
+    driver: local
+    driver_opts:
+      type: none
+      device: ${HOME}/ais/django
+      o: bind
 
 services:
   mariadb:
@@ -20,25 +25,36 @@ services:
       MYSQL_PASSWORD: ${DBPASS}
       MYSQL_RANDOM_ROOT_PASSWORD: ${DBPASS}
     ports:
-      - "3307:3306"
+      - ${DBPORT}:3306
     volumes:
       - mariadb:/var/lib/mysql
     networks:
-      - backend
+      - ais-network
 
-  webapp:
-    hostname: webapp
-    container_name: ais-webapp
-    build: webapp
-    image: ais-webapp
+  django:
+    hostname: django
+    container_name: ais-django
+    build: django
+    image: ais-django
     restart: always
     tty: true
+    environment:
+      DBNAME: ${DBNAME}
+      DBUSER: ${DBUSER}
+      DBPASS: ${DBPASS}
+      DBHOST: ${DBHOST}
+      DBPORT: ${DBPORT}
+      DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY}
+      WAN_IP: ${WAN_IP}
+      ULP_URL: ${ULP_URL}
     volumes:
-      - invoices:/ais/invoices
+      - uwsgi-data:/tmp/uwsgi
+      - web-static:/var/www/ais/static
+      - ais-django:/ais/django
     networks:
-      - backend
+      - ais-network
     ports:
-      - "3000:3000"
+      - "8000:8000"
     depends_on:
       - mariadb
 

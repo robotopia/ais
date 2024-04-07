@@ -21,12 +21,22 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-55#hv*(9*11$=@84tvb0gkbi3djpj&4dladjba&s)d@tx@7!0+"
+SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY')
+
+# Ensure https is recognised
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get('DJANGO_DEBUG') == 'True'
 
-ALLOWED_HOSTS = []
+
+ALLOWED_HOSTS = [
+    '127.0.0.1',
+    '0.0.0.0',
+    'localhost',
+    os.getenv("ULP_URL"),
+    os.getenv("WAN_IP"),
+]
 
 
 # Application definition
@@ -123,11 +133,17 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
 STATIC_URL = "static/"
+MEDIA_URL = 'media/'
+
+if DEBUG == True:
+    MEDIA_ROOT = os.path.join(os.path.dirname(__file__), 'media/')
+    STATIC_ROOT = os.path.join(os.path.dirname(__file__), 'static/')
+else:
+    MEDIA_ROOT = '/var/www/ais/media/'
+    STATIC_ROOT ='/var/www/ais/static/'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-MEDIA_ROOT = os.path.join(os.path.dirname(__file__), 'media/')
-MEDIA_URL = 'media/'
