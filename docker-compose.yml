@@ -4,6 +4,12 @@ networks:
 volumes:
   mariadb:
   web-static:
+  uwsgi-data:
+    driver: local
+    driver_opts:
+      type: none
+      device: /tmp/uwsgi
+      o: bind
   ais-django:
     driver: local
     driver_opts:
@@ -50,10 +56,9 @@ services:
     volumes:
       - web-static:/var/www/ais/static
       - ais-django:/ais/django
+      - uwsgi-data:/tmp/uwsgi
     networks:
       - ais-network
-    ports:
-      - "8000:8000"
     depends_on:
       - mariadb
 
