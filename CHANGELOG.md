@@ -1,8 +1,10 @@
 # Change log
 
-## [Unreleased]
+## v0.5
 
 ### Changed
+
+- Switched completely to Django (admin)
 
 ## v0.4
 
