@@ -45,6 +45,7 @@ services:
       DBHOST: ${DBHOST}
       DBPORT: ${DBPORT}
       DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY}
+      DJANGO_DEBUG: ${DJANGO_DEBUG}
       WAN_IP: ${WAN_IP}
       ULP_URL: ${ULP_URL}
     volumes:

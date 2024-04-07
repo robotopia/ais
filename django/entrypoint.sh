@@ -12,10 +12,10 @@ fi
 
 if [ "$DJANGO_DEBUG" == "True" ]
 then
-    # This runs the web app locally through Django
+    echo "Using Django's built-in 'runserver'..."
     python3 manage.py runserver 0.0.0.0:8000
 else
-    # This runs the webapp using uwsgi and creates a socket that nginx uses
+    echo "Using UWSGI..."
     uwsgi --ini /django/ais.uwsgi.ini
 fi
 
