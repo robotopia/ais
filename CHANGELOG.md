@@ -1,5 +1,11 @@
 # Change log
 
+## v0.6
+
+### Added
+
+- Containerisation for Django
+
 ## v0.5
 
 ### Changed
