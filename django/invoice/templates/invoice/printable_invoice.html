@@ -1,0 +1,42 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>{{ invoice.name }}</title>
+  </head>
+  <body>
+    <h1>INVOICE: {{ invoice.name }}</h1>
+    <div id="biller">
+      <table>
+        <tr>
+          <td><b>{{ invoice.billing.name }}</b></td>
+          <td style="text-align: right;">Ph:</td>
+          <td>{{ invoice.billing.phone }}</td>
+        </tr>
+        <tr>
+          <td>{{ invoice.billing.addr1 }}</td>
+          <td style="text-align: right;">Email:</td>
+          <td>{{ invoice.billing.email }}</td>
+        </tr>
+        <tr>
+          <td>{{ invoice.billing.addr2 }}</td>
+          <td style="text-align: right;">ABN:</td>
+          <td>
+            {{ invoice.billing.abn }}
+            {% if invoice.billing.is_gst_registered %}
+            (GST registered)
+            {% else %}
+            (Not GST registered)
+            {% endif %}
+          </td>
+        </tr>
+      </table>
+    </div>
+  </body>
+</html>
+<style>
+td {
+  padding: 0px 30px;
+}
+</style>
