@@ -4,6 +4,11 @@ networks:
 volumes:
   mariadb:
   web-static:
+    driver: local
+    driver_opts:
+      type: none
+      device: /var/www/ais
+      o: bind
   uwsgi-data:
     driver: local
     driver_opts:
@@ -54,9 +59,9 @@ services:
       WAN_IP: ${WAN_IP}
       ULP_URL: ${ULP_URL}
     volumes:
-      - web-static:/var/www/ais/static
-      - ais-django:/ais/django
+      - ais-django:/django
       - uwsgi-data:/tmp/uwsgi
+      - web-static:/var/www/ais
     networks:
       - ais-network
     depends_on:
