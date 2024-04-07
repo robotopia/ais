@@ -185,8 +185,12 @@ class ContractAdmin(admin.ModelAdmin):
 
 @admin.register(Invoice)
 class InvoiceAdmin(admin.ModelAdmin):
-    list_display = ['name', 'bill_to', 'total_amount', 'issued', 'paid_or_overdue']
+    list_display = ['name', 'bill_to', 'total_amount', 'issued', 'paid_or_overdue', 'printable_link']
     inlines = [InvoiceActivityInline]
+
+    def printable_link(self, obj):
+        return format_html('<a href="{}">Link</a>', reverse('printable_invoice', args=(obj.pk,)))
+    printable_link.short_description = "Printable version"
 
     def bill_email(self, obj):
         return obj.bill_to.bill_email

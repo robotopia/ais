@@ -7,7 +7,8 @@
   </head>
   <body>
     <h1>INVOICE: {{ invoice.name }}</h1>
-    <div id="biller">
+    <div class="card">
+      <h2>Biller</h2>
       <table>
         <tr>
           <td><b>{{ invoice.billing.name }}</b></td>
@@ -54,7 +55,7 @@
         </tr>
       </table>
     </div>
-    <table>
+    <table id="activities">
       <tr>
         <th>Date</th>
         <th>Qty</th>
@@ -65,18 +66,44 @@
       </tr>
       {% for activity in invoice.activity_set.all %}
       <tr>
-        <td></td>
-        <td></td>
-        <td></td>
-        <td></td>
-        <td></td>
-        <td></td>
+        <td>{{ activity.date }}</td>
+        <td>{{ activity.qty }}</td>
+        <td>${{ activity.activity_type.rate }}</td>
+        <td>{{ activity.activity_type.description }}</td>
+        <td>{% if activity.notes %}{{ activity.notes }}{% endif %}</td>
+        <td>${{ activity.amount }}</td>
       </tr>
       {% endfor %}
+      <tr>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td style="text-align: right;">Total:</td>
+        <td>${{ invoice.total_amount }}</td>
+      </tr>
     </table>
+    <div class="card">
+      <h2>Payment advice</h2>
+      <table>
+        <tr>
+          <td>BSB:</td>
+          <td>{{ invoice.account.bsb }}</td>
+        </tr>
+        <tr>
+          <td>Acc. No.:</td>
+          <td>{{ invoice.account.number }}</td>
+        </tr>
+        <tr>
+          <td>Acc. Name:</td>
+          <td>{{ invoice.account.name }}</td>
+        </tr>
+      </table>
+    </div>
   </body>
 </html>
 <style>
+
 td {
   padding: 0px 30px;
 }
@@ -89,6 +116,34 @@ td {
 .card {
   border: 1px solid black;
   padding: 10px;
-  margin: 10px;
+  margin: 10px 10px 20px 10px;
+  box-shadow: 10px 10px #bbb;
 }
+
+#activities {
+  width: calc(100% - 20px);
+  border-collapse: collapse;
+  table-layout: fixed;
+  margin: 10px 10px 20px 10px;
+  box-shadow: 10px 10px #bbb;
+}
+
+#activities td, #activities th {
+    border: 1px solid black;
+    padding: 8px;
+    word-wrap: break-word;
+}
+
+#activities th {
+    padding-top: 12px;
+    padding-bottom: 12px;
+    text-align: left;
+    background-color: #ddd;
+    color: black;
+}
+
+#activities tr:last-child {
+    background-color: #eee;
+}
+
 </style>
