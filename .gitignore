@@ -13,5 +13,5 @@ media
 venv
 __pycache__
 
-# The persistent database folder
-mysql
+# Any database initialisation scripts
+mariadb/*.sql
