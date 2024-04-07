@@ -7,7 +7,7 @@ if [ ! -e /$CONTAINER_FIRST_STARTUP ]; then
     touch /$CONTAINER_FIRST_STARTUP
 
     # Iniitalise the DB with schema
-    python3 manage.py collectstatic
+    python3 manage.py collectstatic --noinput
 fi
 
 if [ "$DJANGO_DEBUG" == "True" ]

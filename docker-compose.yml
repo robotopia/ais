@@ -3,7 +3,6 @@ networks:
 
 volumes:
   mariadb:
-  uwsgi-data:
   web-static:
   ais-django:
     driver: local
@@ -49,7 +48,6 @@ services:
       WAN_IP: ${WAN_IP}
       ULP_URL: ${ULP_URL}
     volumes:
-      - uwsgi-data:/tmp/uwsgi
       - web-static:/var/www/ais/static
       - ais-django:/ais/django
     networks:
