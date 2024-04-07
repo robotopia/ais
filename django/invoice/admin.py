@@ -240,21 +240,26 @@ class InvoiceAdmin(admin.ModelAdmin):
         return obj.account.number
     account_number.short_description = "Account number"
 
-    def payment_received_qstn(self, obj):
+    def payment_acknowledged(self, obj):
         return obj.payment_received is not None
-    payment_received_qstn.boolean = True
-    payment_received_qstn.short_description = "Payment received?"
+    payment_acknowledged.boolean = True
+    #payment_acknowledged.short_description = "Payment acknowledged"
 
     def is_paid(self, obj):
         return obj.paid is not None
     is_paid.boolean = True
-    is_paid.short_description = "Paid?"
+    is_paid.short_description = "Payment sent"
 
     def total_amount(self, obj):
         return f'${obj.total_amount}'
     total_amount.short_description = "Total amount"
 
     def get_fieldsets(self, request, obj=None):
+        if obj.pdf is not None and obj.pdf != "":
+            printable = ('printable_link', 'pdf')
+        else:
+            printable = 'printable_link'
+
         if request.user.is_superuser:
             payment_status_fields = ['issued', 'due']
 
@@ -267,7 +272,7 @@ class InvoiceAdmin(admin.ModelAdmin):
 
             return [
                 (
-                    None, {'fields': ['name', 'billing', 'pdf']},
+                    None, {'fields': ['name', 'billing', printable]},
                 ),
                 (
                     "Bill to", {'fields': ['bill_to', 'bill_email']}
@@ -283,11 +288,11 @@ class InvoiceAdmin(admin.ModelAdmin):
         # Assert: user is a client
         payment_status_fields = ['issued', 'due', 'paid']
         if obj.paid is not None:
-            payment_status_fields.append('payment_received_qstn')
+            payment_status_fields.append('payment_acknowledged')
 
         return [
             (
-                None, {'fields': ['billing__name', 'billing__address', 'billing__phone', 'billing__email', 'billing__abn', 'billing__is_gst_registered', 'pdf']},
+                None, {'fields': ['billing__name', 'billing__address', 'billing__phone', 'billing__email', 'billing__abn', 'billing__is_gst_registered', printable]},
             ),
             (
                 "Bill to", {'fields': ['bill_to__name']}
@@ -315,7 +320,7 @@ class InvoiceAdmin(admin.ModelAdmin):
         return [inline(self.model, self.admin_site) for inline in self.inlines]
 
     def get_readonly_fields(self, request, obj=None):
-        fields = ['bill_email', 'account_name', 'account_bsb', 'account_number', 'total_amount', 'payment_received_qstn', 'is_paid']
+        fields = ['bill_email', 'account_name', 'account_bsb', 'account_number', 'total_amount', 'payment_acknowledged', 'is_paid', 'printable_link']
 
         if obj is None:
             return fields
@@ -334,7 +339,7 @@ class InvoiceAdmin(admin.ModelAdmin):
             return fields
 
         # Assert: user is a client
-        fields = ['bill_email', 'account_name', 'account_bsb', 'account_number', 'total_amount', 'payment_received_qstn', 'billing', 'due', 'bill_to', 'pdf', 'account', 'issued', 'name', 'bill_to__name', 'billing__name', 'billing__address', 'billing__phone', 'billing__email', 'billing__abn', 'billing__is_gst_registered']
+        fields = ['bill_email', 'account_name', 'account_bsb', 'account_number', 'total_amount', 'payment_acknowledged', 'billing', 'due', 'bill_to', 'pdf', 'account', 'issued', 'name', 'bill_to__name', 'billing__name', 'billing__address', 'billing__phone', 'billing__email', 'billing__abn', 'billing__is_gst_registered', 'printable_link']
 
         if obj.payment_received is not None:
             fields.append('paid')
