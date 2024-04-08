@@ -1,3 +1,4 @@
+from django.contrib.auth.decorators import login_required
 from django.http import Http404
 from django.shortcuts import render
 from django.shortcuts import get_object_or_404
@@ -6,6 +7,7 @@ from . import models
 
 # Create your views here.
 
+@login_required
 def printable_invoice(request, pk):
 
     invoice = get_object_or_404(models.Invoice, pk=pk)
