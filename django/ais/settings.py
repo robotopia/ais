@@ -82,6 +82,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "ais.wsgi.application"
 
+LOGIN_URL = '/admin/login/'
 
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
