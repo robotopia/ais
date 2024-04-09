@@ -67,7 +67,9 @@ ROOT_URLCONF = "ais.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
+        "DIRS": [
+            os.path.join(os.path.dirname(__file__), 'templates/')
+        ],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -142,6 +144,10 @@ if DEBUG == True:
 else:
     MEDIA_ROOT = '/var/www/ais/media/'
     STATIC_ROOT ='/var/www/ais/static/'
+
+STATICFILES_DIRS = [
+    os.path.join(os.path.dirname(__file__), 'static/')
+]
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
