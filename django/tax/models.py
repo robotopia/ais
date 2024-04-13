@@ -9,7 +9,7 @@ class Expense(models.Model):
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     description = models.TextField(blank=True, null=True)
     date = models.DateField()
-    receipt = models.CharField(max_length=1024, blank=True, null=True)
+    receipt = models.ImageField(upload_to='receipts', max_length=1023, blank=True, null=True)
     fuel_kms = models.DecimalField(max_digits=10, decimal_places=1, blank=True, null=True)
 
     @property
