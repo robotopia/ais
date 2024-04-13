@@ -17,11 +17,13 @@ Including another URLconf
 from django.contrib import admin
 from django.conf import settings
 from django.conf.urls.static import static
-from django.urls import path, include
+from django.urls import path, re_path, include
+from django.views.generic import RedirectView
 
 urlpatterns = [
-    path('invoice/', include("invoice.urls")),
-    path("admin/", admin.site.urls),
+    path('invoice/', include('invoice.urls')),
+    path('admin/', admin.site.urls, name='admin_site'),
+    re_path(r'^$', RedirectView.as_view(url='admin/')),
 ]
 
 if settings.DEBUG:
