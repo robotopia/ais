@@ -6,6 +6,8 @@ from .models import *
 @admin.register(Expense)
 class ExpenseAdmin(admin.ModelAdmin):
     list_display = ['date', 'amount_str', 'fuel_kms', 'tax_deductible_amount_str']
+    fields = ['date', 'amount', ('receipt', 'image'), 'fuel_kms', 'description']
+    readonly_fields = ['image']
 
     def amount_str(self, obj):
         return f'${obj.amount}'

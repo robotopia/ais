@@ -1,5 +1,6 @@
 from django.db import models
 import invoice.models as invoice_models
+from django.utils.html import mark_safe
 
 import decimal
 
@@ -23,6 +24,11 @@ class Expense(models.Model):
         travel_kms = decimal.Decimal(sum([travel.kms for travel in self.travel_set.filter(activity__isnull=False)]))
         amount = self.amount * travel_kms / self.fuel_kms
         return amount.quantize(decimal.Decimal('0.01'))
+
+    # For displaying the image on the admin site
+    # Adapted from https://stackoverflow.com/questions/16307307/django-admin-show-image-from-imagefield
+    def image(self):
+        return mark_safe('<a href="%s"><img src="%s" width="auto" height="150" /></a>' % (self.receipt.url, self.receipt.url))
 
     def __str__(self) -> str:
         return f'${self.amount} on {self.date}'
