@@ -15,6 +15,7 @@ class ExpenseAdmin(admin.ModelAdmin):
         return f'${obj.tax_deductible_amount}'
     tax_deductible_amount_str.short_description = "Tax deductible amount"
 
+
 @admin.register(Travel)
 class TravelAdmin(admin.ModelAdmin):
     list_display = ['date', 'activity', 'from_location', 'to_location', 'expense', 'kms']
