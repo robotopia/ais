@@ -3,11 +3,18 @@ from .models import *
 
 # Register your models here.
 
+class TravelInline(admin.TabularInline):
+    model = Travel
+    extra = 1
+    ordering = ['date']
+    show_change_link = True
+
 @admin.register(Expense)
 class ExpenseAdmin(admin.ModelAdmin):
     list_display = ['date', 'amount_str', 'fuel_kms', 'tax_deductible_amount_str']
     fields = ['date', 'amount', ('receipt', 'image'), 'fuel_kms', 'description']
     readonly_fields = ['image']
+    inlines = [TravelInline]
 
     def amount_str(self, obj):
         return f'${obj.amount}'
