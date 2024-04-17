@@ -1,20 +1,47 @@
+from django import forms
 from django.contrib import admin
 from .models import *
+from django.db.models import Q
 
-# Register your models here.
+# Custom form for expenses (reverse look-up for available travels to expense)
+class ExpenseTravelForm(forms.ModelForm):
 
-class TravelInline(admin.TabularInline):
-    model = Travel
-    extra = 1
-    ordering = ['date']
-    show_change_link = True
+    travels = forms.ModelMultipleChoiceField(
+        queryset=Travel.objects.all(),
+        widget=admin.widgets.FilteredSelectMultiple(
+            verbose_name=Travel._meta.verbose_name,
+            is_stacked=False,
+        ),
+        required=False,
+    )
+
+    def save(self, commit=True):
+        expense = super(ExpenseTravelForm, self).save(commit=commit)
+        travels = self.cleaned_data.get('travels', None)
+        existing_travels = Travel.objects.filter(expense__exact=expense)
+        # Identify the ones to be removed from this expense
+        # = is in existing_travels, but isn't in travels
+        travels_to_be_removed = existing_travels.difference(travels)
+        # Identify the ones to be added to this expense
+        # = is in travels, but isn't in existing_travels
+        travels_to_be_added = travels.difference(existing_travels)
+        print(travels_to_be_removed)
+        print(travels_to_be_added))
+        return expense
+
+    class Meta:
+        model = Expense
+        fields = '__all__'
+
+
+# ModelAdmins
 
 @admin.register(Expense)
 class ExpenseAdmin(admin.ModelAdmin):
+    form = ExpenseTravelForm
     list_display = ['date', 'amount_str', 'fuel_kms', 'tax_deductible_amount_str']
-    fields = ['date', 'amount', ('receipt', 'image'), 'fuel_kms', 'description']
+    fields = ['date', 'amount', ('receipt', 'image'), 'fuel_kms', 'description', 'travels']
     readonly_fields = ['image']
-    inlines = [TravelInline]
 
     def amount_str(self, obj):
         return f'${obj.amount}'
@@ -24,10 +51,22 @@ class ExpenseAdmin(admin.ModelAdmin):
         return f'${obj.tax_deductible_amount}'
     tax_deductible_amount_str.short_description = "Tax deductible amount"
 
+    def get_form(self, request, obj=None, **kwargs):
+        form = super(ExpenseAdmin, self).get_form(request, obj, **kwargs)
+        form.base_fields['travels'].queryset = Travel.objects.filter(Q(expense__isnull=True) | Q(expense__exact=obj))
+        form.base_fields['travels'].initial = Travel.objects.filter(Q(expense__exact=obj))
+        return form
+
 
 @admin.register(Travel)
 class TravelAdmin(admin.ModelAdmin):
     list_display = ['date', 'activity', 'from_location', 'to_location', 'expense', 'kms']
+
+    def get_form(self, request, obj=None, **kwargs):
+        form = super(TravelAdmin, self).get_form(request, obj, **kwargs)
+        form.base_fields['expense'].queryset = Expense.objects.filter(date__gte=obj.date)
+        return form
+
 
 @admin.register(TaxPeriod)
 class TaxPeriodAdmin(admin.ModelAdmin):
