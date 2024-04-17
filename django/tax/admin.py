@@ -17,16 +17,29 @@ class ExpenseTravelForm(forms.ModelForm):
 
     def save(self, commit=True):
         expense = super(ExpenseTravelForm, self).save(commit=commit)
+
+        # Get the travels that have been "chosen" in the widget
         travels = self.cleaned_data.get('travels', None)
+
+        # Get the travels that are still "available" in the widget
         existing_travels = Travel.objects.filter(expense__exact=expense)
+
         # Identify the ones to be removed from this expense
         # = is in existing_travels, but isn't in travels
         travels_to_be_removed = existing_travels.difference(travels)
+
         # Identify the ones to be added to this expense
         # = is in travels, but isn't in existing_travels
         travels_to_be_added = travels.difference(existing_travels)
-        print(travels_to_be_removed)
-        print(travels_to_be_added))
+
+        # Change the travels accordingly
+        for travel in travels_to_be_removed:
+            travel.expense = None
+            travel.save()
+        for travel in travels_to_be_added:
+            travel.expense = expense
+            travel.save()
+
         return expense
 
     class Meta:
