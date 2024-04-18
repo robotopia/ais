@@ -77,7 +77,8 @@ class TravelAdmin(admin.ModelAdmin):
 
     def get_form(self, request, obj=None, **kwargs):
         form = super(TravelAdmin, self).get_form(request, obj, **kwargs)
-        form.base_fields['expense'].queryset = Expense.objects.filter(date__gte=obj.date)
+        if obj is not None:
+            form.base_fields['expense'].queryset = Expense.objects.filter(date__gte=obj.date)
         return form
 
 
