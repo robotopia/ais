@@ -22,7 +22,7 @@ class ExpenseTravelForm(forms.ModelForm):
         travels = self.cleaned_data.get('travels', None)
 
         # Get the travels that are still "available" in the widget
-        existing_travels = Travel.objects.filter(expense__exact=expense)
+        existing_travels = Travel.objects.filter(expense__pk=expense.pk)
 
         # Identify the ones to be removed from this expense
         # = is in existing_travels, but isn't in travels
@@ -66,8 +66,13 @@ class ExpenseAdmin(admin.ModelAdmin):
 
     def get_form(self, request, obj=None, **kwargs):
         form = super(ExpenseAdmin, self).get_form(request, obj, **kwargs)
-        form.base_fields['travels'].queryset = Travel.objects.filter(Q(expense__isnull=True) | Q(expense__exact=obj))
-        form.base_fields['travels'].initial = Travel.objects.filter(Q(expense__exact=obj))
+        if obj is not None:
+            form.base_fields['travels'].queryset = Travel.objects.filter(
+                Q(expense__isnull=True) | Q(expense__exact=obj)
+            )
+            form.base_fields['travels'].initial = Travel.objects.filter(Q(expense__exact=obj))
+        else:
+            form.base_fields['travels'].queryset = Travel.objects.filter(expense__isnull=True)
         return form
 
 
