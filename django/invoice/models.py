@@ -94,7 +94,7 @@ class Client(models.Model):
     name = models.CharField(max_length=255)
     bill_email = models.CharField(max_length=255, blank=True, null=True)
     email_text = models.TextField(blank=True, null=True)
-    users = models.ManyToManyField(User, db_table='client_user', verbose_name='Authorised users')
+    users = models.ManyToManyField(User, db_table='client_user', verbose_name='Authorised users', blank=True)
 
     def __str__(self) -> str:
         return self.name

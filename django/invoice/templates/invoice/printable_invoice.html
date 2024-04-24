@@ -65,7 +65,7 @@
         <th>Notes</th>
         <th>Amount</th>
       </tr>
-      {% for activity in invoice.activity_set.all %}
+      {% for activity in invoice.activity_set.all|dictsort:"date" %}
       <tr>
         <td>{{ activity.date }}</td>
         <td>{{ activity.qty }}</td>

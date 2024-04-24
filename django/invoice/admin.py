@@ -176,6 +176,7 @@ class BillingAdmin(admin.ModelAdmin):
 class ClientAdmin(admin.ModelAdmin):
     list_display = ['name', 'bill_email']
     fields = ['name', 'bill_email', 'email_text', 'users']
+    filter_horizontal = ['users']
 
 @admin.register(Contract)
 class ContractAdmin(admin.ModelAdmin):
