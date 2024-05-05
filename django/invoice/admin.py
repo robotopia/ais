@@ -256,6 +256,11 @@ class InvoiceAdmin(admin.ModelAdmin):
     total_amount.short_description = "Total amount"
 
     def get_fieldsets(self, request, obj=None):
+        if obj is None:
+            return [
+                (None, {'fields': ['name', 'billing', 'bill_to', 'account']},),
+            ]
+
         if obj.pdf is not None and obj.pdf != "":
             printable = ('printable_link', 'pdf')
         else:
