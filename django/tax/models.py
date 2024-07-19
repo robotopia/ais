@@ -47,7 +47,10 @@ class TaxPeriod(models.Model):
     @property
     def taxable_income(self):
         activities = invoice_models.Activity.objects.filter(invoice__paid__gte=self.start, invoice__paid__lte=self.end)
-        total = sum([activity.amount for activity in activities])
+        if activities.exists():
+            total = sum([activity.amount for activity in activities])
+        else:
+            total = decimal.Decimal("0.00")
         return total.quantize(decimal.Decimal("0.01"))
 
     @property
@@ -58,7 +61,11 @@ class TaxPeriod(models.Model):
             return decimal.Decimal('0.00')
 
         amounts = [expense.tax_deductible_amount for expense in expenses]
-        total = sum(amounts)
+
+        if len(amounts) > 0:
+            total = sum(amounts)
+        else:
+            total = decimal.Decimal("0.00")
 
         return total.quantize(decimal.Decimal('0.01'))
 

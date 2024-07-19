@@ -145,9 +145,9 @@ else:
     MEDIA_ROOT = '/var/www/ais/media/'
     STATIC_ROOT ='/var/www/ais/static/'
 
-STATICFILES_DIRS = [
-    os.path.join(os.path.dirname(__file__), 'static/')
-]
+    STATICFILES_DIRS = [
+        os.path.join(os.path.dirname(__file__), 'static/')
+    ]
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
