@@ -270,11 +270,8 @@ class InvoiceAdmin(admin.ModelAdmin):
             payment_status_fields = ['issued', 'due']
 
             if obj.issued is not None:
-                if obj.paid is not None:
-                    payment_status_fields.append('paid')
-                    payment_status_fields.append('payment_received')
-                else:
-                    payment_status_fields.append('is_paid')
+                payment_status_fields.append('paid')
+                payment_status_fields.append('payment_received')
 
             return [
                 (
@@ -332,16 +329,15 @@ class InvoiceAdmin(admin.ModelAdmin):
             return fields
 
         if request.user.is_superuser:
-            fields.append('paid')
 
             if obj.issued is None:
                 return fields
 
-            fields += ['billing', 'due', 'bill_to', 'pdf', 'account']
+            fields += ['billing', 'bill_to', 'pdf', 'account']
             if obj.paid is None:
                 return fields
 
-            fields += ['issued']
+            fields += ['issued', 'due', 'paid']
             return fields
 
         # Assert: user is a client
