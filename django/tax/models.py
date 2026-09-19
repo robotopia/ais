@@ -1,4 +1,5 @@
 from django.db import models
+from django.db.models import F, Sum, DecimalField, ExpressionWrapper
 import invoice.models as invoice_models
 from django.utils.html import mark_safe
 
@@ -52,6 +53,23 @@ class TaxPeriod(models.Model):
         else:
             total = decimal.Decimal("0.00")
         return total.quantize(decimal.Decimal("0.01"))
+
+    @property
+    def taxable_income_breakdown(self):
+        activities = (
+            invoice_models.Activity.objects
+            .filter(invoice__paid__gte=self.start, invoice__paid__lte=self.end)
+            .values("invoice__bill_to__name")
+            .annotate(
+                total=Sum(
+                    ExpressionWrapper(
+                        F("qty") * F("activity_type__rate"),
+                        output_field=DecimalField(),
+                    )
+                )
+            )
+        )
+        return activities
 
     @property
     def tax_deductible_expenses(self):

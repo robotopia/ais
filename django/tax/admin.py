@@ -1,5 +1,6 @@
 from django import forms
 from django.contrib import admin
+from django.utils.html import format_html, format_html_join
 from .models import *
 from django.db.models import Q
 
@@ -89,13 +90,21 @@ class TravelAdmin(admin.ModelAdmin):
 
 @admin.register(TaxPeriod)
 class TaxPeriodAdmin(admin.ModelAdmin):
-    list_display = ['name', 'start', 'end', 'taxable_income', 'tax_deductible_expenses_str']
-
-    def taxable_income(self, obj):
-        return f'${obj.taxable_income}'
-    taxable_income.short_description = "Taxable income"
+    list_display = ['name', 'start', 'end', 'tax_income_breakdown_html', 'tax_deductible_expenses_str']
 
     def tax_deductible_expenses_str(self, obj):
         return f'${obj.tax_deductible_expenses}'
     tax_deductible_expenses_str.short_description = "Tax-deductible expenses"
+
+    def tax_income_breakdown_html(self, obj):
+        return format_html(
+            "<table>{}<tr><td><b>Total</b></td><td><b>{}</b></td></table>",
+            format_html_join(
+                "",
+                "<tr><td>{}</td><td>${}</td></tr>",
+                ((row["invoice__bill_to__name"], row["total"]) for row in obj.taxable_income_breakdown),
+            ),
+            f'${obj.taxable_income}',
+        )
+    tax_income_breakdown_html.short_description = "Income"
 
